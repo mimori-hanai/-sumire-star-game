@@ -1425,4 +1425,77 @@ v15RosterPanel=function(){
  return html.replace('</section>',note+'</section>');
 };
 
+
+// ===== v18: 男役・娘役の主演履歴 / 5組の年度別スター体制 =====
+// トップ：在任日の記録。2/3番手：レビュー本等による参考序列（正式な公称役職ではない）。
+const V18_RANK_SNAPSHOTS={
+ 2018:{'花組':['柚香光','水美舞斗・鳳月杏（候補）'],'月組':['美弥るりか','月城かなと'],'雪組':['彩風咲奈','彩凪翔・朝美絢（候補）'],'星組':['礼真琴','七海ひろき・瀬央ゆりあ（候補）'],'宙組':['芹香斗亜','愛月ひかる（同年後半に専科へ）']},
+ 2020:{'花組':['瀬戸かずや','水美舞斗'],'月組':['月城かなと','鳳月杏'],'雪組':['彩風咲奈','彩凪翔・朝美絢'],'星組':['愛月ひかる','瀬央ゆりあ'],'宙組':['芹香斗亜','桜木みなと']},
+ 2022:{'花組':['水美舞斗','永久輝せあ'],'月組':['鳳月杏','風間柚乃'],'雪組':['朝美絢','和希そら'],'星組':['（明確な2番手不在）','瀬央ゆりあ・暁千星'],'宙組':['芹香斗亜','桜木みなと']},
+ 2023:{'花組':['永久輝せあ','聖乃あすか'],'月組':['鳳月杏','風間柚乃'],'雪組':['朝美絢','和希そら'],'星組':['瀬央ゆりあ','暁千星'],'宙組':['桜木みなと','瑠風輝']},
+ 2024:{'花組':['聖乃あすか','（検証中）'],'月組':['風間柚乃','礼華はる'],'雪組':['朝美絢','縣千'],'星組':['暁千星','極美慎'],'宙組':['桜木みなと','瑠風輝']},
+ 2025:{'花組':['聖乃あすか','極美慎'],'月組':['風間柚乃','礼華はる'],'雪組':['瀬央ゆりあ','縣千'],'星組':['瑠風輝','天飛華音'],'宙組':['水美舞斗','鷹翔千空']},
+ 2026:{'花組':['聖乃あすか','極美慎'],'月組':['風間柚乃','礼華はる'],'雪組':['瀬央ゆりあ','縣千'],'星組':['瑠風輝','天飛華音'],'宙組':['水美舞斗','鷹翔千空']}
+};
+const V18_SOURCES={
+ 2018:'https://zuka-note.com/archives/931',
+ 2020:'https://zukacoto.com/takarazukanews/takarazukarevue2020-review/',
+ 2022:'https://takarazuka-research.jp/blog-entry-916.html',
+ 2023:'https://takarazuka.blog/2023/07/13/2023review/',
+ 2024:'https://takarazuka-research.jp/blog-entry-1074.html',
+ 2025:'https://demodori-zukablog.com/20250123/',
+ 2026:'https://takarazuka.kokoro-aozora.com/entry/5kumi/wakate-star/2026'
+};
+function v18RanksFor(year,group){
+ if(year>=2027){
+  v15Ensure();v15AdvanceRoster(year);
+  const r=game.v15.groups[group];return {second:r.ranks[0]||'空席',third:r.ranks[1]||'空席',mode:'ゲーム内予測',src:''};
+ }
+ if(V18_RANK_SNAPSHOTS[year])return {second:V18_RANK_SNAPSHOTS[year][group][0],third:V18_RANK_SNAPSHOTS[year][group][1],mode:year===2024?'2024年8月の参考序列（年末の人事とは異なる場合あり）':year===2018?'2018年夏の参考序列（3番手は複数説あり）':'当該年の資料からの参考序列',src:V18_SOURCES[year]};
+ // 離れた年の名簿を史実のように表示しない。
+ return {second:'当該年度の資料未照合',third:'当該年度の資料未照合',mode:'未照合',src:''};
+}
+function v18Roster(){
+ if(!game)return '';
+ const year=game.calendar;
+ const historic=year<=2026;
+ const rows=historic?v16HistoryRoster(year):(v15Ensure(),v15AdvanceRoster(year),game.v15.groups);
+ const current=year===2026?'2026年末の参考編成':year>=2027?'ゲーム内の人事予測':`${year}年末の編成`;
+ return `<section class="panel"><h2>五組のスター体制</h2><p class="note">${current}。トップスター・トップ娘役は収録済みの在任資料、2・3番手は公演・レビュー本等による参考序列です。番手は公式に一律公表される役職ではありません。未照合の年度を別年度の氏名で埋めることはしていません。</p>`+
+ V15_TROUPES.map(group=>{
+  const row=rows[group],r=v18RanksFor(year,group);
+  const heroine=year>=2027?row.heroine:row.heroine;
+  const top=year>=2027?row.top:row.top;
+  // 主人公のトップ就任時には、選択した相手役を未来編成に反映する。
+  const playerPartner=game.v17?.partnerSelected;
+  const paired=year>=2027&&playerPartner&&game.troupe===group&&game.flags.top;
+  const topName=paired?game.name:top;
+  const heroineName=paired?playerPartner.name:heroine;
+  const alt=year>=2027?'ゲーム内予測':r.mode;
+  return `<div class="history"><h3 style="margin:0 0 7px;color:#a44876">${esc(group)}</h3>
+    <div>トップスター（男役主演）：<b>${esc(topName||'未設定')}</b></div>
+    <div>トップ娘役（娘役主演）：<b>${esc(heroineName||'未設定')}</b></div>
+    <div>2番手男役：<b>${esc(r.second)}</b></div>
+    <div>3番手男役：<b>${esc(r.third)}</b></div>
+    <small class="muted">${esc(alt)}${r.src?` ／ <a href="${r.src}" target="_blank" rel="noopener noreferrer">番手参考資料</a>`:''}</small></div>`;
+ }).join('')+
+ `<p class="note">トップ就任・退任記録：<a href="https://sumirecord.com/top-stars" target="_blank" rel="noopener noreferrer">すみれコード</a> ／ <a href="https://momonoyakata.com/timeline-all/" target="_blank" rel="noopener noreferrer">もものやかた年表</a></p><button class="btn" onclick="openTab('timeline')">← 人生の記録へ戻る</button></section>`;
+}
+v15RosterPanel=v18Roster;
+// 男役・娘役ともに主演・ヒロインを分けて記録・表示する。旧セーブデータも対象。
+const v18OldWorks=revisedWorks;
+revisedWorks=function(){
+ if(!game)return '';
+ const original=v18OldWorks();
+ const lead=(game.leadWorks||[]).slice().reverse();
+ const stage=lead.map(w=>{
+  const ownRole=/ヒロイン|娘役/.test(w.role||'')?'ヒロイン（娘役）':/主演/.test(w.role||'')?'主演（男役）':(game.role==='娘役'?'ヒロイン（娘役）':'主演（男役）');
+  const companion=game.role==='娘役'?'相手役・主演男役':'相手役・ヒロイン';
+  return `<div class="history"><b>${esc(w.year)}年・${esc(w.title||'作品名未登録')}</b><br>${esc(w.kind||'公演')} ／ ${ownRole}<br>${companion}：${esc(w.partner||'未記録')}</div>`;
+ }).join('')||'<p class="muted">まだ主演・ヒロインの記録はありません。</p>';
+ const leadPanel=`<section class="panel"><h2>主演・ヒロイン歴（男役／娘役）</h2><p class="note">新人公演・バウ・東上・本公演・別箱の主演／ヒロイン歴を、相手役とともに表示します。</p>${stage}</section>`;
+ // 既存の出演履歴・別箱欄は消さず、上部に分類を追加する。
+ return leadPanel+original;
+};
+
 </script></body></html>
