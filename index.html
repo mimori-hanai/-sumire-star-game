@@ -16,6 +16,24 @@
 .shop-controls{background:#fff8fd;border:1px solid #eed6e9;border-radius:9px;padding:12px;margin:9px 0;display:grid;gap:8px}
 .shop-controls select{width:100%;padding:11px;border:1px solid #c9a6bf;background:white;border-radius:7px;font-size:15px}
 .shop-controls button{width:100%;padding:10px}.person-status{font-size:11px;color:#736578}
+</style><style>
+/* v10 kawaii 2000s pixel makeover */
+:root{--bg:#fff4fa;--pink:#b65291;--teal:#4d928d;--border:#e7c9dd}
+body{background:radial-gradient(circle at 2% 8%,#fffafa 0,#fff0f8 40%,#f3eafa 100%)}
+header{background:linear-gradient(100deg,#fff8fe,#fce5f5);border-bottom:3px solid #e6b4d1}
+header strong{color:#ac4b92;text-shadow:1px 1px #fff;letter-spacing:.14em}
+.panel{border-radius:16px;border-color:#ead3e5;box-shadow:0 4px 12px #ae78a214}
+.btn,.controls button{border-radius:10px;box-shadow:0 2px 0 #cfb4c9}
+.btn.primary,.controls button.selected{background:#9b4f88;border-color:#9b4f88}
+.pixel-stage{height:284px!important;min-height:284px!important;border:7px ridge #e5a8cb!important;border-radius:16px!important;background:linear-gradient(180deg,#fff1fa 0,#ffe3f4 65%,#ead4fa 66%,#f3ddff 100%)!important;box-shadow:inset 0 0 0 4px #fff,0 6px 0 #e3c8e3!important}
+.pixel-stage .retro-scene{top:34px;height:225px;width:min(98%,375px)}
+.pixel-stage .caption{font-weight:bold;color:#a74e87;text-shadow:1px 1px white;z-index:2;left:4%;top:6px;font-size:12px}
+.pixel-stage .retro-label{z-index:3;bottom:3px;position:absolute;left:6%;right:6%;text-align:center;background:#fff9f9df;border:1px solid #d9a5c6;border-radius:8px;padding:3px;color:#7c426a;font-size:12px;font-weight:bold}
+.shop-controls{border:2px solid #e6b9d9;background:linear-gradient(135deg,#fff9ff,#fce9f6);border-radius:14px;padding:14px;margin:13px 0;display:flex;flex-direction:column;gap:9px}
+.shop-controls select{min-height:44px;border-radius:9px;border:1px solid #d9a6c4;padding:10px;background:white;width:100%}
+.shop-controls .btn{align-self:flex-start;background:#a95790;color:white;border-color:#a95790}
+.shopgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.shopitem{border-radius:12px;background:#fff9fd}
+@media(max-width:420px){.pixel-stage{height:264px!important;min-height:264px!important}.pixel-stage .retro-scene{top:24px;height:218px}}
 </style></head><body><header><strong>✦ すみれの軌跡</strong><span>宝塚人生シミュレーション</span></header><main id="app" class="wrap"></main><script>
 'use strict';
 const REAL_PEOPLE=[
@@ -464,5 +482,318 @@ const v8OldRecord=recordShow;
 recordShow=function(kind='本公演',featured=false){let rec=v8OldRecord(kind,featured);if(/バウ|東上|別箱/.test(kind)){rec.theatre=/バウ/.test(kind)?'宝塚バウホール':'別箱公演';rec.box=true}return rec};
 const v8OldWorks=revisedWorks;
 revisedWorks=function(){let html=v8OldWorks();const boxes=game.performances.filter(w=>/バウ|東上|別箱/.test(w.kind));let panel=`<section class="panel"><h2>別箱公演の出演記録（${boxes.length}件）</h2>${boxes.slice().reverse().map(w=>`<div class="history"><b>${w.year}年 ${esc(w.kind)} 『${esc(w.title)}』</b><br>${esc(w.role)}${w.partner?'／相手役：'+esc(w.partner):''}</div>`).join('')||'<p class="muted">別箱への出演記録はまだありません。</p>'}<p class="note">作品名と公演形態の組合せが未検証の履歴もあります。記録はゲーム上の進行に従います。</p></section>`;return panel+html};
+
+
+
+// === v9 : realistic career forks, separate venue productions, incremental growth ===
+const V9_BOXES=[
+[2017,'月組','Arkadia －アルカディア－','宝塚バウホール','暁千星'],[2017,'宙組','パーシャルタイムトラベル 時空の果てに','宝塚バウホール','桜木みなと'],
+[2018,'雪組','義経妖狐夢幻桜','宝塚バウホール','朝美絢'],[2018,'花組','Senhor CRUZEIRO!','宝塚バウホール','水美舞斗'],
+[2019,'宙組','リッツ・ホテルくらいに大きなダイヤモンド','宝塚バウホール','瑠風輝'],[2019,'雪組','PR×PRince','宝塚バウホール','永久輝せあ'],[2019,'星組','龍の宮物語','宝塚バウホール','瀬央ゆりあ'],
+[2021,'花組','PRINCE OF ROSES－王冠に導かれし男－','宝塚バウホール','聖乃あすか'],[2021,'月組','LOVE AND ALL THAT JAZZ','宝塚バウホール','風間柚乃'],[2021,'宙組','夢千鳥','宝塚バウホール','和希そら'],
+[2022,'雪組',"Sweet Little Rock 'n' Roll",'宝塚バウホール','縣千'],[2022,'星組','ベアタ・ベアトリクス','宝塚バウホール','極美慎'],[2022,'花組','殉情','宝塚バウホール','一之瀬航季'],
+[2023,'宙組','夢現の先に','宝塚バウホール','鷹翔千空'],[2023,'花組','舞姫','宝塚バウホール','聖乃あすか'],[2023,'月組','月の燈影','宝塚バウホール','礼華はる'],[2023,'星組','My Last Joke―虚構に生きる―','宝塚バウホール','天飛華音'],
+[2024,'月組','Golden Dead Schiele','宝塚バウホール','彩海せら'],[2024,'宙組','MY BLUE HEAVEN －わたしのあおぞら－','宝塚バウホール','風色日向'],
+[2025,'星組','にぎたつの海に月出づ','宝塚バウホール','極美慎'],[2025,'花組','儚き星の照らす海の果てに','宝塚バウホール','希波らいと'],[2025,'雪組','ステップ・バイ・ミー','宝塚バウホール','華世京'],[2025,'星組','アレクサンダー―天上の王国―','宝塚バウホール','天飛華音'],
+[2026,'月組','雨にじむ渤海','宝塚バウホール','礼華はる'],[2026,'星組','銀二貫','宝塚バウホール','稀惺かずと'],[2026,'花組','赤と黒','宝塚バウホール','侑輝大弥'],
+[2025,'花組','DEAN','日本青年館ホール','極美慎']
+].map(([year,troupe,title,theatre,lead])=>({year,troupe,title,theatre,lead}));
+const V9_FC_COST_MULTIPLIER=5;
+// お茶会運営費は従来8,500円→42,500円、会の企画・トラブル対応費も5倍。
+MONEY_PRICES.fc=42500;
+const v9BaseFcChoice=fcChoice;
+fcChoice=function(index){if(game?.pending?.fcType==='event'){
+ let p=game.pending,evt=FC_EVENTS[p.fcIndex];
+ if(['finance','goods','event'].includes(evt?.category)){
+   // The original event charges 3,000 / 8,000 via the club ledger.
+   // Additional 12,000 / 32,000 brings the total to 5×.
+   let supplement=index===0?12000:32000;
+   fcInit();game.fc.finance=Math.max(0,game.fc.finance-supplement);
+   if(game.wallet>=supplement){game.wallet-=supplement;feed('会運営に伴う追加支出',`${evt.title}の対応費として${JPY(supplement)}を支出した。`)}
+   else {game.fc.quality=Math.max(0,game.fc.quality-3);game.fc.trust=Math.max(0,game.fc.trust-2);feed('会の予算不足',`${evt.title}への追加費用${JPY(supplement)}を十分に確保できなかった。`)}
+ }
+ }return v9BaseFcChoice(index)};
+
+function v9Track(){if(!game)return;game.v9??={route:'未確定',retirementAsked:false,retirementTurn:0,yearBonus:'',skipBau:false};}
+function v9Train(kind,amount=1){if(!game||!game.stats)return;improve(kind,amount);}
+function v9NaturalGrowth(work){v9Track();if(!work)return;let boosts=[];
+ const growth=[['song','発声と歌稽古'],['dance','振付の反復稽古'],['acting','芝居の稽古'],['team','舞台上の連携']];
+ const chosen=growth[(game.calendar+game.part+game.year)%growth.length];
+ v9Train(chosen[0],1);boosts.push(`${chosen[1]}で${SKILLS[chosen[0]]}が上昇`);
+ if(/主演|ヒロイン|主要|重要|役付き/.test(work.role)&&Math.random()<.8){gain('pop',game.flags.top?2:1);boosts.push('好演が評判となり人気が上昇')}
+ else if(Math.random()<.25){gain('pop',1);boosts.push('舞台写真が注目され人気が上昇')}
+ feed('公演での成長',boosts.join('。')+'。');
+}
+function v9EligibleRivals(){let peers=typeof v8Roster==='function'?v8Roster():activeCandidates();return peers.filter(p=>p.group===game.troupe && (game.role==='娘役'?p.kind==='娘役':p.kind!=='娘役') && v8CanLead(p)&&Math.abs(pplTerm(p)-game.term)<=5 && game.calendar-entryTerm(pplTerm(p))<8)}
+function v9Companion(){let r=typeof v8Roster==='function'?v8Roster():activeCandidates();let rookie=game.flags.rookie>0,senior=game.year>7;
+ let possible=r.filter(p=>p.group===game.troupe&&Math.abs(pplTerm(p)-game.term)<=(senior?10:3));
+ if(senior&&!rookie){let notRising=possible.filter(p=>!v8CanLead(p));if(notRising.length&&Math.random()<.88)possible=notRising}
+ else if(rookie){let rising=possible.filter(v8CanLead);if(rising.length&&Math.random()<.72)possible=rising}
+ return possible.length?pick(possible):null;
+}
+const v9BaseFriend=eventFriend;
+eventFriend=function(){if(game?.year>0){let p=v9Companion();if(p)return p}return v9BaseFriend()};
+function v9ShowCandidates(){let list=V9_BOXES.filter(x=>x.troupe===game.troupe&&x.year===game.calendar);return list}
+function v9RecordBox(featured=false,type='バウホール公演'){
+ let matches=v9ShowCandidates();let data=matches.length?pick(matches):null;
+ let future=game.calendar>2026;
+ let title=data?.title||(future?pick(['星の記憶','夢の回廊','宵待ちの花']):'別箱公演（演目未確認）');
+ let theatre=data?.theatre||(type==='バウホール公演'?'宝塚バウホール':'梅田芸術劇場シアター・ドラマシティ');
+ let role=featured?(game.role==='男役'?'主演（ゲーム内配役）':'ヒロイン（ゲーム内配役）'):'出演（配役未確認）';
+ let row={year:game.calendar,term:game.year,title,kind:type,role,troupe:game.troupe,theatre,forecast:future,box:true,realLead:data?.lead||null};
+ if(featured){row.partner=choosePartner();game.leadWorks.push(row)}
+ game.performances.push(row);return row;
+}
+const v9BaseRecord=recordShow;
+recordShow=function(kind='本公演',featured=false){
+ if(/バウ|東上|別箱/.test(kind))return v9RecordBox(featured,kind);
+ return v9BaseRecord(kind,featured)
+};
+function v9Route(){if(game.flags.top)return 'トップ';if(game.role==='娘役')return game.flags.rookie?'ヒロイン候補':'娘役としての活動';if(game.flags.rookie===0&&game.year>7)return '別格・路線外';if(game.flags.bau>0)return '路線スター候補';if(game.flags.rookie>0)return '新人公演主演経験者';return '若手・模索期'}
+const v9BaseRank=adjustRank;
+adjustRank=function(){v9BaseRank();if(game?.role==='男役'&&!game.flags.top&&game.flags.rank===2 && !(game.flags.tojo>0))game.flags.rank=3};
+function v9CareerChoices(){
+ let y=game.year,friend=v9Companion()?.name||'稽古仲間';
+ if(y<=7){let rival=v9EligibleRivals();let target=rival.length?pick(rival).name:'同じ組の若手';
+ return stagedChoice('新人公演の配役選考',`『${chooseShow().title}』の新人公演。${target}らと舞台を作る中で、配役を決める時期が近づいた。`,[
+ {label:'歌・芝居の課題を重点的に修正し、主演・ヒロインを狙う',effect:'rookie',rival:target},
+ {label:'自分の役を完成させ、チームの評価を高める',effect:'rookie',rival:target}
+ ])}
+ if(game.flags.rookie===0){game.v9.route='別格・路線外';let opts=[
+ ['芝居巧者として脇を固める', 'acting'],['歌唱のスペシャリストを目指す','song'],['ダンサー・群舞の中核として存在感を示す','dance'],['組の後輩の指導に力を注ぐ','team'],['別箱で個性的な役に挑戦する','nonlead']];
+ let current=opts[(y+game.calendar)%opts.length],second=opts[(y+game.calendar+2)%opts.length];
+ return stagedChoice('路線外・別格としての進路',`新人公演卒業後、${friend}らと役の大小を問わず作品を支える。主演系の選考とは別に、${game.role==='娘役'?'娘役':'上級生'}としての強みを磨ける。`,[{label:current[0],effect:current[1],friend},{label:second[0],effect:second[1],friend}]);
+ }
+ if(game.flags.bau===0){return stagedChoice('バウ主演への挑戦',`新人公演での実績を携え、${friend}とも別箱の稽古に参加する。ここから主演の機会を得られるか。`,[
+ {label:'バウホール主演を目指し、準備を重ねる',effect:'bau',friend},
+ {label:'別箱で存在感のある助演を磨く',effect:'nonlead',friend}]);}
+ if(!game.flags.tojo){return stagedChoice('東上主演への挑戦',`バウ主演を経験し、東京公演を含む別箱主演の可能性が見えてきた。`,[
+ {label:'東上主演のために演技と集客力を磨く',effect:'tojo',friend},
+ {label:'全国ツアー・本公演の主要役に集中する',effect:'nonlead',friend}]);}
+ return stagedChoice('番手スターとしての選択',`東上主演を経験した。組の重要な役と、後輩の成長が次の課題になっている。`,[
+ {label:'本公演での主役級の芝居を磨く',effect:'acting',friend},
+ {label:'組の発展を考え、若手を支える',effect:'team',friend}]);
+}
+// Intercept existing annual third part without disturbing the other year-steps, fan club or transfer notices.
+const v9OldStep=step;
+step=function(){if(!game||game.ended||game.pending)return;ensureExtra();v9Track();
+ if(game.phase===3&&game.part===2){game.part=3;v9CareerChoices();return}
+ if(game.phase===3&&game.part===4&&game.year>=2&&game.v9.boxYear!==String(game.calendar)&&Math.random()<.62){
+   game.v9.boxYear=String(game.calendar);let row=v9RecordBox(false,'別箱公演');v9NaturalGrowth(row);feed('別箱公演への出演',`『${row.title}』に${row.role}として参加し、稽古や舞台を経験した。${row.theatre}。`);
+ }
+ if(game.phase===3&&game.part===6){
+   if(!game.v9.yearBonus||game.v9.yearBonus!==String(game.calendar)){
+     game.v9.yearBonus=String(game.calendar);
+     if(game.flags.rookie===0&&game.year>=8){
+       let friend=v9Companion();if(friend)bumpFriend(friend.name,2);
+       if(game.year===8)feed('新人公演卒業後の人間関係','主演争いが終わり、同じ立場の生徒と過ごす時間が増えた。別格・路線外として新しい舞台で役を磨く。');
+     }else if(game.flags.rookie>0){let friend=v9Companion();if(friend){bumpFriend(friend.name,3);feed('路線スターとの交流',`${friend.name}と、稽古場で大きな役を担う者同士として相談する時間が増えた。`)}}
+   }
+ }
+ // End-of-year conversation about voluntary retirement; never represent it as an institutional dismissal order.
+ if(game.phase===3&&game.part===7&&game.year>=9&&!game.flags.top&&!game.v9.retirementAsked){
+   let average=(game.stats.song+game.stats.dance+game.stats.acting+game.stats.aura)/4;
+   let highRisk=game.flags.rookie===0&&average<45;
+   let odds=highRisk?(game.year>=11?.5:.27):game.flags.rookie===0?.09:.015;
+   if(Math.random()<odds){game.v9.retirementAsked=true;
+     stagedChoice('これからの舞台人生を考える',`研${game.year}。役付きや自身の将来について考える時期を迎えた。退団は本人が決める選択。舞台を続ける道もある。`,[
+       {label:'宝塚での舞台生活を続け、次の役に向き合う',effect:'continueCareer'},
+       {label:'退団を決意し、新しい人生へ進む',effect:'voluntaryRetirement'}]);return;
+   }
+ }
+ v9OldStep();
+};
+const v9OldRun=runGameChoice;
+runGameChoice=function(ix){let p=game?.pending,c=p?.choices?.[ix];if(!c)return v9OldRun(ix);
+ v9Track();
+ if(c.effect==='voluntaryRetirement'){
+   game.pending=null;game.ended=true;game.v9.route='退団';feed('退団を決意',`研${game.year}、本人の意思で退団を決めた。これまでの出演作と仲間たちを思い返す。`,'choice');popMajor('宝塚歌劇団を退団',`${game.name}の舞台人生に一区切り。`);awardTitles();save();render();return;
+ }
+ if(c.effect==='continueCareer'){game.pending=null;gain('energy',1);feed('舞台を続ける決意','次の役へ挑戦することを選び、日々の稽古に向き合う。','choice');save();render();return}
+ if(c.effect==='nonlead'){game.pending=null;let skill=pick(['acting','dance','song']);improve(skill,1);let r=v9RecordBox(false,'別箱公演');v9NaturalGrowth(r);let friend=c.friend;if(friend)bumpFriend(friend,4);feed('別箱で個性的な役を務める',`『${r.title}』に出演。役付きは主演ではないが、${SKILLS[skill]}を磨き、稽古場での信頼を得た。`,'choice');save();render();return}
+ if(c.effect==='bau'&&!(game.flags.rookie>0)){game.pending=null;feed('主演候補の見送り','まず新人公演での主演経験が必要というゲーム内路線ルールにより、主演への挑戦は見送られた。');save();render();return}
+ if(c.effect==='tojo'){
+   game.pending=null;
+   if(game.flags.bau<=0){feed('東上主演候補の見送り','バウ主演経験がないため、ゲーム内の東上主演選考には進めなかった。');save();render();return}
+   let chance=Math.min(.4,.045+game.flags.bau*.055+game.stats.pop*.002+game.stats.acting*.0006+(game.parentBoost||0));
+   if(Math.random()<chance){game.flags.tojo=(game.flags.tojo||0)+1;gain('pop',4);let r=v9RecordBox(true,'東上公演');feed('東上公演の主演決定',`『${r.title}』で主演／ヒロインを務める。相手役：${r.partner}。`,'choice');popMajor('東上主演決定',`${r.title}の主演に抜擢された。`)}
+   else{let r=v9RecordBox(false,'東上公演');improve('acting',1);feed('東上公演の出演',`『${r.title}』の役付きは主演ではなかった。`,'choice')}
+   adjustRank();save();render();return;
+ }
+ let before=game.performances?.length||0;
+ v9OldRun(ix);
+ if(game?.performances?.length>before){let r=game.performances.at(-1);v9NaturalGrowth(r)}
+ if(c.effect==='rookie'&&game.flags.rookie>0){game.v9.route='新人公演主演経験者';let f=v9Companion();if(f)bumpFriend(f.name,3)}
+ save();render();
+};
+const v9OldRankInfo=rankInfo;
+rankInfo=function(){let r=v9OldRankInfo();if(game?.role==='男役'&&r.stage?.includes('2番手')&&!game.flags.tojo)return {...r,stage:'3番手候補（東上未経験）'};return r};
+const v9OldRevisedProfile=revisedProfile;
+revisedProfile=function(){let h=v9OldRevisedProfile();v9Track();return h.replace('</section>',`<div class="history"><b>キャリアの現在地</b>：${esc(v9Route())}<br>新人公演主演／ヒロイン ${game.flags.rookie||0}回 ／ バウ主演／ヒロイン ${game.flags.bau||0}回 ／ 東上主演／ヒロイン ${game.flags.tojo||0}回</div></section>`)};
+const v9OldWorks=revisedWorks;
+revisedWorks=function(){let h=v9OldWorks();return h.replace('別箱公演の出演記録', '別箱公演の出演記録（実在演目対応）').replace('作品名と公演形態の組合せが未検証の履歴もあります。','実在の別箱演目は確認できた開催年・組・劇場から割り当てます。主人公の配役・共演は物語上の設定です。')};
+const v9OldFcPanel=fcPanel;
+fcPanel=function(){return v9OldFcPanel().replace('会の活動</h3>','会の活動</h3><p class="note">会の企画・トラブル対応支出およびお茶会運営費は従来比5倍に調整済みです。</p>')};
+
+
+// === v10: real drop-downs, retro pixel costumes, persistent autoplay & historic cast handling ===
+// The scene is intentionally a stylized original pixel drawing, not a traced photograph.
+const V10_PETS={dog:['犬',120000],cat:['猫',95000],bird:['小鳥',18000],fish:['魚',10000],hamster:['ハムスター',13000],rabbit:['うさぎ',32000],ferret:['フェレット',58000],turtle:['カメ',15000],guinea:['モルモット',19000]};
+function v10FriendList(){return v8Roster().filter(p=>groupInYear(p.name,game.calendar)===game.troupe && Math.abs(pplTerm(p)-game.term)<=7).sort((a,b)=>Math.abs(pplTerm(a)-game.term)-Math.abs(pplTerm(b)-game.term))}
+function v10Pets(){const old=game.pet?`<p class="meeting">一緒に暮らす：${esc(game.pet.name)}（${esc(V10_PETS[game.pet.kind]?.[0]||'ペット')}）</p>`:'';
+return `<div class="shop-controls"><b>🐾 ペットを迎える</b><label for="v10-pet">種類を選択</label><select id="v10-pet"><option value="">— ペットを選んでください —</option>${Object.entries(V10_PETS).map(([id,[label,price]])=>`<option value="${id}">${label}　${JPY(price)}</option>`).join('')}</select><button class="btn" onclick="v10Adopt()" ${game.pet?'disabled':''}>選んだペットを迎える</button>${old}</div>`}
+function v10Adopt(){const kind=document.getElementById('v10-pet')?.value;if(!V10_PETS[kind])return alert('ペットの種類を選んでください。');if(game.pet)return alert('すでにペットと暮らしています。');const [label,cost]=V10_PETS[kind];if(game.wallet<cost)return alert('貯蓄が足りません。');const name=(prompt(`${label}の名前を決めてください`, 'すみれ')||'すみれ').slice(0,20);game.pet={kind,name};game.wallet-=cost;game.spendCount++;game.purchases.push({year:game.calendar,item:`${label}を迎えた`,cost});feed('ペットを迎える',`${label}の${name}を新しい家族として迎えた。`);gain('energy',1);save();render()}
+function v10Outing(){const name=document.getElementById('v10-friend')?.value;if(!name)return alert('遊ぶ相手を選択してください。');if(!v10FriendList().some(p=>p.name===name))return alert('その生徒は現在一緒に遊べません。');const cost=MONEY_PRICES.outing;if(game.wallet<cost)return alert('貯蓄が足りません。');game.wallet-=cost;game.spendCount++;game.purchases.push({year:game.calendar,item:`${name}との外出`,cost});bumpFriend(name,9);improve('team');feed('同期・仲間と出かける',`${name}と食事や買い物へ。近況を話し、仲良し度が上昇した。`,'choice');save();render()}
+shop=function(){ensureExtra();const friends=v10FriendList();const choices=[['clothes','服を買う','衣装選びの感性が磨かれる'],['spa','身体のケア','体力を回復する'],['lesson','個人レッスン','歌・踊り・芝居を磨く'],['fc','お茶会を開く','ファンとの交流（会の条件に応じて）']];return `<section class="panel"><h2>✧ プライベートとお金 ✧</h2>${salaryPanel()}${v10Pets()}<div class="shop-controls"><b>♡ 同期・仲間と遊ぶ</b><label for="v10-friend">一緒に出かける相手</label><select id="v10-friend"><option value="">— 相手を選んでください —</option>${friends.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}（${pplTerm(p)}期・${esc(groupInYear(p.name,game.calendar))}）／仲良し ${game.friendship[p.name]||0}</option>`).join('')}</select><button class="btn" onclick="v10Outing()" ${!friends.length?'disabled':''}>${JPY(MONEY_PRICES.outing)}で遊びに行く</button>${!friends.length?'<p class="muted">現時点で同じ組・近い期の候補がいません。</p>':''}</div><h3>その他の使い道</h3><div class="shopgrid">${choices.map(([id,label,desc])=>`<div class="shopitem"><strong>${label}</strong><p>${desc}</p><button class="btn" onclick="buy('${id}')" ${game.wallet<MONEY_PRICES[id]?'disabled':''}>${JPY(MONEY_PRICES[id])}</button></div>`).join('')}</div><h3 style="margin-top:18px">支出の記録</h3>${game.purchases.slice(-25).reverse().map(x=>`<div class="history">${x.year}年　${esc(x.item)}　−${JPY(x.cost)}</div>`).join('')||'<p class="muted">まだありません。</p>'}</section>`};
+// Disallow known retired performers from all active interactions, not from historic credits.
+const V10_RETIRE_ADD={'彩みちる':'2025-11-16','爽悠季':'2025-11-16','蓮つかさ':'2023-11-19','蘭尚樹':'2023-11-19','舞空瞳':'2024-12-01','煌えりせ':'2024-12-01','水乃ゆり':'2024-12-01','一之瀬航季':'2099-12-31'};
+for(const [n,d] of Object.entries(V10_RETIRE_ADD))if(!d.startsWith('2099'))V8_RETIREMENTS[n]=d;
+// Additional named male performers from the verified 2026 roster, including youngest cohorts.
+const V10_ADDITIONAL_MEN=[
+[95,'雪組','朝美絢',true],[95,'宙組','桜木みなと',true],
+[97,'花組','永久輝せあ',true],[98,'星組','暁千星',true],
+[106,'宙組','鳳城のあん',true],[108,'花組','光稀れん',true],[108,'星組','馳琉輝',true],
+[111,'花組','綺陽なぎ,羽月涼風,春真幸,涼雅水',false],
+[111,'月組','瑠希友杏,朝霧彗斗,湊英,橙咲じゅん,奏翔耀',false],
+[111,'雪組','千隼悠,遥陽音,天羽輝空,一貴蘭',false],
+[111,'星組','琉月りお,花御莉凡,琥珀空,夏渚稀',false],
+[111,'宙組','綾城潤,白蘭薫,瑚都雅,稀爽礼,一世羅央',false]
+];
+for(const [term,grp,names,lead] of V10_ADDITIONAL_MEN)for(const name of names.split(',')){
+ if(REAL_PEOPLE.some(p=>v8Key(p.name)===v8Key(name)))continue;
+ REAL_PEOPLE.push({name,group:grp,position:`${term}期・${lead?'新人公演主演経験者':'男役'}`,kind:'現役',source:'https://sumirecord.com/otokoyaku',bio:`${term}期`,noLead:!lead});ROOT_GROUP.set(name,grp)
+}
+// Predeclared lead status must never be inferred from a regular appearance in a troupe performance.
+function v10CompetitionEligible(p){if(p.noLead)return false;if(p.kind==='娘役')return (p.credits?.some(c=>c.year<=game.calendar))||false;const text=p.bio||'';return /新人公演主演[:：][^0]|新人公演主演経験者|トップスター/.test((p.position||'')+' '+text)}
+const v10OldStageChoice=stagedChoice;
+stagedChoice=function(title,body,choices){if(title==='新人公演の配役争い'){
+ const rival=v8Roster().filter(p=>groupInYear(p.name,game.calendar)===game.troupe&&Math.abs(pplTerm(p)-game.term)<=5&&game.calendar-entryTerm(pplTerm(p))<7&&game.calendar-entryTerm(pplTerm(p))>=0&& (game.role==='娘役'?p.kind==='娘役':p.kind!=='娘役')&&v10CompetitionEligible(p));
+ const who=rival.length?pick(rival).name:'同組の主演候補';body=`『${chooseShow().title}』の新人公演。${who}と同じ舞台で稽古を重ねる。主演・ヒロインの配役が発表される。`;choices=choices.map(c=>({...c,rival:who}));
+ }return v10OldStageChoice(title,body,choices)};
+// A lifetime toggle survives choice events, modal notices, and switching tabs.
+const v10OldStop=stop;
+togglePlay=function(){v8AutoRequested=!v8AutoRequested;if(!v8AutoRequested){playing=false;clearTimeout(timer)}else if(!game?.pending?.choices&&!game?.popups?.length){playing=true;schedule()}render()};
+openTab=function(t){tab=t;playing=false;clearTimeout(timer);render()};
+const v10OldScreen=gameScreen;
+gameScreen=function(){let html=v10OldScreen();const text=v8AutoRequested?'Ⅱ 自動解除':'▶ 自動';return html.replace(/(<button class="[^"]*" onclick="togglePlay\(\)">)[\s\S]*?(<\/button>)/,`$1${text}$2`)};
+const v10OldNewGame=newGame;
+newGame=function(){v8AutoRequested=false;v10OldNewGame()};
+// The existing render watchdog resumes autoplay only after pending choice and popup are dismissed.
+const v10OldPixel=v8PixelSvg;
+function v10PixelDecor(){return `<g shape-rendering="crispEdges"><rect x="24" y="10" width="8" height="8" fill="#ffd8a1"/><rect x="30" y="16" width="8" height="8" fill="#ffb8ce"/><rect x="240" y="12" width="7" height="7" fill="#fbd6a4"/><rect x="251" y="29" width="5" height="5" fill="#d3a8f3"/><rect x="41" y="62" width="5" height="5" fill="#d8b2f0"/><rect x="248" y="84" width="5" height="5" fill="#cbb3f4"/><path d="M31 138v-34h5v34m-10-16h15" stroke="#f5afd1" stroke-width="4"/><path d="M244 140v-30h6v30m-12-13h17" stroke="#f5afd1" stroke-width="4"/></g>`}
+// Override with a genuinely pixel-based drawing: layered crown, blush, bows, lace and 8/16-bit small pets.
+v8PixelSvg=function(){let svg=v10OldPixel();return svg.replace('<rect x="12" y="8"',v10PixelDecor()+'<rect x="12" y="8"').replace('<rect x="144" y="66" width="7" height="3" fill="#d68b99"/>','<rect x="144" y="66" width="7" height="3" fill="#d68b99"/><rect x="124" y="64" width="8" height="3" fill="#ed9fb6"/><rect x="159" y="64" width="8" height="3" fill="#ed9fb6"/><rect x="136" y="32" width="16" height="6" fill="#f8badf"/><rect x="140" y="27" width="8" height="5" fill="#f3a9d1"/>').replace('<rect x="13" y="175"', '<rect x="113" y="122" width="6" height="6" fill="#fff4d7"/><rect x="171" y="122" width="6" height="6" fill="#fff4d7"/><rect x="13" y="175"')};
+// Link visual costume choices to the most recent recorded role, not just the theatre's genre.
+const v10BaseCostume=v8Costume;
+v8Costume=function(){const c=v10BaseCostume();const w=game.performances?.at(-1);if(w){const role=w.role||'';if(/王|貴族|皇帝|姫|伯爵|公爵|伯爵夫人/.test(role))return {id:'royal',label:`${w.title}／${role}・宮廷風`,coat:'#ac8cc8',trim:'#f4d47d'};if(/武士|侍|姫君|将軍/.test(role))return {id:'kimono',label:`${w.title}／${role}・和装`,coat:'#d8819d',trim:'#f9e4a0'};return {...c,label:`${w.title}／${role}・${c.label}`}}return c};
+// A separate explicit venue panel at the top of the works screen, including old saves.
+const v10OldWorks=revisedWorks;
+revisedWorks=function(){let h=v10OldWorks();const boxes=game.performances.filter(w=>/バウ|東上|別箱|全国ツアー|梅田芸術|ドラマシティ|博多座/.test([w.kind,w.theatre].join(' ')));
+if(!h.includes('別箱公演の出演記録'))h=`<section class="panel"><h2>別箱の出演作品 ${boxes.length}件</h2>${boxes.slice().reverse().map(w=>`<div class="history"><b>${w.year}年 ${esc(w.kind)}『${esc(w.title)}』</b><br>${esc(w.theatre||'会場未登録')} ／ ${esc(w.role)}${w.partner?'　相手役：'+esc(w.partner):''}</div>`).join('')||'まだ出演歴はありません。'}</section>`+h;
+return h};
+
+
+// ============ v11: 会の導線・代表選考・本公演役付きの修復 ============
+// 以前の会画面はHTML文字列の完全一致による差し込みが失敗し、ナビゲーションから消えていた。
+// 「お金を使う」のボタンを目印に正規表現ではなく生成済みHTMLへ確実に挿入する。
+const v11PreviousScreen=gameScreen;
+gameScreen=function(){
+  let html=v11PreviousScreen();
+  const marker='お金を使う</button>';
+  if(html.includes(marker)&&!html.includes('data-club-tab="1"')){
+    html=html.replace(marker,marker+`<button data-club-tab="1" class="btn ${tab==='club'?'primary':''}" onclick="openTab('club')">♡ 会（ファンクラブ）${game.fc?.founded?' '+game.fc.members+'名':''}</button>`);
+  }
+  // 旧版で会画面が人生の記録へフォールバックする問題への明示的な復旧。
+  if(tab==='club'&&!html.includes('私設ファンクラブ「会」')){
+    let journalMarkup=journal();
+    if(html.includes(journalMarkup))html=html.replace(journalMarkup,fcPanel());
+  }
+  return html;
+};
+// 過去セーブの残存設定を整え、代表・会員の表示を保持する。
+const v11PreviousFcInit=fcInit;
+fcInit=function(){
+  v11PreviousFcInit();
+  if(!game)return;
+  let f=game.fc;
+  f.founded=!!f.founded;
+  f.members=Math.max(0,Math.min(3000,Number(f.members)||0));
+  f.quality??=50;f.trust??=50;f.staff??=0;f.finance??=0;
+  f.letters??=0;f.seats??=0;f.preMeet??=0;
+  f.history??=[];f.handled??=[];
+  if(f.founded)game.club.level=1;
+};
+const v11PreviousFound=fcFoundOption;
+fcFoundOption=function(){
+  v11PreviousFound();
+  // 代表候補の得意分野を比較できるようにし、職業・現場実績も選考に表示。
+  if(game.pending?.fcType==='found'){
+    game.pending.text='応援するファンが増え、私設ファンクラブを立ち上げる段階になった。代表候補の宝塚応援歴、職業、経験、資金力、事務管理、調整力を比較しよう。';
+    game.pending.choices=game.fc.candidates.map(c=>({id:c.id,label:`${c.name}〈${c.type}〉｜${c.profession}／応援${c.history}年／現場${c.experience}／資金${c.funding}／事務${c.admin}／対人${c.communication}`})).concat([{id:-1,label:'今は発足を延期する'}]);
+    save();render();
+  }
+};
+const v11PreviousFcChoice=fcChoice;
+fcChoice=function(ix){
+  const founding=game?.pending?.fcType==='found';
+  const wasFounded=!!game?.fc?.founded;
+  v11PreviousFcChoice(ix);
+  if(!game)return true;
+  if(founding&&!wasFounded&&game.fc.founded){
+    // 代表選出から発足までを重要な出来事として必ず時系列とポップアップに残す。
+    const rep=game.fc.representative;
+    if(!game.popups?.some(p=>p.title.includes('私設ファンクラブ発足')))
+      popMajor('♡ 私設ファンクラブが発足しました',`${rep.name}を代表に選出。会員${game.fc.members}名から会の活動が始まります。`);
+    save();render();
+  }
+  return true;
+};
+// 以前の「お茶会を開く」は会の発足を勝手に成立させていたため、発足判定と分離。
+const v11PreviousBuy=buy;
+buy=function(item){
+  if(item!=='fc')return v11PreviousBuy(item);
+  ensureExtra();
+  const price=MONEY_PRICES.fc;
+  if(game.wallet<price){alert('お茶会の費用が足りません。');return}
+  game.wallet-=price;game.spendCount++;
+  game.purchases.push({year:game.calendar,item:game.fc.founded?'会のお茶会運営':'お茶飲み会開催',cost:price});
+  game.club.meet++;
+  if(game.fc.founded){game.fc.quality=Math.min(100,game.fc.quality+1);game.fc.trust=Math.min(100,game.fc.trust+2)}
+  gain('pop',1);
+  feed(game.fc.founded?'会主催のお茶会':'ファンとのお茶飲み会',`ファンとの交流会を開いた。準備・会場費として${JPY(price)}を支出した。`,'choice');
+  save();render();
+};
+// 配役は正式な実在役名が資料にない場合、創作の役格と明示した区分で付ける。
+// 新人公演主演の実績がある主人公を本公演でほぼ無名の役へ固定しない。
+const v11PreviousRecordShow=recordShow;
+recordShow=function(kind='本公演',featured=false){
+  const w=v11PreviousRecordShow(kind,featured);
+  if(!w||featured||!String(kind).includes('本公演'))return w;
+  const f=game.flags;
+  if(f.top){w.role=game.role==='男役'?'本公演の主演（ゲーム内配役）':'本公演の主演娘役（ゲーム内配役）';}
+  else if(f.rank===2){w.role=game.role==='男役'?'主要配役・2番手格（ゲーム内配役）':'主要配役・娘役上位（ゲーム内配役）';}
+  else if(f.rank===3){w.role='主要配役・3番手格（ゲーム内配役）';}
+  else if(f.rookie>=1){
+    const roll=Math.random();
+    if(roll<.63)w.role=game.role==='男役'?'台詞と見せ場のある役（新人公演主演経験者・ゲーム内配役）':'台詞と見せ場のある娘役（新人公演ヒロイン経験者・ゲーム内配役）';
+    else w.role='中堅の役付き（新人公演主演経験者・ゲーム内配役）';
+  }
+  return w;
+};
+const v11OldFcPanel=fcPanel;
+fcPanel=function(){
+  fcInit();
+  let html=v11OldFcPanel();
+  const f=game.fc;
+  const intro=`<div class="notice" style="background:#fff2f8;border:1px solid #e8a9c8"><b>♡ 会のステータス</b><br>会員 ${f.founded?f.members+'名':'発足前'} ／ 代表 ${f.representative?esc(f.representative.name):'未選任'} ／ 運営安定度 ${f.quality}/100 ／ 信頼度 ${f.trust}/100<br><small>男役：研3以上・人気12以上で代表選考。娘役：トップまたは2番手級・人気16以上で選考。発足前もファンレター・生徒席・お茶飲み会が発生します。</small></div>`;
+  html=html.replace('<h2>私設ファンクラブ「会」</h2>','<h2>私設ファンクラブ「会」</h2>'+intro);
+  if(f.founded){
+    const activities=game.events.filter(e=>/会の運営|私設ファンクラブ|チケット|お茶会|会員|代表/.test(e.name)).slice(-12).reverse();
+    html=html.replace('</section>',`<h3>最近の会の出来事</h3>${activities.map(e=>`<div class="history">${e.year}年　<b>${esc(e.name)}</b><br>${esc(e.text)}</div>`).join('')||'<p>まだ運営の記録はありません。</p>'}</section>`);
+  }
+  return html;
+};
+// 40種類の運営イベントは既存のFC_EVENTSを使用し、全種類の内容を選択イベントとして展開する。
+// 年間の決算処理が回るまでは進行を待つ。会発足前のファン交流は継続。
 
 </script></body></html>
