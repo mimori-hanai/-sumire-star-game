@@ -150,7 +150,7 @@ function schedule(){clearTimeout(timer);if(!playing)return;timer=setTimeout(fast
 function fmtProfile(){let s=game,info=[['芸名',s.name],['本名（架空）',s.real],['誕生日（架空）',s.birth],['音楽学校入学時の年齢',s.age+'歳'],['期',s.term+'期（'+s.entry+'年入団）'],['身長（架空）',s.height+'cm'],['出身地（架空）',s.region],['出身校（架空）',s.school],['音楽学校受験',s.attempt+'回目で合格'],['憧れの先輩（設定）',s.admire],['家族の職業（架空）',s.parentJob],['志望',s.role],['所属組',s.troupe]];return `<section class="panel profile"><h2>スター・プロフィール</h2><dl>${info.map(x=>`<dt>${esc(x[0])}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl><p class="note">本名・生年月日・家族の職業などは主人公の架空プロフィールです。実在の生徒の非公開個人情報は使用していません。</p></section>`}
 function statsSmall(){return `<div class="statrow">${Object.entries(SKILLS).map(([k,l])=>`<div class="stat">${l}<b>${game.stats[k]}</b><div class="meter"><span style="width:${game.stats[k]}%"></span></div></div>`).join('')}</div>`}
 function statsSide(){return `<aside class="side"><div class="statside panel"><div class="sidehead">${esc(game.name)} · ${esc(game.troupe)}</div><p class="mini">${game.term}期／${game.role}／研${game.year||'—'}</p>${Object.entries(SKILLS).map(([k,l])=>`<div class="statline"><span>${l}</span><div class="bar"><i style="width:${game.stats[k]}%"></i></div><b>${game.stats[k]}</b></div>`).join('')}<hr><div class="mini">新人公演${game.role==='男役'?'主演':'ヒロイン'}：${game.flags.rookie}回<br>バウホール主演級：${game.flags.bau}回<br>私設FC：${game.club.level?'発足':'未発足'}<br>お茶会・お茶飲み会：${game.club.meet}回</div><button class="btn smallbutton" onclick="tab='profile';render()">プロフィール</button></div></aside>`}
-function journal(){let a=game.events.slice().reverse();return `<section class="panel"><h2>人生の記録 <span style="font-size:11px;color:#728086">新しい順</span></h2>${game.pending?.choices?`<div class="notice"><b>${esc(game.pending.name)}</b><p>${esc(game.pending.text)}</p><div class="actions">${game.pending.choices.map((x,i)=>`<button onclick="processChoices(${i})">${esc(x.label)} →</button>`).join('')}</div></div>`:''}${a.length?a.map(x=>`<div class="event ${x.kind}"><time>${x.age}歳<br>${x.year}年</time><div><strong>${esc(x.name)}</strong><p>${esc(x.text)}</p><span class="details">${esc(x.phase)} ・ ${x.kind==='auto'?'自動イベント':'選択イベント'}</span></div></div>`).join(''):'<p class="muted">「次へ」で人生が進みます。イベントには自動で発生するものと、選択肢が表示されるものがあります。</p>'}</section>`}
+function journal(){let a=game.events.slice(-120).reverse();return `<section class="panel"><h2>人生の記録 <span style="font-size:11px;color:#728086">新しい順</span></h2>${game.pending?.choices?`<div class="notice"><b>${esc(game.pending.name)}</b><p>${esc(game.pending.text)}</p><div class="actions">${game.pending.choices.map((x,i)=>`<button onclick="processChoices(${i})">${esc(x.label)} →</button>`).join('')}</div></div>`:''}${a.length?a.map(x=>`<div class="event ${x.kind}"><time>${x.age}歳<br>${x.year}年</time><div><strong>${esc(x.name)}</strong><p>${esc(x.text)}</p><span class="details">${esc(x.phase)} ・ ${x.kind==='auto'?'自動イベント':'選択イベント'}</span></div></div>`).join(''):'<p class="muted">「次へ」で人生が進みます。イベントには自動で発生するものと、選択肢が表示されるものがあります。</p>'}</section>`}
 function showWorks(){return `<section class="panel"><h2>出演演目・配役</h2><p class="note">下記の演目・役付きは物語上の創作です。実在の公演履歴ではありません。</p>${game.performances.slice().reverse().map(p=>`<div class="history"><b>${esc(p.year)}年 ${esc(p.troupe)} 『${esc(p.title)}』</b>${esc(p.kind)}／${esc(p.role)}</div>`).join('')||'<p class="muted">初舞台の後に記録されます。</p>'}</section>`}
 function people(){let arr=REAL_PEOPLE.filter(x=>(x.kind==='現役'||x.kind==='娘役'));let real=game?.calendar||2026,term=game?.term||102;let fit=arr.filter(p=>pplTerm(p)<=108&&entryTerm(pplTerm(p))<=real&&p.group===game?.troupe);return `<section class="panel"><h2>関係者・同期・ライバル</h2><p class="note">登場する実在人物の氏名・期は提供された名簿に基づきます。主人公との交流、配役争い、会話、組内での出会いは架空であり、実在の本人の発言や実際の人事を意味しません。過去の所属や実際の退団年は簡略化しています。</p><h3>同じ組・この年までに入団した人物</h3>${fit.map(p=>`<div class="history"><b>${esc(p.name)}（${pplTerm(p)}期）</b>${esc(p.position)}<br>${esc(p.bio)}</div>`).join('')||'<p class="muted">現在の条件で該当する登録人物はいません。</p>'}<details><summary>登録された現役生徒一覧</summary>${GROUPS.map(g=>`<h3>${g}</h3>${arr.filter(p=>p.group===g).map(p=>`<span class="tag">${esc(p.name)} ${pplTerm(p)}期</span>`).join('')}`).join('')}</details><details><summary>OG（近年退団の元トップスター）</summary>${REAL_PEOPLE.filter(p=>p.kind==='OG').map(p=>`<div class="history"><b>${esc(p.name)}</b>${esc(p.bio)}</div>`).join('')}</details></section>`}
 function gameScreen(){return `<div class="split"><div class="column"><section class="panel"><div class="topbar"><div><span class="age">${currentAge()}</span>歳 <small>${game.calendar}年 · ${game.term}期 · ${game.year?'研'+game.year:game.phase===0?'予科':game.phase===1?'本科':'初舞台準備'}</small></div><small>${esc(game.name)} ／ ${esc(game.troupe)}</small></div><div class="progress"><span style="width:${(Math.min(game.year,19)/19)*100}%"></span></div><div class="controls"><button class="${playing?'selected':''}" onclick="togglePlay()">${playing?'Ⅱ 停止':'▶ 自動'}</button>${[1,2,4,8,12].map(v=>`<button class="${speed===v?'selected':''}" onclick="speed=${v};if(playing)schedule();render()">${v}×</button>`).join('')}<button onclick="fastTick()" ${game.pending?.choices||game.ended?'disabled':''}>次へ »</button><button onclick="tab='profile';stop();render()">プロフィール</button></div><div class="stage"><span class="pixel">🏰</span><span class="pixel">🎭</span><span class="pixel">💃</span><span class="pixel">🎶</span><span class="pixel">🏰</span></div><div class="identity">${game.phase<3?`宝塚音楽学校 ${game.term}期。${game.name}は舞台人となるために学んでいる。`:`${game.troupe}・${game.role}・${game.term}期。${game.year}年目の舞台人生。人気 ${game.stats.pop}/100。`}<div class="muted">選択しなくても起こる出来事と、判断を求められる出来事が時系列で積み重なります。</div></div><div class="panel sticky">${statsSmall()}</div><div class="row" style="margin-bottom:12px"><button class="btn ${tab==='timeline'?'primary':''}" onclick="tab='timeline';render()">人生の記録</button><button class="btn ${tab==='works'?'primary':''}" onclick="tab='works';render()">出演作品</button><button class="btn ${tab==='people'?'primary':''}" onclick="tab='people';render()">関係者</button></div>${game.ended?`<div class="end"><h2>舞台人生の幕が下りた</h2><p>${game.flags.top?'トップ就任を果たしました。':'退団までの歩みを振り返りましょう。'}</p></div>`:''}${tab==='works'?showWorks():tab==='people'?people():journal()}<p class="note">本作は非公式の架空作品です。公開制度を参考にしていますが、配役・公演タイトル・共演・新人公演の結果は創作です。</p></section></div>${statsSide()}</div>`}
@@ -224,7 +224,7 @@ function step(){if(!game||game.ended||game.pending)return;ensureExtra();let s=ga
 function gameScreen(){ensureExtra();let r=rankInfo();return `<div class="split"><div class="column"><section class="panel"><div class="topbar"><div><span class="age">${currentAge()}</span>歳 <small>${game.calendar}年 · ${game.term}期 · ${game.year?'研'+game.year:game.phase===0?'予科':game.phase===1?'本科':'初舞台準備'}</small></div><small>${esc(game.name)} ／ ${esc(game.troupe)}</small></div><div class="progress"><span style="width:${Math.min(100,game.year/19*100)}%"></span></div><div class="controls"><button class="${playing?'selected':''}" onclick="togglePlay()">${playing?'Ⅱ 停止':'▶ 自動'}</button>${[1,2,4,8,12].map(v=>`<button class="${speed===v?'selected':''}" onclick="speed=${v};if(playing)schedule();render()">${v}×</button>`).join('')}<button onclick="fastTick()" ${game.pending||game.ended?'disabled':''}>次へ »</button><button onclick="openTab('profile')">プロフィール</button></div>${pixelArt()}<div class="identity">${esc(game.name)}　${esc(game.troupe)}／${esc(r.stage)}　　近い期の比較 ${r.rank}/${r.count}位</div><div class="panel sticky">${revisedStats()}</div>${salaryPanel()}<div class="row" style="margin-bottom:12px"><button class="btn ${tab==='timeline'?'primary':''}" onclick="openTab('timeline')">人生の記録</button><button class="btn ${tab==='works'?'primary':''}" onclick="openTab('works')">出演・主演作品</button><button class="btn ${tab==='people'?'primary':''}" onclick="openTab('people')">関係者</button><button class="btn ${tab==='shop'?'primary':''}" onclick="openTab('shop')">お金を使う</button></div>${game.ended?`<div class="end"><h2>宝塚での舞台人生を終えた</h2><p>主演作品 ${game.leadWorks.length}作／総収入 ${JPY(game.totalEarned)}</p></div>`:''}${tab==='works'?revisedWorks():tab==='people'?revisedPeople():tab==='shop'?shop():journal()}<div class="credit">公演年表：<a href="https://zuka-no-susume.com/perfs/" target="_blank">ヅカのすゝめ</a>／配役の照合：<a href="https://kageki.hankyu.co.jp/revue/2025/guysanddolls/cast.html" target="_blank">公式『GUYS AND DOLLS』</a>・<a href="https://www.kageki.hankyu.co.jp/revue/2026/elisabeth/cast.html" target="_blank">公式『エリザベート』</a>。新人公演ヒロイン：<a href="https://momonoyakata.com/futurestars-all20202029/" target="_blank">もものやかた（2020年以降）</a>。転向事例：<a href="https://zuka-note.com/archives/9937" target="_blank">宝塚歌劇ノート</a>。未来年の作品・人事・収入はゲーム内で生成します。</div></section></div>${statsSide()}</div>`}
 function profileScreen(){ensureExtra();return `<div class="split"><div><section class="panel"><h2>最初のステータス</h2>${revisedStats()}</section>${revisedProfile()}<section class="panel"><h3>舞台人生の始まり</h3><p>芸名と男役・娘役の志望を決めて、人生を進めてください。</p><div class="row"><button class="btn primary" onclick="tab='timeline';render()">舞台人生を始める →</button><button class="btn" onclick="newGame()">プロフィールを再抽選</button></div></section></div>${statsSide()}</div>`}
 function continueGame(){let s=saved();if(s&&s.term&&s.events){game=s;ensureExtra();if(game.pending?.choices){game.pending.choices=game.pending.choices.map(c=>({label:c.label||'選択する',effect:c.effect||'acting',friend:c.friend,rival:c.rival}))}tab='timeline';render()}else alert('続きのデータが見つかりません。')}
-function journal(){let a=game.events.slice().reverse();return `<section class="panel"><h2>人生の記録 <span class="muted">新しい順</span></h2>${game.pending?.choices?`<div class="notice"><b>${esc(game.pending.name)}</b><p>${esc(game.pending.text)}</p><div class="actions">${game.pending.choices.map((x,i)=>`<button onclick="runGameChoice(${i})">${esc(x.label)} →</button>`).join('')}</div></div>`:''}${a.map(x=>`<div class="event ${x.kind}"><time>${x.age}歳<br>${x.year}年</time><div><strong>${esc(x.name)}</strong><p>${esc(x.text)}</p><span class="details">${esc(x.phase)}・${x.kind==='auto'?'自動':'選択'}</span></div></div>`).join('')||'<p>「次へ」を押して進みます。</p>'}</section>`}
+function journal(){let a=game.events.slice(-120).reverse();return `<section class="panel"><h2>人生の記録 <span class="muted">新しい順</span></h2>${game.pending?.choices?`<div class="notice"><b>${esc(game.pending.name)}</b><p>${esc(game.pending.text)}</p><div class="actions">${game.pending.choices.map((x,i)=>`<button onclick="runGameChoice(${i})">${esc(x.label)} →</button>`).join('')}</div></div>`:''}${a.map(x=>`<div class="event ${x.kind}"><time>${x.age}歳<br>${x.year}年</time><div><strong>${esc(x.name)}</strong><p>${esc(x.text)}</p><span class="details">${esc(x.phase)}・${x.kind==='auto'?'自動':'選択'}</span></div></div>`).join('')||'<p>「次へ」を押して進みます。</p>'}</section>`}
 function fastTick(){if(!game||game.ended)return;if(game.pending?.choices){stop();render();return}if(game.pending){game.pending=null}step();save();render();if(playing&&!game?.pending?.choices)schedule()}
 function statsSide(){ensureExtra();let r=rankInfo();return `<aside class="side"><div class="statside panel"><div class="sidehead">${esc(game.name)} ／ ${esc(game.troupe)}</div><div class="mini">${r.stage}　近い期${r.rank}/${r.count}位<br>年収 ${JPY(game.salary)}<br>貯蓄 ${JPY(game.wallet)}</div>${Object.entries(SKILLS).map(([k,l])=>`<div class="statline"><span>${l}</span><div class="bar"><i style="width:${game.stats[k]}%"></i></div><b>${game.stats[k]}</b></div>`).join('')}<button class="btn smallbutton" onclick="openTab('profile')">プロフィール</button></div></aside>`}
 function render(){const el=document.getElementById('app');el.innerHTML=!game?home():tab==='profile'?profileScreen():gameScreen()}
@@ -1122,7 +1122,7 @@ function v15AdvanceRoster(y){v15Ensure();const v=game.v15; if(y<=v.year)return;
     if([line.top,line.heroine,...line.ranks].includes(p.name)||v.retired.includes(p.name))continue;
     const term=pplTerm(p),tenure=yr-entryTerm(term)+1,road=v15IsRoad(p);
     const lower=road?8:3,upper=road?18:10;
-    if(tenure>=upper||(tenure>=lower&&(v15Hash(p.name+'exit'+yr)%100)<(road?7:12))){v.retired.push(p.name);v15Notice(yr,'生徒退団（仮想人事）',`${g}の${p.name}が退団。以後、交友・配役候補から外れる。`)}
+    if(road && (tenure>=upper||(tenure>=lower&&(v15Hash(p.name+'exit'+yr)%100)<7))){v.retired.push(p.name);v15Notice(yr,'生徒退団（仮想人事）',`${g}の${p.name}が退団。以後、交友・配役候補から外れる。`)}
    }
    while(line.ranks.length<3){const next=v15FillVacancy(g,yr,line.ranks.length);if(!next)break;}
    if(!line.top)v15FillVacancy(g,yr,'top');
@@ -1634,7 +1634,7 @@ v10FriendList=function(){
 // 専科は5組のいずれにも固定所属せず、複数組へ特別出演する。
 function v19SenkaEligible(){return game&&game.phase===3&&!game.ended&&!game.flags.top&&game.year>=13&&game.troupe!=='専科'}
 function v19SenkaOffer(){
- v19State();const year=game.calendar;if(!v19SenkaEligible()||game.v19.senkaOffered.includes(year))return false;
+ v19State();const year=game.calendar;if(!v19SenkaEligible()||game.v19.senkaOffered.length>0)return false;
  // 研13以降、年に1度のキャリア選択（自発的な異動希望として扱う）。
  game.v19.senkaOffered.push(year);
  const from=game.troupe;
@@ -2056,4 +2056,289 @@ step=function(){
  }
 };
 
+
+// ===== v22: 路線外退団・舞台エピソード・支出拡張（2026-11） =====
+// 退団確率は依頼に基づく創作ルール。公式の退団基準ではない。
+CAREER_CHOICE_EVENTS.push(...[{"period":"1-2","title":"初めての生オーケストラ","situation":"指揮のテンポと足の運びが合わず、同期と確認する","a":"dance","b":"team"},{"period":"1-2","title":"劇場での場当たり","situation":"袖からの距離感をつかめず動線を整理する","a":"acting","b":"team"},{"period":"1-2","title":"学年写真の撮影","situation":"整列の仕方と表情を練習する","a":"aura","b":"team"},{"period":"1-2","title":"黒燕尾の基本","situation":"首と肩の角度を意識する","a":"dance","b":"aura"},{"period":"1-2","title":"舞台袖の暗転","situation":"暗がりでの安全な移動を覚える","a":"team","b":"energy"},{"period":"1-2","title":"合唱の声部変更","situation":"コーラスのパート替えに対応する","a":"song","b":"team"},{"period":"1-2","title":"化粧前の片付け","situation":"公演後の準備と撤収の段取りを学ぶ","a":"team","b":"energy"},{"period":"1-2","title":"初めての洋装フィッティング","situation":"衣装の形に合う歩幅を練習する","a":"aura","b":"dance"},{"period":"1-2","title":"ラインダンスの数え直し","situation":"同じ振りを踊る仲間とカウントを調整する","a":"dance","b":"team"},{"period":"1-2","title":"トーク番組の自己紹介","situation":"短い時間で自分の魅力を伝える","a":"aura","b":"acting"},{"period":"1-2","title":"舞台用マイクの確認","situation":"歌の声量とマイクの距離を試す","a":"song","b":"team"},{"period":"1-2","title":"初めての地方遠征","situation":"荷物と体調の管理に戸惑う","a":"energy","b":"team"},{"period":"1-2","title":"出番待ちの緊張","situation":"本番直前の呼吸を整える","a":"energy","b":"acting"},{"period":"1-2","title":"先輩からの小道具の助言","situation":"舞台で自然に小道具を扱う練習をする","a":"acting","b":"team"},{"period":"1-2","title":"群舞の列の入れ替え","situation":"立ち位置が急に変更される","a":"dance","b":"energy"},{"period":"1-2","title":"日本物の扇","situation":"扇を開く所作を綺麗に見せる","a":"dance","b":"aura"},{"period":"1-2","title":"朝の自主発声","situation":"同期と稽古場で基礎発声に励む","a":"song","b":"team"},{"period":"1-2","title":"お稽古靴の修理","situation":"公演期間中に靴を調整する","a":"energy","b":"dance"},{"period":"1-2","title":"初めてのファンレター","situation":"舞台を観た人から温かな言葉が届く","a":"pop","b":"team"},{"period":"1-2","title":"上級生の舞台を観劇","situation":"客席から演じ方を学ぶ","a":"acting","b":"aura"},{"period":"1-2","title":"フィナーレでの笑顔","situation":"緊張で固まった表情を直す","a":"aura","b":"energy"},{"period":"1-2","title":"同期の誕生日","situation":"稽古後に小さなお祝いを企画する","a":"team","b":"energy"},{"period":"3-5","title":"新人公演の衣装合わせ","situation":"本役と違う体型に合わせて衣装を微調整する","a":"aura","b":"team"},{"period":"3-5","title":"小さなソロの抜擢","situation":"短い歌唱場面を任される","a":"song","b":"pop"},{"period":"3-5","title":"舞台写真の選定","situation":"撮影された自分の表情を研究する","a":"aura","b":"acting"},{"period":"3-5","title":"役付きの台本読み","situation":"名前のある役の心理を掘り下げる","a":"acting","b":"song"},{"period":"3-5","title":"同期との帰り道","situation":"夜の稽古帰りに将来を語り合う","a":"team","b":"energy"},{"period":"3-5","title":"初めてのお茶飲み会","situation":"応援してくれる人と作品の話をする","a":"pop","b":"team"},{"period":"3-5","title":"新人公演の自主稽古","situation":"本役と同じ時間が取れず工夫する","a":"acting","b":"energy"},{"period":"3-5","title":"代役の立ち稽古","situation":"出番のない役も覚えることにする","a":"acting","b":"team"},{"period":"3-5","title":"ペアダンスの呼吸","situation":"組む相手と踏み出すタイミングをそろえる","a":"dance","b":"team"},{"period":"3-5","title":"新人公演のプログラム","situation":"自身の役名が掲載された冊子を見る","a":"pop","b":"aura"},{"period":"3-5","title":"遠征先の食事会","situation":"地方公演で組子と食事を共にする","a":"team","b":"energy"},{"period":"3-5","title":"レビューの早替わり","situation":"衣装替えの動線を秒単位で確認する","a":"team","b":"dance"},{"period":"3-5","title":"舞台化粧の色選び","situation":"照明の下で映える色を試す","a":"aura","b":"acting"},{"period":"3-5","title":"歌劇の短いコメント","situation":"舞台への思いを誌面にまとめる","a":"acting","b":"pop"},{"period":"3-5","title":"笑いの場面の稽古","situation":"客席の反応を想像しながら間を調整する","a":"acting","b":"team"},{"period":"3-5","title":"主演同期の会見","situation":"同じ期の活躍を見て刺激を受ける","a":"aura","b":"acting"},{"period":"3-5","title":"公演写真の評判","situation":"思いがけず写真が人気を集める","a":"pop","b":"aura"},{"period":"3-5","title":"振付助手の助言","situation":"小さな癖を丁寧に直す","a":"dance","b":"team"},{"period":"3-5","title":"歌い出しの音合わせ","situation":"オーケストラと入りのタイミングを合わせる","a":"song","b":"energy"},{"period":"3-5","title":"スカイステージでの対談","situation":"他組の若手と稽古の話をする","a":"team","b":"aura"},{"period":"3-5","title":"上級生への役の相談","situation":"役の過去設定の解釈を聞く","a":"acting","b":"team"},{"period":"3-5","title":"新人公演の最終通し","situation":"限られた時間で完成度を上げる","a":"acting","b":"energy"},{"period":"6-7","title":"最後の新人公演候補","situation":"主演を争う最後の学年が迫る","a":"acting","b":"aura"},{"period":"6-7","title":"本公演の銀橋ソロ","situation":"一瞬の見せ場を歌で印象づける","a":"song","b":"pop"},{"period":"6-7","title":"新人公演の指導役","situation":"後輩に段取りを説明する","a":"team","b":"acting"},{"period":"6-7","title":"スター候補の座談会","situation":"他組の若手と番組で対談する","a":"aura","b":"team"},{"period":"6-7","title":"全国ツアーのホテル","situation":"移動先で上級生と過ごす","a":"energy","b":"team"},{"period":"6-7","title":"フィナーレ階段降り","situation":"舞台上の位置取りを確認する","a":"aura","b":"dance"},{"period":"6-7","title":"別箱のオーディション","situation":"主演候補の芝居を見学する","a":"acting","b":"team"},{"period":"6-7","title":"組替えする同期の送別","situation":"離れた組へ向かう仲間を送り出す","a":"team","b":"energy"},{"period":"6-7","title":"週刊誌の観劇評","situation":"短い場面を評価される","a":"pop","b":"acting"},{"period":"6-7","title":"衣装の補修を手伝う","situation":"本番前に衣装担当と相談する","a":"team","b":"energy"},{"period":"6-7","title":"芝居場面の新解釈","situation":"演出家の指示で役の温度感が変わる","a":"acting","b":"aura"},{"period":"6-7","title":"デュエットの音取り","situation":"相手役とフレーズを丁寧に合わせる","a":"song","b":"team"},{"period":"6-7","title":"舞台写真の撮り直し","situation":"前回と異なる表情を求められる","a":"aura","b":"acting"},{"period":"6-7","title":"カーテンコールの挨拶","situation":"観客への伝え方を考える","a":"acting","b":"pop"},{"period":"6-7","title":"組全体の歌稽古","situation":"上級生とのコーラスに挑戦する","a":"song","b":"team"},{"period":"6-7","title":"公演直前のトラブル","situation":"小道具の位置が変わり冷静に対応する","a":"energy","b":"team"},{"period":"6-7","title":"新人公演の後輩","situation":"自分の経験を後輩に伝える","a":"team","b":"acting"},{"period":"6-7","title":"主演候補との稽古","situation":"同じ役を目指す仲間と芝居合わせをする","a":"acting","b":"team"},{"period":"6-7","title":"稽古場の休養日","situation":"集中力と身体の回復を優先する","a":"energy","b":"song"},{"period":"6-7","title":"宝塚GRAPHの撮影企画","situation":"組を越えた特集に参加する","a":"aura","b":"pop"},{"period":"6-7","title":"得意の歌で再評価","situation":"歌唱の見せ場を増やせるか相談する","a":"song","b":"acting"},{"period":"6-7","title":"新人公演卒業の夜","situation":"同期と新人公演での思い出を語る","a":"team","b":"energy"},{"period":"8-12","title":"別格スターの大役","situation":"主役以外の印象的な人物像を任される","a":"acting","b":"aura"},{"period":"8-12","title":"全国ツアー座組の相談","situation":"若手の役付きを支える","a":"team","b":"acting"},{"period":"8-12","title":"ディナーショーの候補","situation":"音楽の選曲を提案する","a":"song","b":"aura"},{"period":"8-12","title":"銀橋での短い独唱","situation":"大劇場の客席を意識して歌う","a":"song","b":"pop"},{"period":"8-12","title":"新トップの稽古場","situation":"新しい座組の空気を読み取る","a":"team","b":"acting"},{"period":"8-12","title":"後輩との写真撮影","situation":"雑誌企画で若手に話題を振る","a":"team","b":"aura"},{"period":"8-12","title":"長期公演の喉の疲れ","situation":"発声の負担を見直す","a":"energy","b":"song"},{"period":"8-12","title":"バウ主演同期の活躍","situation":"同期の主役抜擢に刺激を受ける","a":"acting","b":"energy"},{"period":"8-12","title":"東上公演の稽古補佐","situation":"主演者を支える立場を考える","a":"team","b":"acting"},{"period":"8-12","title":"スポンサー撮影の打診","situation":"外部撮影の動線を確認する","a":"aura","b":"team"},{"period":"8-12","title":"日本物の男役所作","situation":"立ち姿と扇の所作を細かく整える","a":"dance","b":"acting"},{"period":"8-12","title":"トップ娘役との芝居","situation":"相手に合わせた間を作る","a":"acting","b":"team"},{"period":"8-12","title":"スカイステージの番組企画","situation":"同期と楽屋での思い出を話す","a":"pop","b":"team"},{"period":"8-12","title":"客席からの拍手","situation":"見せ場の反応に手応えを感じる","a":"pop","b":"aura"},{"period":"8-12","title":"衣装の重さを克服","situation":"フィナーレで大きな装飾を扱う","a":"energy","b":"dance"},{"period":"8-12","title":"広報写真の撮影","situation":"宣伝用ポーズを検討する","a":"aura","b":"pop"},{"period":"8-12","title":"組替え先の初稽古","situation":"他組の先輩と舞台の進め方を学ぶ","a":"team","b":"acting"},{"period":"8-12","title":"芝居の立ち位置変更","situation":"大きな役の動きを調整する","a":"acting","b":"team"},{"period":"8-12","title":"上級生との外食","situation":"退団を控えた先輩から話を聞く","a":"team","b":"energy"},{"period":"8-12","title":"公演の座談会","situation":"異なる役の視点を語る","a":"acting","b":"aura"},{"period":"8-12","title":"稽古場の体調管理","situation":"無理のない予定に組み替える","a":"energy","b":"team"},{"period":"8-12","title":"人気公演の再演","situation":"過去の役の印象を超える工夫をする","a":"acting","b":"aura"},{"period":"13-19","title":"専科生との共演","situation":"組を越えた芝居の組み立て方を学ぶ","a":"acting","b":"team"},{"period":"13-19","title":"後輩の組替え相談","situation":"異動する生徒に助言する","a":"team","b":"acting"},{"period":"13-19","title":"退団同期の思い出","situation":"同期との舞台人生を振り返る","a":"energy","b":"team"},{"period":"13-19","title":"全国ツアーの代役相談","situation":"予期せぬ変更に対応する","a":"acting","b":"team"},{"period":"13-19","title":"上級生の歌唱指導","situation":"若手に息の使い方を伝える","a":"song","b":"team"},{"period":"13-19","title":"ショーでの重厚な役","situation":"作品を引き締める人物を任される","a":"acting","b":"aura"},{"period":"13-19","title":"重要な衣装の最終合わせ","situation":"華やかな衣装で大階段を歩く","a":"aura","b":"dance"},{"period":"13-19","title":"舞台人生の記念撮影","situation":"後輩と節目の写真を撮る","a":"pop","b":"team"},{"period":"13-19","title":"歌劇誌の回顧特集","situation":"過去の役とこれからを語る","a":"acting","b":"aura"},{"period":"13-19","title":"主役級の若手との共演","situation":"若手の表現を受け止める","a":"acting","b":"team"},{"period":"13-19","title":"ベテランの所作","situation":"細かい動きに経験を生かす","a":"dance","b":"aura"},{"period":"13-19","title":"専科公演への打診","situation":"所属組を越える舞台を検討する","a":"acting","b":"team"},{"period":"13-19","title":"退団公演の準備","situation":"一つ一つの公演を丁寧に務める","a":"energy","b":"acting"},{"period":"13-19","title":"記念のスカイステージ","situation":"出演作品の思い出を語る","a":"pop","b":"team"},{"period":"13-19","title":"大劇場の見せ場","situation":"センターを引き立てながら存在感を示す","a":"aura","b":"team"},{"period":"13-19","title":"声楽指導の依頼","situation":"若手との音取りを担当する","a":"song","b":"team"},{"period":"13-19","title":"長期公演の疲労","situation":"身体のケアを行う","a":"energy","b":"dance"},{"period":"13-19","title":"再演での役替わり","situation":"前回とは違う人物に挑戦する","a":"acting","b":"aura"},{"period":"13-19","title":"後進の送り出し","situation":"新人公演の卒業生を激励する","a":"team","b":"pop"},{"period":"13-19","title":"組全体の舞台挨拶","situation":"千秋楽の空気をまとめる","a":"acting","b":"team"},{"period":"13-19","title":"バウの芝居稽古","situation":"若手座組で大人の役を演じる","a":"acting","b":"team"},{"period":"13-19","title":"ファンへの感謝","situation":"長い応援に感謝を伝える","a":"pop","b":"energy"}]);
+const V22_NEW_ITEMS=[
+ ['voice','発声スタジオの予約',16000,'歌唱','song'],
+ ['dance','バレエ個人レッスン',24000,'舞踊','dance'],
+ ['acting','演技ワークショップ',26000,'芝居','acting'],
+ ['kimonos','日本舞踊のレッスン',22000,'舞踊・所作','dance'],
+ ['theatre','他組公演の観劇',14000,'芝居の研究','acting'],
+ ['books','役作りの資料・書籍',6500,'芝居の研究','acting'],
+ ['hair','美容院・ヘアケア',18000,'舞台の華','aura'],
+ ['cosmetics','舞台化粧品の購入',21000,'舞台の華','aura'],
+ ['shoes','稽古用シューズの新調',28000,'舞踊','dance'],
+ ['massage','整体・マッサージ',12000,'体力回復','energy'],
+ ['trip','休日の小旅行',75000,'体力回復','energy'],
+ ['parents','家族へのプレゼント',30000,'心身の充実','energy'],
+ ['photo','宣材写真の撮影',48000,'舞台の華','aura'],
+ ['music','歌唱の伴奏音源制作',36000,'歌唱','song'],
+ ['food','同期と少し豪華な食事',18000,'協調性','team'],
+ ['health','舞台前の健康チェック',17000,'体力回復','energy']
+];
+function v22SpendItem(id){
+ const item=V22_NEW_ITEMS.find(v=>v[0]===id);if(!game||game.ended||!item)return;
+ const [,label,cost,,skill]=item;
+ if(game.wallet<cost)return alert('貯蓄が不足しています。');
+ game.wallet-=cost;game.spendCount=(game.spendCount||0)+1;
+ game.purchases??=[];game.purchases.push({year:game.calendar,item:label,cost});
+ if(skill==='energy')gain('energy',4);else improve(skill,1);
+ feed('プライベート：'+label,`${JPY(cost)}を使い、${label}に取り組んだ。${skill==='energy'?'体力が回復した。':'舞台の準備を進めた。'}`,'choice');
+ save();render();
+}
+const v22PreviousShop=shop;
+shop=function(){let html=v22PreviousShop();if(!game)return html;
+ const section=`<h3>さらに広がるお金の使い道</h3><div class="shopgrid">${V22_NEW_ITEMS.map(([id,name,cost,detail])=>`<div class="shopitem"><strong>${esc(name)}</strong><p>${esc(detail)}に役立つ</p><button class="btn" onclick="v22SpendItem('${id}')" ${game.wallet<cost||game.ended?'disabled':''}>${JPY(cost)}</button></div>`).join('')}</div>`;
+ return html.replace('<h3 style="margin-top:18px">支出の記録</h3>',section+'<h3 style="margin-top:18px">支出の記録</h3>');
+};
+const V22_EPISODES=[
+ ['食事のデザート','注文した甘いものが思った以上に大きく、みんなで分け合って笑った'],
+ ['地図の読み違い','同期と道を一本間違え、帰り道に新しい喫茶店を見つけた'],
+ ['似ている持ち物','二人が同じ色の小物を持っていて、偶然に驚いた'],
+ ['写真の撮り直し','記念写真を撮るたび誰かが目をつむり、何度も撮り直した'],
+ ['劇場帰りのおしゃべり','公演終わりに歩きながら、お互いの役の好きな台詞を語った'],
+ ['お店のメニュー','二人で同じメニューを選び、好みが似ていると盛り上がった'],
+ ['忘れた傘','急な雨で傘を一緒に使い、帰り道が妙ににぎやかになった'],
+ ['観劇帰りの感想','他組公演の感想を話し始めたら止まらなくなった'],
+ ['楽屋のお菓子','同期が差し入れのお菓子をきれいに分けてくれた'],
+ ['あだ名の由来','昔のあだ名の理由を話してみんなで笑い合った'],
+ ['稽古の言い間違い','芝居の稽古中に言葉を取り違え、緊張がほどけた'],
+ ['振付の覚え方','独特の覚え方を披露すると仲間が真似し始めた'],
+ ['舞台袖の励まし','緊張していた同期に小声で励まされ、本番に踏み出せた'],
+ ['衣装の早替わり','早替わりの導線をみんなで確認して無事に乗り切った'],
+ ['歌稽古のハモり','休憩中に始めたハモりが思いがけずきれいに揃った'],
+ ['楽屋の小さな工夫','道具をまとめる工夫が周りに広まり感謝された'],
+ ['台本の書き込み','印を付ける場所が同期と同じで驚いた'],
+ ['リハーサル前の掛け声','みんなで考えた掛け声がいつもの習慣になった'],
+ ['お祝いのメッセージ','公演の節目に仲間から短いメッセージをもらった'],
+ ['役作りの相談','普段あまり話さない先輩の一言が大きなヒントになった']
+];
+function v22Episode(person,context){
+ if(!game||!person)return;
+ game.v22??={};game.v22.episodes??=[];
+ const event=V22_EPISODES[rand(V22_EPISODES.length)];
+ const detail=`${person}と${context}で過ごした際、${event[1]}。`;
+ feed(`エピソード：${event[0]}`,detail,'auto');
+ game.v22.episodes.push({year:game.calendar,person,title:event[0],detail});
+ if(game.v22.episodes.length>80)game.v22.episodes.shift();
+ // 仲間が番組や取材でエピソードを語り、反響を呼ぶこともある。
+ if(game.calendar>=2010&&Math.random()<.23){
+  const rise=2+rand(5);gain('pop',rise);
+  feed('仲間のエピソードトークが話題に',`${person}が番組や取材で${game.name}との「${event[0]}」の話を披露。親しみやすい姿が話題になり人気 +${rise}。`);
+ }
+}
+const v22OldOuting=v10Outing;
+v10Outing=function(){const name=document.getElementById('v10-friend')?.value;
+ const previous=game?.purchases?.length||0;
+ v22OldOuting();
+ if(name&&game?.purchases?.length>previous){v22Episode(name,'外出先');save();render()}
+};
+const v22PriorTrain=v9Train;
+v9Train=function(kind,amount=1){v22PriorTrain(kind,amount);
+ if(!game||game.phase!==3||game.ended||Math.random()>.16)return;
+ const p=typeof v10FriendList==='function'?v10FriendList():[];
+ if(!p.length)return;
+ const who=pick(p).name;bumpFriend(who,1);
+ v22Episode(who,'自主稽古');
+};
+// 現役の実在人物の実退団を上書きせず、2027年以降のゲーム内仮想人事のみに適用。
+function v22RetirementPlan(name,term){
+ if(!game?.v15)return null;
+ const v=game.v15;v.v22RetirementPlans??={};
+ if(v.v22RetirementPlans[name])return v.v22RetirementPlans[name];
+ const h=v15Hash(String(game.seed)+'|retire22|'+name);
+ const selected=(h%100)<90;
+ const tenure=3+(Math.floor(h/101)%10); // 研3～12のいずれか
+ return v.v22RetirementPlans[name]={selected,tenure};
+}
+function v22NPCDepartures(year){
+ if(!game||year<2027)return;v15Ensure();
+ let v=game.v15;v.v22RetirementNotified??=[];
+ const everyone=v15AllPeople().slice();
+ for(const p of everyone){
+  const name=p.name;const term=pplTerm(p);
+  if(!term||name===game.name||!V15_TROUPES.includes(groupInYear(name,year)))continue;
+  const line=Object.values(v.groups).find(g=>[g.top,g.heroine,...g.ranks].includes(name));
+  if(line||v15IsRoad(p)||v.retired.includes(name)||v.v22RetirementNotified.includes(name))continue;
+  const career=year-entryTerm(term)+1;
+  const plan=v22RetirementPlan(name,term);
+  if(!plan?.selected||career<plan.tenure)continue;
+  v.retired.push(name);v.v22RetirementNotified.push(name);
+  v15Notice(year,'路線外生徒の退団（仮想人事）',`${name}（研${career}）が退団。以後、現役の交友や配役争いから外れる。`,false);
+ }
+}
+const v22BeforeAdvance=v15AdvanceRoster;
+v15AdvanceRoster=function(year){if(!game)return;
+ const previous=game.v15?.year??2026;
+ v22BeforeAdvance(year);
+ for(let y=Math.max(2027,previous+1);y<=year;y++)v22NPCDepartures(y);
+};
+function v22MaybeRetirementOffer(){
+ if(!game||game.ended||game.pending||game.phase!==3||game.flags.rookie>0||game.flags.top||game.year<5||game.year>12)return;
+ game.v22??={};
+ if(game.v22.retirementAsked)return;
+ // 年次に応じた節目で任意の進路選択を促す。強制退団ではない。
+ if(game.year>=8||Math.random()<.22){
+  game.v22.retirementAsked=true;
+  const skills=['song','dance','acting','aura'].map(k=>game.stats[k]);
+  const low=skills.reduce((a,b)=>a+b,0)/skills.length<50;
+  game.pending={name:'舞台人生の進路相談',text:`研${game.year}。新人公演の主演・ヒロイン経験はまだない。${low?'現在の舞台での役付きを踏まえて、':'舞台で重ねた経験を踏まえて、'}これからの進路を考える時期を迎えた。どうする？`,kind:'choice',choices:[
+    {label:'もう一度、舞台での役作りに集中して続ける',effect:'continueCareer',detail:'在団継続／芝居と体力を少し伸ばす'},
+    {label:'歌やダンスを強みに別格として活動する',effect:'continueCareer',detail:'在団継続／専門性を磨く'},
+    {label:'後輩を支える上級生の道を探す',effect:'continueCareer',detail:'在団継続／協調性を磨く'},
+    {label:'退団を決意し、新しい人生を歩む',effect:'voluntaryRetirement',detail:'退団して人生を終了'}
+  ]};
+  popMajor('これからの舞台人生',`研${game.year}、今後の進路を考える時期を迎えた。`);
+ }
+}
+const v22BeforeStep=step;
+step=function(){if(!game||game.ended||game.pending)return;
+ const before=game.calendar;
+ v22BeforeStep();
+ if(game?.calendar!==before && game?.phase===3 && !game.ended){
+  v22MaybeRetirementOffer();save();render();
+ }
+};
+
+// ===== v23: 五組への主人公反映・未来主演歴・専科再点検・長期プレイ最適化 =====
+function v23State(){
+ if(!game)return;
+ game.v23??={npcCredits:[],doneYears:[],senkaApplied:false};
+ game.v23.npcCredits??=[];game.v23.doneYears??=[];
+}
+function v23Deterministic(name,year,tag,mod=100){return v15Hash(`${game.seed}|v23|${name}|${year}|${tag}`)%mod}
+function v23YearCredits(year){
+ if(!game||year<2027)return;
+ v23State();if(game.v23.doneYears.includes(year))return;
+ game.v23.doneYears.push(year);
+ const everyone=v15AllPeople().filter(p=>p.name!==game.name&&pplTerm(p)&&entryTerm(pplTerm(p))<=year);
+ for(const p of everyone){
+  if(game.v15.retired.includes(p.name))continue;
+  const troupe=groupInYear(p.name,year);
+  if(!V15_TROUPES.includes(troupe))continue;
+  const tenure=year-entryTerm(pplTerm(p))+1;
+  const c=game.v23.npcCredits;
+  const prev=(type)=>c.some(r=>r.name===p.name&&r.type===type&&r.year<=year);
+  const isLady=p.kind==='娘役';
+  const isRoad=v15IsRoad(p)||v23Deterministic(p.name,2027,'potential')<34;
+  if(!isRoad)continue;
+  let type=null,work=null;
+  if(tenure>=3&&tenure<=7&&!prev('rookie')&&v23Deterministic(p.name,year,'rookie')<23){type='rookie';}
+  else if(isLady&&tenure>=5&&tenure<=15&&prev('rookie')&&v23Deterministic(p.name,year,'boxHeroine')<19){type='boxHeroine';}
+  else if(!isLady&&tenure>=6&&tenure<=13&&prev('rookie')&&!prev('bow')&&v23Deterministic(p.name,year,'bow')<19){type='bow';}
+  else if(!isLady&&tenure>=9&&tenure<=17&&prev('bow')&&!prev('tojo')&&v23Deterministic(p.name,year,'tojo')<22){type='tojo';}
+  if(!type)continue;
+  try{work=v15Future(year,troupe,type==='rookie'?'本公演':type==='bow'?'バウホール':type==='tojo'?'東上公演':'別箱公演')?.title}catch(e){}
+  work=work||`${year}年 ${troupe}公演（ゲーム内予測）`;
+  c.push({name:p.name,year,troupe,type,title:work});
+ }
+ // Safety: old saves may carry a huge timeline; retain only recent records for performance.
+ if(game.v23.doneYears.length>150)game.v23.doneYears=game.v23.doneYears.slice(-150);
+}
+const v23OldBauEligible=v20BauEligible;
+v20BauEligible=function(name,year){
+ return v23OldBauEligible(name,year)||!!game?.v23?.npcCredits?.some(x=>x.name===name&&x.type==='bow'&&x.year<=year);
+};
+const v23OldAdvance=v15AdvanceRoster;
+v15AdvanceRoster=function(year){
+ if(!game)return;
+ v15Ensure();v23State();
+ const before=game.v15.year;
+ if(year>before)for(let yr=Math.max(before+1,2027);yr<=Math.min(year,before+80);yr++)v23YearCredits(yr);
+ const result=v23OldAdvance(year);
+ if(year>=2027)v23SyncPlayerRank(year);
+ return result;
+};
+// Player rank is always represented in their own troupe's predicted lineup. Never publish an imaginary fourth place.
+function v23SyncPlayerRank(year){
+ if(!game||!game.v15||!V15_TROUPES.includes(game.troupe)||game.ended)return;
+ for(const g of V15_TROUPES){
+  const x=game.v15.groups[g];
+  if(g!==game.troupe){x.ranks=x.ranks.filter(n=>n!==game.name);if(x.top===game.name)x.top='';if(x.heroine===game.name)x.heroine='';}
+ }
+ const x=game.v15.groups[game.troupe];
+ if(game.flags.top){
+  if(game.role==='娘役')x.heroine=game.name;
+  else {x.top=game.name;x.ranks=x.ranks.filter(n=>n!==game.name)}
+ }else if(game.role==='男役'&&game.flags.bau>0&&(game.flags.rank===2||game.flags.rank===3)){
+  const pos=game.flags.rank-2;
+  x.ranks=x.ranks.filter(n=>n!==game.name);
+  x.ranks.splice(pos,0,game.name);
+  x.ranks=x.ranks.slice(0,(x.doubleSecond||x.doubleThird)?3:2);
+ }
+}
+const v23OldRoster=v18Roster;
+v18Roster=function(){
+ if(!game)return '';
+ const year=game.calendar;
+ if(year>=2027){v15AdvanceRoster(year);v23SyncPlayerRank(year)}
+ let html=v23OldRoster();
+ if(!V15_TROUPES.includes(game.troupe)||game.ended)return html;
+ if(year>=2027){
+  const heading=`<h3 style="margin:0 0 7px;color:#a44876">${esc(game.troupe)}</h3>`;
+  const start=html.indexOf(heading);
+  if(start>=0){
+   const end=html.indexOf('</div>',start+heading.length);
+   if(end>start){
+    let section=html.slice(start,end);
+    if(game.flags.top){
+     const label=game.role==='娘役'?'トップ娘役':'トップスター（男役主演）';
+     if(game.role==='男役')section=section.replace(/(トップスター（男役主演）：<b>)[^<]*/,`$1${esc(game.name)}`);
+     else section=section.replace(/(トップ娘役（娘役主演）：<b>)[^<]*/,`$1${esc(game.name)}`);
+    }else if(game.role==='男役'&&game.flags.bau>0){
+     if(game.flags.rank===2)section=section.replace(/(2番手男役：<b>)[^<]*/,`$1${esc(game.name)}`);
+     if(game.flags.rank===3)section=section.replace(/(3番手男役：<b>)[^<]*/,`$1${esc(game.name)}`);
+    }
+    html=html.slice(0,start)+section+html.slice(end);
+   }
+  }
+ }
+ // Historical years remain historically accurate, with a conspicuous separate playable-character line.
+ if(year<2027){
+  const hint=game.flags.top?(game.role==='男役'?'トップスター':'トップ娘役'):(game.role==='男役'&&game.flags.rank===2?'2番手':game.role==='男役'&&game.flags.rank===3?'3番手':'番手外');
+  const target=`<h3 style="margin:0 0 7px;color:#a44876">${esc(game.troupe)}</h3>`;
+  html=html.replace(target,target+`<div class="notice">主人公（ゲーム内人事）：${esc(game.name)} ／ ${hint}</div>`);
+ }
+ return html;
+};
+// The in-game predicted credit ledger supplements, rather than replaces, verifiable historical performance records.
+const v23OldCredits=v21PersonCredits;
+v21PersonCredits=function(p,year){
+ const base=v23OldCredits(p,year);
+ const future=(game?.v23?.npcCredits||[]).filter(r=>r.name===p.name&&r.year<=year);
+ const label=(type)=>future.filter(r=>r.type===type).map(r=>`${r.year}『${r.title}』（予測）`);
+ return {...base,rookie:[...new Set([...base.rookie,...label('rookie')])],bow:[...new Set([...base.bow,...label('bow')])],tojo:[...new Set([...base.tojo,...label('tojo')])],heroine:[...new Set([...base.heroine,...label('boxHeroine')])]};
+};
+// Male-role performance history must not show the etoile subsection; the heroine career retains it.
+const v23OldWorks=revisedWorks;
+revisedWorks=function(){
+ let html=v23OldWorks();
+ if(game?.role==='男役')html=html.replace(/<h3>エトワール担当歴（\d+回）<\/h3>(?:<div class="history">[\s\S]*?<\/div>|<p class="muted">[\s\S]*?<\/p>)*/,'');
+ return html;
+};
+// Prevent future rank arrays from holding "4th" as a displayed rank. Refill gaps only with eligible cast.
+const v23PreviousNormalize=v20NormalizeRank;
+v20NormalizeRank=function(group,year){
+ v23PreviousNormalize(group,year);
+ if(!game?.v15||year<2027)return;
+ const x=game.v15.groups[group];
+ x.ranks=x.ranks.filter((n,i,arr)=>n&&arr.indexOf(n)===i&&n!==x.top);
+ x.ranks=x.ranks.slice(0,(x.doubleSecond||x.doubleThird)?3:2);
+};
+// Senka request is permitted only once even when the original save already has a prior offer.
+const v23PriorSenkaOffer=v19SenkaOffer;
+v19SenkaOffer=function(){
+ v19State();if(game.v19.senkaOffered.length>0)return false;
+ return v23PriorSenkaOffer();
+};
+// Render performance: prevent a recursion loop from exploding at high calendar years.
+let v23Advancing=false;
+const v23AdvanceUnprotected=v15AdvanceRoster;
+v15AdvanceRoster=function(year){
+ if(v23Advancing||!game)return;
+ v23Advancing=true;
+ try{return v23AdvanceUnprotected(year)}finally{v23Advancing=false}
+};
 </script></body></html>
