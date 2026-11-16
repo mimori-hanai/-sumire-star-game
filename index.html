@@ -2341,4 +2341,270 @@ v15AdvanceRoster=function(year){
  v23Advancing=true;
  try{return v23AdvanceUnprotected(year)}finally{v23Advancing=false}
 };
-</script></body></html>
+
+// ===== v25: 芸名100案／娘役の在団期間／ストレス／役柄別イラスト =====
+const V25_NAMES=[
+'花乃宮すみれ','朝凪あおい','星月ひかり','白羽みちる','彩花ゆき','夢咲れい','紫苑あかり','月城しずく','天羽かなた','春野小夜','桜庭れいか','水無瀬ゆう','東雲あさひ','七瀬ゆめ','霧島のぞみ','瑠璃川なぎ','綾小路ほたる','雪代つばさ','暁月さくら','風花いろは',
+'花霞みやび','銀河りつ','琥珀しおん','桃園しゅり','蒼海ほのか','白鷺りお','若葉つむぎ','秋月いぶき','朝霧ななせ','碧羽ゆづき','藍沢あんじゅ','千歳みく','凰華せいら','水琴ゆら','詩乃こころ','紫月れん','春日野りん','雪村かえで','紅葉あまね','天宮しえる',
+'麗星みお','美月かすみ','風早こはく','琴吹かれん','花園るちあ','月白かのん','朝比奈りり','真白とうか','夢月あお','星乃せな','桜羽ひなた','花城しおり','風見ゆうり','雪乃ゆず','彩月ひめか','蒼空ひびき','紫堂すばる','宵宮あおい','天翔るか','愛月のあ',
+'天上院きらり','百花繚乱こまち','銀河鉄道きらら','王冠キラリ','薔薇山ベル','桃色こぶし','大福もちこ','目玉焼きひかる','唐揚げレモン','爆裂すみれ','深夜のプリン','銀杏いちょう','いちご大福','猫宮にゃん','栗まんじゅう','白米ぴかり','星屑サイダー','天才マドレーヌ','夢見がちこ','大銀河ゆめ','薔薇畑もなか',
+'星影アルマ','月下ルナ','桜音マリア','天花エリカ','瑠璃宮アリス','花咲エトワール','碧海ソレイユ','白夜レオ','銀華ノエル','朝陽レオン','紫苑オスカル','麗しの薔薇子','天使の羽音','夢中まりん','月夜のダリア','春色キャンディ','花時雨カノン','水晶ミレイ','星雲ジュリエ' ];
+function v25RandomName(){return pick(V25_NAMES)}
+function v25RenameRandom(){if(!game)return;game.name=v25RandomName();save();render()}
+const v25PrevNew=newGame;
+newGame=function(){v25PrevNew();if(!game)return;game.name=v25RandomName();game.stress=clamp(game.stress??(8+rand(15)));game.stressLeaveYear=0;game.stressLastYear=0;game.stressForcedExit=false;save();render()};
+const v25PrevExtra=ensureExtra;
+ensureExtra=function(){v25PrevExtra();if(!game)return;game.stress??=18;game.stressLastYear??=0;game.stressLeaveYear??=0;game.stressForcedExit??=false};
+// 旧版の「体力回復」はストレス軽減に変換する。内部のenergy値は旧イベントとの互換性のため維持。
+const v25PriorGain=gain;
+gain=function(key,n){if(game&&key==='energy'&&Number.isFinite(n)){game.stress=clamp((game.stress??18)-n*1.5)}return v25PriorGain(key,n)};
+function v25Stress(n){if(game&&!game.ended)game.stress=clamp((game.stress??18)+n)}
+const v25PriorFeed=feed;
+feed=function(name,description,kind='auto'){
+ if(game&&!game.ended){const text=String(name)+' '+String(description);
+  if(/新人公演.*(主演|ヒロイン)|バウ.*(主演|抜擢)|東上.*主演|トップ.*就任|2番手.*昇格|3番手.*昇格|大役.*抜擢/.test(text)){v25Stress(5+rand(7));v25PriorGain('pop',2+rand(4));}
+  else if(/本公演|初日|千秋楽|役替わり|主役|重要な役/.test(text)){v25Stress(2+rand(4));}
+  else if(/稽古|レッスン|振付|歌唱指導|自主練習/.test(text)){v25Stress(1+rand(3));}
+  if(/仲間と|同期と|お出かけ|遊びに|小旅行|趣味|リフレッシュ|お茶会|休養|リラクゼーション|マッサージ|休日/.test(text))v25Stress(-(3+rand(6)));
+ }
+ return v25PriorFeed(name,description,kind)
+};
+// 研年次進行時の疲労蓄積と休演・退団判定。実在人物の健康状態には適用しない。
+const v25PriorStep=step;
+step=function(){if(!game||game.ended||game.pending)return;
+ ensureExtra();const priorYear=game.calendar;v25PriorStep();
+ if(!game||game.ended||game.phase!==3)return;
+ if(game.calendar!==priorYear){
+  v25Stress(3+rand(5));game.stressLastYear=game.calendar;
+  if(game.stress>=73 && game.stressLeaveYear!==game.calendar && Math.random()<Math.min(.85,(game.stress-60)/38)){
+   game.stressLeaveYear=game.calendar;v25Stress(-18);v25PriorGain('pop',-2);improve('team',-1);
+   v25PriorFeed('体調管理のための休演',`負担の蓄積から公演を一部休演することになった。休養を優先したが、舞台上での信頼評価が低下した。ストレス ${Math.round(game.stress)}。`);
+   popMajor('休演のお知らせ','心身の負担を考えて一部公演を休演。休養を取ることになりました。');
+  }
+  if(game.stress>=92 && game.stressLeaveYear && game.stressLeaveYear<game.calendar && Math.random()<.32 && !game.stressForcedExit){
+   game.stressForcedExit=true;
+   game.pending={name:'休養と進路の相談',text:'高いストレスが続いている。舞台活動を継続するか、卒業して新しい道を歩むかを検討する。',kind:'choice',choices:[{label:'長期休養を取り、復帰を目指す',effect:'v25Rest',detail:'ストレス −40／人気 −2'},{label:'宝塚を退団する',effect:'voluntaryRetirement',detail:'舞台人生を終了'}]};
+   popMajor('今後の進路','過度の負担が続いたため、休養か退団かを選択します。');
+  }
+  // 娘役は男役より平均約4年早い退団時期。トップ娘役は任期3〜6年で卒業イベントを提案する。
+  if(game.role==='娘役'&&!game.ended){
+   game.v25RetirementTarget??=11+rand(5);
+   if(game.flags.top){game.v25TopStart??=game.topStartYear||game.calendar;
+    if(!game.v25TopTenure)game.v25TopTenure=3+rand(4);
+    if(game.calendar-game.v25TopStart+1>=game.v25TopTenure&&!game.v25TopRetired){
+     game.v25TopRetired=true;game.pending={name:'トップ娘役としての卒業',text:`トップ娘役として${game.v25TopTenure}年間舞台を務めた。退団公演を迎える。`,kind:'choice',choices:[{label:'千秋楽をもって卒業する',effect:'voluntaryRetirement',detail:'退団'}]};popMajor('トップ娘役 退団発表','トップ娘役としての舞台人生を締めくくります。');
+    }
+   }else if(game.year>=game.v25RetirementTarget&&!game.v25RetirementAsked){game.v25RetirementAsked=true;
+    game.pending={name:'娘役としての進路相談',text:`研${game.year}。これまでの舞台人生と今後の道を考える。`,kind:'choice',choices:[{label:'引き続き舞台に挑戦する',effect:'continueCareer',detail:'在団継続'},{label:'退団を決意する',effect:'voluntaryRetirement',detail:'退団'}]};popMajor('進路の節目','娘役として今後の進路を考える時期です。');}
+  }
+  save();render();
+ }
+};
+const v25OldChoice=runGameChoice;
+runGameChoice=function(ix){if(game?.pending?.choices?.[ix]?.effect==='v25Rest'){
+ let e=game.pending;game.pending=null;v25Stress(-40);v25PriorGain('pop',-2);v25PriorFeed('休養からの復帰','十分な休養を取り、少しずつ舞台へ戻る準備を進めた。','choice');save();render();return;
+ }return v25OldChoice(ix)};
+const v25OldV10Outing=v10Outing;
+v10Outing=function(){const before=game?.wallet;v25OldV10Outing();if(game&&game.wallet<before){v25Stress(-9);save();render()}};
+const v25OldSpend=v22SpendItem;
+v22SpendItem=function(id){const old=game?.wallet;v25OldSpend(id);if(game&&game.wallet<old&&/massage|trip|food|parents|spa|health/.test(id)){v25Stress(-8);save();render()}};
+// プロフィールから100案の再抽選を可能にし、手入力は既存機能を維持。
+const v25OldProfile=revisedProfile;
+revisedProfile=function(){return v25OldProfile().replace('<button class="btn" onclick="renameStage()">変更</button>','<button class="btn" onclick="renameStage()">変更</button><button class="btn" onclick="v25RenameRandom()">100案からランダム</button>')};
+const v25OldStats=revisedStats;
+function v25StressMeter(){const s=Math.round(game?.stress??0);let color=s>=80?'#d74c63':s>=55?'#ec9e47':'#6aa99a';return `<div class="v25stress"><span>ストレス <strong>${s}/100</strong></span><div class="v25track"><i style="width:${s}%;background:${color}"></i></div><small>${s>=80?'危険：休養を優先':s>=55?'負荷が高め':s>=30?'やや疲れ気味':'良好'}</small></div>`}
+revisedStats=function(){return v25OldStats().replace(/<div class="stat">体力<b>[\s\S]*?<\/div><\/div>/,'')+v25StressMeter()};
+const v25OldSide=statsSide;
+statsSide=function(){return v25OldSide().replace(/<div class="statline"><span>体力<\/span>[\s\S]*?<\/div><\/div>/,'') .replace('</aside>',v25StressMeter()+'</aside>')};
+// 現在の出演役に沿った舞台イラスト。装飾は簡潔なベクターで描画する。
+function v25TheatreIllustration(){if(!game)return '';
+ const p=game.performances?.at(-1);const title=p?.title||'音楽学校';const role=game.role==='男役';
+ const show=/エリザベート/.test(title)?'elis':/ベルサイユ|ベルばら/.test(title)?'versa':/ロミオとジュリエット/.test(title)?'romeo':/ファントム/.test(title)?'phantom':/和物|忠臣蔵|信長|幕末|新選組|壬生|雪華|夢介/.test(title)?'japan':'stage';
+ const theme={elis:['#211c3a','#b7a0cc','#4c234d','月夜の宮廷'],versa:['#f5e8db','#d5b17b','#fcf0cf','華麗なる宮廷'],romeo:['#55788c','#d8c2a2','#e2b8b4','運命の恋'],phantom:['#252b36','#d1ced9','#652a41','仮面の舞台'],japan:['#354f55','#e6c59b','#b43b5a','和の舞'],stage:['#453455','#d1aec5','#f0d7bc','レビューの舞台']}[show];
+ const [dark,trim,light,genre]=theme;
+ const outfit=role?`<path d="M103 156L90 251H217L201 156L172 144L150 178L127 145Z" fill="${dark}" stroke="${trim}" stroke-width="4"/><path d="M148 176L135 242M158 177L172 242" stroke="${light}" stroke-width="10"/><path d="M139 159L154 183L171 159" fill="none" stroke="${trim}" stroke-width="7"/><path d="M92 171L77 212M209 171L225 212" stroke="${dark}" stroke-width="22" stroke-linecap="round"/><path d="M100 161L127 157M180 157L201 161" stroke="${trim}" stroke-width="9"/>`:`<path d="M116 151L193 151L225 260Q151 284 82 260Z" fill="${dark}" stroke="${trim}" stroke-width="5"/><path d="M105 234Q154 262 209 234" fill="none" stroke="${light}" stroke-width="8"/><path d="M133 154L154 179L174 154" fill="none" stroke="${trim}" stroke-width="8"/><path d="M117 164L91 214M190 164L215 214" stroke="${light}" stroke-width="19" stroke-linecap="round"/>`;
+ const prop=show==='elis'?`<path d="M217 125L236 89L243 122Z" fill="${trim}"/>`:show==='versa'?`<path d="M114 143L112 122L128 133L145 116L153 138L168 115L183 131L191 120L190 144Z" fill="${trim}" stroke="#fff7db" stroke-width="2"/>`:show==='phantom'?`<path d="M150 92L166 91L165 111L155 121Z" fill="#f9f4e7"/>`:show==='japan'?`<path d="M215 201Q248 171 257 213L230 225Z" fill="${trim}"/>`:'';
+ let pet='';if(game.pet){const k=game.pet.kind;const fur=k==='cat'?'#d7c5af':k==='dog'?'#c9a88c':k==='hamster'?'#e9c6a2':'#d4af9d';pet=`<g transform="translate(220 207)"><ellipse cx="26" cy="40" rx="28" ry="19" fill="${fur}"/><circle cx="19" cy="22" r="20" fill="${fur}"/><path d="M6 8L1 -2L17 4M30 5L39 -2L37 17" fill="${fur}"/><circle cx="13" cy="21" r="2.5" fill="#302a36"/><circle cx="26" cy="21" r="2.5" fill="#302a36"/><path d="M18 29Q22 32 26 29" fill="none" stroke="#805757" stroke-width="2"/></g>`}
+ return `<div class="v25illustration"><svg viewBox="0 0 310 300" role="img" aria-label="${esc(title)}の舞台衣装イメージ"><defs><linearGradient id="v25bg" x2="0" y2="1"><stop stop-color="#f5dce8"/><stop offset="1" stop-color="#f3eef4"/></linearGradient></defs><rect width="310" height="300" rx="12" fill="url(#v25bg)"/><path d="M0 0Q38 83 0 260L0 0M310 0Q274 89 310 260L310 0" fill="#9d3c6e"/><path d="M15 32Q153 80 295 32" fill="none" stroke="#cb9b69" stroke-width="6"/><ellipse cx="154" cy="278" rx="94" ry="13" fill="#a4779280"/><g>${outfit}<rect x="138" y="125" width="31" height="37" rx="10" fill="#f5c9b6"/><ellipse cx="154" cy="97" rx="37" ry="44" fill="#f5c9b6"/><path d="M116 88Q112 48 153 49Q196 50 193 90L181 78Q154 49 123 82Z" fill="${role?'#342b38':'#6c4c4f'}"/><path d="M124 87Q129 55 155 60" fill="none" stroke="${role?'#342b38':'#6c4c4f'}" stroke-width="12"/><path d="M139 105q7 -5 13 0m9 0q7 -5 13 0" stroke="#6c4153" stroke-width="2.5" fill="none"/><circle cx="145" cy="104" r="2" fill="#3a2930"/><circle cx="166" cy="104" r="2" fill="#3a2930"/><path d="M151 124q8 5 15 0" fill="none" stroke="#c97479" stroke-width="2"/>${prop}</g>${pet}<text x="155" y="22" text-anchor="middle" font-family="serif" font-size="13" fill="#7e375d">✦ ${esc(genre)} ✦</text></svg><div class="v25workcaption">${esc(title)}｜${esc(p?.role||'舞台への憧れ')}</div></div>`
+}
+pixelArt=v25TheatreIllustration;
+
+// 未来の娘役も男役より平均4年短い在団期間を基準に判定する。
+const v25PriorRosterAdvance=v15AdvanceRoster;
+v15AdvanceRoster=function(year){v25PriorRosterAdvance(year);if(!game||year<2027)return;
+ v15Ensure();const v=game.v15;v.v25FemaleRetired??=[];
+ const all=v15AllPeople();
+ for(const p of all){if(p.kind!=='娘役'||!pplTerm(p)||v.retired.includes(p.name)||v.v25FemaleRetired.includes(p.name))continue;
+  const rankMember=Object.values(v.groups).some(g=>g.top===p.name||g.heroine===p.name||g.ranks.includes(p.name));
+  if(rankMember)continue;
+  const road=v15IsRoad(p);const tenure=road?9+(v15Hash('female-road'+p.name)%6):4+(v15Hash('female-other'+p.name)%7);
+  if(year-entryTerm(pplTerm(p))+1<tenure)continue;
+  v.retired.push(p.name);v.v25FemaleRetired.push(p.name);
+  v15Notice(year,'娘役の退団（仮想人事）',`${p.name}が研${year-entryTerm(pplTerm(p))+1}で退団した。`,false);
+ }
+};
+const V25_HOBBIES=[['映画鑑賞',2500,7],['読書とカフェ',3400,6],['絵画・陶芸教室',9000,10],['音楽鑑賞',11000,12],['温泉旅行',43000,17],['ペットとの休日',1200,8]];
+function v25Hobby(i){if(!game||game.ended)return;const [name,cost,relax]=V25_HOBBIES[i]||[];if(!name)return;
+ if(name==='ペットとの休日'&&!game.pet)return alert('先にペットを迎えてください。');
+ if(game.wallet<cost)return alert('貯蓄が不足しています。');
+ game.wallet-=cost;game.spendCount++;game.purchases.push({year:game.calendar,item:name,cost});v25Stress(-relax);
+ v25PriorFeed('趣味でリフレッシュ',`${name}を楽しみ、ストレスが${relax}減った。`,'choice');save();render();
+}
+const v25PriorShop=shop;
+shop=function(){return v25PriorShop()+`<section class="panel"><h3>趣味・休養でストレスを解消する</h3><p class="muted">稽古や大役の負担を減らし、休演を防ぎましょう。</p><div class="shopgrid">${V25_HOBBIES.map(([name,cost,n],i)=>`<div class="shopitem"><strong>${esc(name)}</strong><p>ストレス −${n}</p><button class="btn" onclick="v25Hobby(${i})" ${game.wallet<cost?'disabled':''}>${JPY(cost)}</button></div>`).join('')}</div></section>`};
+
+// v26: Long-play safety fix. Keep the entire accumulated game logic, but batch all
+// synchronous DOM and localStorage updates produced by a single yearly step.
+let v26InStep = false;
+let v26NeedsSave = false;
+let v26NeedsRender = false;
+const v26OriginalSave = save;
+const v26OriginalRender = render;
+save = function(){
+  if(v26InStep){v26NeedsSave=true;return;}
+  return v26OriginalSave();
+};
+render = function(){
+  if(v26InStep){v26NeedsRender=true;return;}
+  return v26OriginalRender();
+};
+const v26OriginalStep = step;
+step = function(){
+  if(!game || game.ended || game.pending || v26InStep) return;
+  v26InStep = true;
+  try {
+    v26OriginalStep();
+  } catch(error) {
+    // Do not leave automatic advance locked after an error. Keep current save usable.
+    console.error('すみれの軌跡: 年次進行の処理エラー',error);
+    playing=false;clearTimeout(timer);
+    if(game){game.lastStepError=String(error?.message||error);}
+  } finally {
+    v26InStep=false;
+    if(v26NeedsSave || v26NeedsRender){
+      v26NeedsSave=false;v26NeedsRender=false;
+      v26OriginalSave();v26OriginalRender();
+    }
+  }
+};
+
+// Predicted 5-troupe personnel updates used to produce dozens of popups in a
+// single transition. The timeline still contains all personnel changes.
+// Aggregate only the numerous predicted NPC personnel popups; do not suppress
+// player milestones, retirement, partner, or other personal notifications.
+const v26OriginalNotice = v15Notice;
+v15Notice = function(year,title,message,major=false){
+  const npcPrediction = year>=2027 && /仮想人事|ゲーム内予測|予測/.test(title) &&
+    /番手|組替え|退団|W2|W3/.test(title) &&
+    !String(message).includes(game?.name||'___player___');
+  if(npcPrediction) major=false;
+  return v26OriginalNotice(year,title,message,major);
+};
+
+// Safety: a saved game can already contain a huge modal queue. Display the
+// newest important notification, keeping every other event in the timeline.
+const v26OriginalPopup = popMajor;
+popMajor = function(title,body){
+  if(!game)return;
+  game.popups ??=[];
+  if(game.popups.length>=3){
+    // Important updates are retained in the journal; never accumulate hundreds
+    // of blocking overlays during one yearly rollover.
+    if(game.events)game.events.push({id:game.events.length+1,year:game.calendar,
+      age:currentAge(),phase:`研${game.year}`,name:`通知：${title}`,text:body,kind:'auto'});
+    return;
+  }
+  return v26OriginalPopup(title,body);
+};
+const v26OriginalClose = closeMajor;
+closeMajor = function(){
+  const autoWasOn = !!game?.v26AutoRequested;
+  v26OriginalClose();
+  if(autoWasOn && game && !game.pending && !game.ended && !(game.popups?.length)){
+    playing=true;schedule();
+  }
+};
+
+// Allow the auto toggle to remain requested across modal notifications. Pause
+// timers while a popup is visible, and resume once the user dismisses it.
+const v26OriginalToggle = togglePlay;
+togglePlay = function(){
+  if(!game)return;
+  game.v26AutoRequested = !game.v26AutoRequested;
+  if(game.v26AutoRequested){playing=true;if(!game.popups?.length && !game.pending)schedule();}
+  else {playing=false;clearTimeout(timer);}
+  save();render();
+};
+const v26OriginalSchedule = schedule;
+schedule = function(){
+  if(!game || game.popups?.length || game.pending?.choices){clearTimeout(timer);return;}
+  return v26OriginalSchedule();
+};
+
+// Stop the most expensive of the future-personnel passes from rescanning every
+// active actress whenever an already completed year is displayed.
+const v26PreviousRosterAdvance = v15AdvanceRoster;
+v15AdvanceRoster = function(year){
+  if(!game)return;
+  const target=Number(year);
+  if(!Number.isFinite(target))return;
+  if(game.v15 && target<=game.v15.year && game.v26FemaleScanYear>=target) return;
+  v26PreviousRosterAdvance(target);
+  if(game.v15 && target>=2027)game.v26FemaleScanYear=target;
+};
+
+// A smaller number of screens at a time is more stable on Safari. Do not delete
+// the underlying career record; the journal already keeps its compact view.
+const v26OriginalContinue = continueGame;
+continueGame = function(){
+  v26OriginalContinue();
+  if(!game)return;
+  if((game.popups?.length||0)>3){
+    const count=game.popups.length;
+    game.popups=game.popups.slice(-2);
+    feed('通知の整理',`以前のバージョンで蓄積された${count}件の通知を整理。人事履歴は人生の記録に保存されています。`);
+  }
+  game.v26FemaleScanYear ??= Math.max(2026,game.v15?.year||2026);
+  save();render();
+};
+
+// Re-arm requested automatic playback after both old and new styles of choice.
+function v26ResumeAuto(){
+  if(!game?.v26AutoRequested || game.ended || game.pending?.choices)return;
+  if(game.popups?.length)return;
+  playing=true;schedule();
+}
+const v26OriginalRunGameChoice=runGameChoice;
+runGameChoice=function(index){
+  const result=v26OriginalRunGameChoice(index);
+  v26ResumeAuto();
+  return result;
+};
+const v26OriginalProcessChoices=processChoices;
+processChoices=function(index){
+  const result=v26OriginalProcessChoices(index);
+  v26ResumeAuto();
+  return result;
+};
+
+// Last-resort recovery: if a rare old save encounters an unhandled annual event,
+// advance past that one event instead of forcing the user into a permanent loop.
+// The error remains available on the saved game for diagnosis.
+const v26OuterStep=step;
+step=function(){
+  const oldPart=game?.part,oldYear=game?.calendar;
+  v26OuterStep();
+  if(!game?.lastStepError || game.ended || game.pending)return;
+  const error=game.lastStepError;
+  game.lastStepError=null;
+  if(game.part===oldPart && game.calendar===oldYear){
+    if(game.part>=7){game.year++;game.calendar=game.entry+game.year-1;game.part=0;}
+    else game.part=Math.max(0,(game.part||0)+1);
+  }
+  feed('進行データの自動修復',`互換性のない旧イベントを1件スキップし、進行を再開しました。（${error.slice(0,110)}）`);
+  save();render();
+};
+
+</script><style>
+.v25stress{background:#fff5f7;border:1px solid #eacbd5;border-radius:9px;margin-top:10px;padding:10px;font-size:13px;grid-column:1/-1}.v25stress span{display:flex;justify-content:space-between}.v25track{height:9px;background:#e8e0e4;border-radius:20px;overflow:hidden;margin:6px 0}.v25track i{display:block;height:100%;border-radius:20px;transition:width .25s}.v25stress small{color:#805e6d}.v25illustration{background:#fff7fa;border:2px solid #e4b9cf;border-radius:12px;padding:8px;text-align:center;margin:12px auto}.v25illustration svg{display:block;margin:auto;width:min(100%,310px);height:auto}.v25workcaption{font-size:12px;color:#774a66;padding:5px}
+</style></body></html>
