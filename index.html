@@ -133,7 +133,7 @@ function step(){if(!game||game.ended||game.pending)return;let s=game;if(s.phase<
  if(s.part===3){s.part++;let p=interactions(s.calendar)[0];let choices=yearChoices();addEvent(choices.title,choices.body+(p?` 今回は${p.name}とも顔を合わせる（架空の交流）。`:''),'choice',choices.items);return}
  if(s.part===4){s.part++;let y=s.year;if(y>=3&&s.stats.pop>=12){let lvl=s.club.level;let min=y>=5?16:12;if(s.stats.pop>=min){let opts=[{label:lvl?'私設ファンクラブのお茶会を開く':'小規模なお茶飲み会を開く',text:'ファンと公演の感想を語り合うひとときを過ごした。',run:()=>{if(s.club.level===0&&s.stats.pop>=24)s.club.level=1;s.club.meet++;gain('pop',1);gain('energy',-2)}},{label:'稽古と休養を優先する',text:'次の舞台に向けて心身を整えた。',run:()=>gain('energy',4)}];addEvent('応援する人たちとの交流',lvl?'私設ファンクラブの会員による公演後の交流会が計画された。':'少しずつ応援するファンが増えてきた。','choice',opts);return}}
  let rare=[['舞台袖での小さなハプニング','衣装の小道具が外れかけたが、全員で落ち着いて本番を終えた。'],['劇場への通勤','梅雨の雨の中、劇場へ向かう。今日も客席から拍手が聞こえる。'],['同期と過ごす休日','同期と街で食事をし、普段は話せない稽古の悩みを分かち合った。'],['役替わりの知らせ','次の公演では新しい配役に挑むことになった。'],['稽古中の声の不調','喉の疲れを感じ、発声のペースを見直した。'],['観劇と刺激','他の組の舞台から演技の工夫を学んだ。'],['お礼状を受け取る','ファンから舞台の感想が届き、励みになった。']];let x=pick(rare);addEvent(x[0],x[1]);return}
- if(s.part===5){s.part++;if(s.year>=10&&s.year%4===0&&Math.random()<.11){let next=pick(GROUPS.filter(g=>g!==s.troupe));addEvent('組替えの発表',`${s.troupe}から${next}への組替えが発表された（架空の人事）。`);s.troupe=next;return}if(s.year>=7&&s.flags.rookie>0&&s.flags.bau>0&&s.stats.pop>38&&Math.random()<.07){s.flags.top=true;s.ended=true;addEvent('トップ就任の発表',`${s.troupe}の${s.role==='男役'?'トップスター':'トップ娘役'}に就任することになった（架空の人事）。`);return}addEvent('一年を振り返る',`研${s.year}の公演を終えた。舞台経験を重ねながら、次の年の配役を待つ。`);return}
+ if(s.part===5){s.part++;if(false){let next=pick(GROUPS.filter(g=>g!==s.troupe));addEvent('組替えの発表',`${s.troupe}から${next}への組替えが発表された（架空の人事）。`);s.troupe=next;return}if(s.year>=7&&s.flags.rookie>0&&s.flags.bau>0&&s.stats.pop>38&&Math.random()<.07){s.flags.top=true;s.ended=true;addEvent('トップ就任の発表',`${s.troupe}の${s.role==='男役'?'トップスター':'トップ娘役'}に就任することになった（架空の人事）。`);return}addEvent('一年を振り返る',`研${s.year}の公演を終えた。舞台経験を重ねながら、次の年の配役を待つ。`);return}
  if(s.part>=6){extraYear();save();render();return}
 }
 function rookieResult(title,other,chance){let success=Math.random()<clamp(chance,0,.25);let role=game.role==='男役'?'主演':'ヒロイン';let result=success?`『${title}』新人公演の${role}に選ばれた。${other}とも舞台を作り上げた（架空の配役・共演）。`:`新人公演の${role}は${other}が務めることになった（架空の配役）。自分は別の役で舞台に立った。`;if(success){game.flags.rookie++;gain('pop',4);improve('acting',1);game.performances.push({year:game.calendar,term:game.year,title,kind:'新人公演',role,troupe:game.troupe})}else{game.performances.push({year:game.calendar,term:game.year,title,kind:'新人公演',role:'配役あり',troupe:game.troupe})}feed('新人公演の結果',result);save()}
@@ -1004,6 +1004,425 @@ gameScreen=function(){
   let html=v13PreviousScreen();
   // 旧版・二重差込みによる会ボタンをすべて除去する。発足イベントや会の状態は消さない。
   return html.replace(/<button\b[^>]*>\s*(?:♡\s*)?会（ファンクラブ）(?:\s*\d+名)?\s*<\/button>/g,'');
+};
+
+
+// ===== v14: expanded historical side-stage performances from six requested venue archives =====
+const V14_BOXES = [{"year":2027,"troupe":"花組","title":"Ave Mare（アヴェ マーレ）!","theatre":"梅田芸術劇場メインホール","lead":"永久輝せあ","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2027,"troupe":"星組","title":"大奥","theatre":"梅田芸術劇場メインホール","lead":"暁千星","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2026,"troupe":"雪組","title":"Monte-Cristo－le spectacle musical－","theatre":"梅田芸術劇場メインホール","lead":"朝美絢","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2026,"troupe":"雪組","title":"波うららかに、めおと日和","theatre":"梅田芸術劇場メインホール","lead":"朝美絢","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2025,"troupe":"花組","title":"Goethe（ゲーテ）！","theatre":"梅田芸術劇場メインホール","lead":"永久輝せあ","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2025,"troupe":"雪組","title":"An American in Paris（パリのアメリカ人）","theatre":"梅田芸術劇場メインホール","lead":"朝美絢","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2025,"troupe":"宙組","title":"ZORRO THE MUSICAL","theatre":"梅田芸術劇場メインホール","lead":"桜木みなと","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2024,"troupe":"雪組","title":"愛の不時着","theatre":"梅田芸術劇場メインホール","lead":"朝美絢","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2024,"troupe":"月組","title":"G.O.A.T","theatre":"梅田芸術劇場メインホール","lead":"月城かなと","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2023,"troupe":"花組","title":"二人だけの戦場","theatre":"梅田芸術劇場メインホール","lead":"柚香光","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2022,"troupe":"雪組","title":"ODYSSEY","theatre":"梅田芸術劇場メインホール","lead":"彩風咲奈","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2022,"troupe":"花組","title":"TOP HAT","theatre":"梅田芸術劇場メインホール","lead":"柚香光","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2021,"troupe":"宙組","title":"Hotel Svizra House","theatre":"梅田芸術劇場メインホール","lead":"真風涼帆","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2021,"troupe":"花組","title":"NICE WORK IF YOU CAN GET IT","theatre":"梅田芸術劇場メインホール","lead":"柚香光","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2020,"troupe":"星組","title":"エル・アルコン－鷹－","theatre":"梅田芸術劇場メインホール","lead":"礼真琴","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2020,"troupe":"雪組","title":"炎のボレロ","theatre":"梅田芸術劇場メインホール","lead":"彩風咲奈","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2020,"troupe":"宙組","title":"FLYING SAPA","theatre":"梅田芸術劇場メインホール","lead":"真風涼帆","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2019,"troupe":"星組","title":"ロックオペラ モーツァルト","theatre":"梅田芸術劇場メインホール","lead":"礼真琴","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2019,"troupe":"月組","title":"ON THE TOWN","theatre":"梅田芸術劇場メインホール","lead":"珠城りょう","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2018,"troupe":"宙組","title":"WEST SIDE STORY","theatre":"梅田芸術劇場メインホール","lead":"真風涼帆","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2017,"troupe":"星組","title":"オーム・シャンティ・オーム","theatre":"梅田芸術劇場メインホール","lead":"紅ゆずる","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2017,"troupe":"宙組","title":"A Motion","theatre":"梅田芸術劇場メインホール","lead":"朝夏まなと","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2016,"troupe":"花組","title":"Ernest in Love","theatre":"梅田芸術劇場メインホール","lead":"明日海りお","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2016,"troupe":"星組","title":"LOVE & DREAM","theatre":"梅田芸術劇場メインホール","lead":"北翔海莉","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2015,"troupe":"宙組","title":"TOP HAT","theatre":"梅田芸術劇場メインホール","lead":"朝夏まなと","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2014,"troupe":"月組","title":"風と共に去りぬ","theatre":"梅田芸術劇場メインホール","lead":"龍真咲","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2013,"troupe":"月組","title":"ME AND MY GIRL","theatre":"梅田芸術劇場メインホール","lead":"龍真咲","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2012,"troupe":"雪組","title":"フットルース","theatre":"梅田芸術劇場メインホール","lead":"音月桂","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2011,"troupe":"雪組","title":"ハウ・トゥー・サクシード","theatre":"梅田芸術劇場メインホール","lead":"音月桂","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2010,"troupe":"星組","title":"ロミオとジュリエット","theatre":"梅田芸術劇場メインホール","lead":"柚希礼音","source":"https://sumirecord.com/betsubako/umeda_main_hall"},{"year":2027,"troupe":"雪組","title":"Snowing!!","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2026,"troupe":"花組","title":"赤と黒","theatre":"宝塚バウホール","lead":"侑輝大弥","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2026,"troupe":"星組","title":"銀二貫","theatre":"宝塚バウホール","lead":"稀惺かずと","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2026,"troupe":"宙組","title":"Beautiful SKY !!","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2026,"troupe":"月組","title":"雨にじむ渤海","theatre":"宝塚バウホール","lead":"礼華はる","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2025,"troupe":"星組","title":"アレクサンダー―天上の王国―","theatre":"宝塚バウホール","lead":"天飛華音","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2025,"troupe":"雪組","title":"ステップ・バイ・ミー","theatre":"宝塚バウホール","lead":"華世京","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2025,"troupe":"月組","title":"Twinkle Moon","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2025,"troupe":"花組","title":"儚き星の照らす海の果てに","theatre":"宝塚バウホール","lead":"希波らいと","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2025,"troupe":"星組","title":"にぎたつの海に月出づ","theatre":"宝塚バウホール","lead":"極美慎","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2024,"troupe":"宙組","title":"MY BLUE HEAVEN","theatre":"宝塚バウホール","lead":"風色日向","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2024,"troupe":"月組","title":"BLUFF","theatre":"宝塚バウホール","lead":"風間柚乃","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2024,"troupe":"雪組","title":"39 Steps","theatre":"宝塚バウホール","lead":"凪七瑠海","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2024,"troupe":"月組","title":"Golden Dead Schiele","theatre":"宝塚バウホール","lead":"彩海せら","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2023,"troupe":"星組","title":"My Last Joke","theatre":"宝塚バウホール","lead":"天飛華音","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2023,"troupe":"月組","title":"月の燈影","theatre":"宝塚バウホール","lead":"礼華はる","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2023,"troupe":"花組","title":"舞姫","theatre":"宝塚バウホール","lead":"聖乃あすか","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2023,"troupe":"星組","title":"Stella Voice","theatre":"宝塚バウホール","lead":"天華えま","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2023,"troupe":"宙組","title":"夢現の先に","theatre":"宝塚バウホール","lead":"鷹翔千空","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2022,"troupe":"花組","title":"殉情","theatre":"宝塚バウホール","lead":"一之瀬航季","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2022,"troupe":"星組","title":"ベアタ・ベアトリクス","theatre":"宝塚バウホール","lead":"極美慎","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2022,"troupe":"星組","title":"ザ・ジェントル・ライアー","theatre":"宝塚バウホール","lead":"瀬央ゆりあ","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2022,"troupe":"雪組","title":"Sweet Little Rock 'n' Roll","theatre":"宝塚バウホール","lead":"縣千","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2021,"troupe":"月組","title":"LOVE AND ALL THAT JAZZ","theatre":"宝塚バウホール","lead":"風間柚乃","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2021,"troupe":"星組","title":"マノン","theatre":"宝塚バウホール","lead":"愛月ひかる","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2021,"troupe":"雪組","title":"ほんものの魔法使","theatre":"宝塚バウホール","lead":"朝美絢","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2021,"troupe":"宙組","title":"夢千鳥","theatre":"宝塚バウホール","lead":"和希そら","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2021,"troupe":"月組","title":"幽霊刑事","theatre":"宝塚バウホール","lead":"珠城りょう","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2021,"troupe":"花組","title":"PRINCE OF ROSES","theatre":"宝塚バウホール","lead":"聖乃あすか","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2021,"troupe":"月組","title":"Eternità","theatre":"宝塚バウホール","lead":"珠城りょう","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2020,"troupe":"専科","title":"パッション・ダムール","theatre":"宝塚バウホール","lead":"凪七瑠海","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2019,"troupe":"星組","title":"龍の宮物語","theatre":"宝塚バウホール","lead":"瀬央ゆりあ","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2019,"troupe":"宙組","title":"リッツ・ホテルくらいに大きなダイヤモンド","theatre":"宝塚バウホール","lead":"瑠風輝","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2019,"troupe":"花組","title":"Dream On!","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2019,"troupe":"雪組","title":"PR×PRince","theatre":"宝塚バウホール","lead":"永久輝せあ","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2019,"troupe":"専科","title":"パパ・アイ・ラブ・ユー","theatre":"宝塚バウホール","lead":"轟悠","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2019,"troupe":"月組","title":"Anna Karenina","theatre":"宝塚バウホール","lead":"美弥るりか","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2018,"troupe":"星組","title":"デビュタント","theatre":"宝塚バウホール","lead":"瀬央ゆりあ","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2018,"troupe":"星組","title":"New Wave! －星－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2018,"troupe":"宙組","title":"ハッスル メイツ！","theatre":"宝塚バウホール","lead":"和希そら","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2018,"troupe":"月組","title":"愛聖女","theatre":"宝塚バウホール","lead":"愛希れいか","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2018,"troupe":"花組","title":"Senhor CRUZEIRO!","theatre":"宝塚バウホール","lead":"水美舞斗","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2018,"troupe":"雪組","title":"義経妖狐夢幻桜","theatre":"宝塚バウホール","lead":"朝美絢","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2017,"troupe":"月組","title":"Arkadia","theatre":"宝塚バウホール","lead":"暁千星","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2017,"troupe":"専科","title":"神家の七人","theatre":"宝塚バウホール","lead":"轟悠","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2017,"troupe":"宙組","title":"パーシャルタイムトラベル","theatre":"宝塚バウホール","lead":"桜木みなと","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2017,"troupe":"雪組","title":"New Wave! －雪－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2017,"troupe":"星組","title":"燃ゆる風","theatre":"宝塚バウホール","lead":"七海ひろき","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"宙組","title":"双頭の鷲","theatre":"宝塚バウホール","lead":"轟悠","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"月組","title":"Bow Singing Workshop －月－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"月組","title":"FALSTAFF","theatre":"宝塚バウホール","lead":"星条海斗","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"花組","title":"アイラブアインシュタイン","theatre":"宝塚バウホール","lead":"瀬戸かずや","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"花組","title":"Bow Singing Workshop －花－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"雪組","title":"Bow Singing Workshop －雪－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"星組","title":"One Voice","theatre":"宝塚バウホール","lead":"北翔海莉","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"星組","title":"Bow Singing Workshop －星－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"宙組","title":"Bow Singing Workshop －宙－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2016,"troupe":"星組","title":"鈴蘭","theatre":"宝塚バウホール","lead":"礼真琴","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"雪組","title":"銀二貫","theatre":"宝塚バウホール","lead":"月城かなと","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"宙組","title":"相続人の肖像","theatre":"宝塚バウホール","lead":"桜木みなと","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"月組","title":"A－EN","theatre":"宝塚バウホール","lead":"暁千星","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"月組","title":"A－EN","theatre":"宝塚バウホール","lead":"朝美絢","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"専科","title":"オイディプス王","theatre":"宝塚バウホール","lead":"轟悠","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"花組","title":"スターダム","theatre":"宝塚バウホール","lead":"鳳月杏","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"宙組","title":"New Wave! －宙－","theatre":"宝塚バウホール","lead":"","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2015,"troupe":"月組","title":"Bandito","theatre":"宝塚バウホール","lead":"珠城りょう","source":"https://sumirecord.com/betsubako/bow_hall"},{"year":2027,"troupe":"花組","title":"にぎたつの海に月出づ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"極美慎","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2027,"troupe":"星組","title":"I am Heathcliff","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"瑠風輝","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2026,"troupe":"宙組","title":"酔いどれ御免！","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"鷹翔千空","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2026,"troupe":"雪組","title":"DayDream Dali","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"瀬央ゆりあ","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2025,"troupe":"花組","title":"DEAN","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"極美慎","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2025,"troupe":"宙組","title":"RED STONE","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"水美舞斗","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2024,"troupe":"雪組","title":"FORMOSA!!","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"縣千","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2024,"troupe":"花組","title":"Liefie","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"聖乃あすか","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2024,"troupe":"星組","title":"夜明けの光芒","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"暁千星","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2023,"troupe":"雪組","title":"双曲線上のカルテ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"和希そら","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2023,"troupe":"宙組","title":"大逆転裁判","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"瑠風輝","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2023,"troupe":"星組","title":"赤と黒","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"礼真琴","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2023,"troupe":"雪組","title":"海辺のストルーエンセ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"朝美絢","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2022,"troupe":"月組","title":"ELPIDIO","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"鳳月杏","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2022,"troupe":"雪組","title":"心中・恋の大和路","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"和希そら","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2022,"troupe":"宙組","title":"カルト・ワイン","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"桜木みなと","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2022,"troupe":"月組","title":"ブエノスアイレスの風","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"暁千星","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2022,"troupe":"花組","title":"冬霞の巴里","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"永久輝せあ","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2021,"troupe":"宙組","title":"プロミセス、プロミセス","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"芹香斗亜","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2021,"troupe":"花組","title":"銀ちゃんの恋","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"水美舞斗","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2021,"troupe":"星組","title":"婆娑羅の玄孫","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"轟悠","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2021,"troupe":"月組","title":"ダル・レークの恋","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"月城かなと","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2020,"troupe":"星組","title":"シラノ・ド・ベルジュラック","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"轟悠","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2020,"troupe":"宙組","title":"壮麗帝","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"桜木みなと","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2020,"troupe":"月組","title":"出島小宇宙戦争","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"鳳月杏","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2020,"troupe":"花組","title":"マスカレード・ホテル","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"瀬戸かずや","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2019,"troupe":"雪組","title":"ハリウッド・ゴシップ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"彩風咲奈","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2019,"troupe":"月組","title":"チェ・ゲバラ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"轟悠","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2019,"troupe":"星組","title":"鎌足","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"紅ゆずる","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2019,"troupe":"宙組","title":"群盗","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"芹香斗亜","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2018,"troupe":"花組","title":"蘭陵王","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"凪七瑠海","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2018,"troupe":"星組","title":"Thunderbolt Fantasy 東離劍遊紀","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"紅ゆずる","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2018,"troupe":"月組","title":"THE LAST PARTY","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"月城かなと","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2018,"troupe":"星組","title":"ドクトル・ジバゴ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"轟悠","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2018,"troupe":"宙組","title":"不滅の棘","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"愛月ひかる","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2017,"troupe":"花組","title":"はいからさんが通る","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"柚香光","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2017,"troupe":"雪組","title":"CAPTAIN NEMO","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"彩風咲奈","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2017,"troupe":"星組","title":"阿弖流為","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"礼真琴","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2017,"troupe":"月組","title":"瑠璃色の刻","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"美弥るりか","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2017,"troupe":"花組","title":"MY HERO","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"芹香斗亜","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2016,"troupe":"月組","title":"アーサー王伝説","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"珠城りょう","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2016,"troupe":"雪組","title":"ドン・ジュアン","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"望海風斗","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2016,"troupe":"宙組","title":"ヴァンパイア・サクセション","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"真風涼帆","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2016,"troupe":"花組","title":"For the people","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"轟悠","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2015,"troupe":"月組","title":"DRAGON NIGHT!!","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"龍真咲","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2015,"troupe":"星組","title":"キャッチ・ミー・イフ・ユー・キャン","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"紅ゆずる","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2015,"troupe":"雪組","title":"アル・カポネ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"望海風斗","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2015,"troupe":"花組","title":"風の次郎吉","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"北翔海莉","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2014,"troupe":"月組","title":"THE KINGDOM","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"凪七瑠海","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2014,"troupe":"雪組","title":"心中・恋の大和路","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"壮一帆","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2014,"troupe":"宙組","title":"翼ある人びと","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"朝夏まなと","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2013,"troupe":"月組","title":"THE MERRY WIDOW","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"北翔海莉","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2013,"troupe":"星組","title":"日のあたる方へ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"真風涼帆","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2013,"troupe":"星組","title":"南太平洋","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"轟悠","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2013,"troupe":"雪組","title":"ブラック・ジャック","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"未涼亜希","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2013,"troupe":"宙組","title":"逆転裁判3","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"悠未ひろ","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2012,"troupe":"花組","title":"Streak of Light","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"蘭寿とむ","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2012,"troupe":"星組","title":"REON!!","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"柚希礼音","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2011,"troupe":"雪組","title":"Samourai","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"音月桂","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2011,"troupe":"花組","title":"カナリア","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"壮一帆","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2011,"troupe":"宙組","title":"ヴァレンチノ","theatre":"梅田芸術劇場シアター・ドラマシティ","lead":"大空祐飛","source":"https://sumirecord.com/betsubako/umeda_drama_city"},{"year":2026,"troupe":"宙組","title":"愛するには短すぎる","theatre":"博多座","lead":"桜木みなと","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2025,"troupe":"花組","title":"マジシャンの憂鬱","theatre":"博多座","lead":"永久輝せあ","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2023,"troupe":"星組","title":"ME AND MY GIRL","theatre":"博多座","lead":"水美舞斗","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2021,"troupe":"月組","title":"川霧の橋","theatre":"博多座","lead":"月城かなと","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2019,"troupe":"宙組","title":"黒い瞳","theatre":"博多座","lead":"真風涼帆","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2018,"troupe":"花組","title":"あかねさす紫の花","theatre":"博多座","lead":"明日海りお","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2017,"troupe":"月組","title":"長崎しぐれ坂","theatre":"博多座","lead":"轟悠","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2014,"troupe":"月組","title":"宝塚をどり","theatre":"博多座","lead":"龍真咲","source":"https://sumirecord.com/betsubako/hakataza"},{"year":2026,"troupe":"星組","title":"花より男子II","theatre":"御園座","lead":"暁千星","source":"https://sumirecord.com/betsubako/misonoza"},{"year":2025,"troupe":"雪組","title":"An American in Paris","theatre":"御園座","lead":"朝美絢","source":"https://sumirecord.com/betsubako/misonoza"},{"year":2024,"troupe":"花組","title":"ドン・ジュアン","theatre":"御園座","lead":"永久輝せあ","source":"https://sumirecord.com/betsubako/misonoza"},{"year":2023,"troupe":"雪組","title":"BONNIE & CLYDE","theatre":"御園座","lead":"彩風咲奈","source":"https://sumirecord.com/betsubako/misonoza"},{"year":2022,"troupe":"星組","title":"王家に捧ぐ歌","theatre":"御園座","lead":"礼真琴","source":"https://sumirecord.com/betsubako/misonoza"},{"year":2020,"troupe":"月組","title":"赤と黒","theatre":"御園座","lead":"珠城りょう","source":"https://sumirecord.com/betsubako/misonoza"},{"year":2018,"troupe":"星組","title":"うたかたの恋","theatre":"中日劇場","lead":"紅ゆずる","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2017,"troupe":"雪組","title":"星逢一夜","theatre":"中日劇場","lead":"早霧せいな","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2016,"troupe":"雪組","title":"ローマの休日","theatre":"中日劇場","lead":"早霧せいな","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2016,"troupe":"花組","title":"Ernest in Love","theatre":"中日劇場","lead":"明日海りお","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2015,"troupe":"月組","title":"風と共に去りぬ","theatre":"中日劇場","lead":"龍真咲","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2014,"troupe":"花組","title":"ベルサイユのばら","theatre":"中日劇場","lead":"明日海りお","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2014,"troupe":"宙組","title":"ロバート・キャパ 魂の記録","theatre":"中日劇場","lead":"凰稀かなめ","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2013,"troupe":"星組","title":"怪盗楚留香 外伝","theatre":"中日劇場","lead":"柚希礼音","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2013,"troupe":"雪組","title":"若き日の唄は忘れじ","theatre":"中日劇場","lead":"壮一帆","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2012,"troupe":"宙組","title":"仮面のロマネスク","theatre":"中日劇場","lead":"大空祐飛","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2011,"troupe":"星組","title":"ノバ・ボサ・ノバ","theatre":"中日劇場","lead":"柚希礼音","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2011,"troupe":"星組","title":"愛するには短すぎる","theatre":"中日劇場","lead":"柚希礼音","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2010,"troupe":"月組","title":"紫子","theatre":"中日劇場","lead":"霧矢大夢","source":"https://sumirecord.com/betsubako/chunichi_theatre"},{"year":2009,"troupe":"宙組","title":"外伝 ベルサイユのばら","theatre":"中日劇場","lead":"大和悠河","source":"https://sumirecord.com/betsubako/chunichi_theatre"}];
+const V14_PREVIOUS_BOXES=V9_BOXES.slice();
+V9_BOXES.length=0;
+const v14Keys=new Set();
+for(const r of [...V14_BOXES,...V14_PREVIOUS_BOXES]){
+ const key=[r.year,r.troupe,r.title.replace(/[\s－―〜～()（）]/g,'') ,r.theatre].join('|');
+ if(v14Keys.has(key))continue;
+ v14Keys.add(key);V9_BOXES.push(r);
+}
+// The record picker must honor the type and venue: a Bow lead never automatically
+// gets credited as a Drama City lead just because both titles share a year/troupe.
+function v14Candidates(kind){
+ const pool=V9_BOXES.filter(r=>r.year===game.calendar&&r.troupe===game.troupe);
+ if(/バウ/.test(kind))return pool.filter(r=>r.theatre==='宝塚バウホール');
+ if(/東上/.test(kind))return pool.filter(r=>r.theatre.includes('ドラマシティ'));
+ return pool;
+}
+function v14RecordBox(featured=false,kind='別箱公演'){
+ const candidates=v14Candidates(kind), data=candidates.length?pick(candidates):null;
+ const predicted=game.calendar>2026;
+ const row={year:game.calendar,term:game.year,troupe:game.troupe,kind,
+  title:data?.title||(predicted?'将来の別箱公演（予想）':'別箱公演（演目未収録）'),
+  theatre:data?.theatre||(/バウ/.test(kind)?'宝塚バウホール':'劇場未確定'),
+  source:data?.source||'',forecast:predicted&&!data,scheduled:predicted&&!!data,box:true,
+  realLead:data?.lead||null,
+  role:featured?(game.role==='男役'?'主演（ゲーム内配役）':'ヒロイン（ゲーム内配役）'):'出演（配役未確認）'};
+ if(featured){row.partner=choosePartner();game.leadWorks.push(row)}
+ game.performances.push(row);return row;
+}
+v9RecordBox=v14RecordBox;
+const v14Works=revisedWorks;
+revisedWorks=function(){let html=v14Works();
+ const pool=V9_BOXES.filter(r=>r.year===game.calendar&&r.troupe===game.troupe)
+ .sort((a,b)=>a.theatre.localeCompare(b.theatre,'ja'));
+ const history=game.performances.filter(r=>r.box||/バウ|東上|別箱/.test(r.kind));
+ const archive=`<section class="panel"><h2>別箱の公演資料（${esc(game.calendar)}年・${esc(game.troupe)}）</h2>
+ <p class="muted">その年・組の実在する別箱公演を表示。自分の出演履歴とは区別しています。</p>
+ ${pool.length?pool.map(r=>`<div class="history"><b>${esc(r.title)}</b>${esc(r.theatre)}${r.lead?' ／ 実際の主演：'+esc(r.lead):''}</div>`).join(''):'<p class="muted">この年度・組では、今回収録した6劇場の公演が見つかりません。</p>'}
+ <p class="note">確認元：すみれコードの劇場別公演一覧。公演資料の主演は実際の記録、主人公の出演・配役はゲームの結果です。2027年の公演は予定を含みます。</p></section>`;
+ return archive+html;
+};
+
+// ===== v15: 5組スター体制・仮想人事・未来演目・舞台衣装 =====
+// 2026年11月のトップコンビは公式情報、男役番手はファン考察上の目安。
+const V15_BASE={
+ '花組':{top:'永久輝せあ',heroine:'星空美咲',ranks:['聖乃あすか','極美慎','希波らいと'],doubleSecond:true},
+ '月組':{top:'鳳月杏',heroine:'天紫珠李',ranks:['風間柚乃','礼華はる','彩海せら']},
+ '雪組':{top:'朝美絢',heroine:'音彩唯',ranks:['瀬央ゆりあ','縣千','華世京']},
+ '星組':{top:'暁千星',heroine:'詩ちづる',ranks:['瑠風輝','天飛華音','稀惺かずと']},
+ '宙組':{top:'桜木みなと',heroine:'春乃さくら',ranks:['水美舞斗','鷹翔千空','風色日向']}
+};
+const V15_FUTURE=[{"genre": "原作候補", "title": "フルーツバスケット ―十二支の約束―"}, {"genre": "原作候補", "title": "ちはやふる ―競技かるたの青春―"}, {"genre": "原作候補", "title": "暁のヨナ ―緋色の王女―"}, {"genre": "原作候補", "title": "薬屋のひとりごと ―後宮の謎―"}, {"genre": "原作候補", "title": "大奥 ―将軍と春の幻―"}, {"genre": "原作候補", "title": "のだめカンタービレ ―音楽の都―"}, {"genre": "原作候補", "title": "NANA ―星屑のステージ―"}, {"genre": "原作候補", "title": "天は赤い河のほとり ―時の扉・新章―"}, {"genre": "原作候補", "title": "ミステリと言う勿れ ―月影の迷宮―"}, {"genre": "原作候補", "title": "十二国記 ―風の王国―"}, {"genre": "海外ミュージカル候補", "title": "WICKED ―エメラルドの約束―"}, {"genre": "海外ミュージカル候補", "title": "レ・ミゼラブル ―希望の旗―"}, {"genre": "海外ミュージカル候補", "title": "CHICAGO ―薔薇の法廷―"}, {"genre": "海外ミュージカル候補", "title": "アナスタシア ―失われた記憶―"}, {"genre": "海外ミュージカル候補", "title": "SIX ―王妃たちの歌―"}, {"genre": "オリジナル", "title": "月下のヴェネツィア"}, {"genre": "オリジナル", "title": "星屑のアルカディア"}, {"genre": "オリジナル", "title": "薔薇色の航海図"}, {"genre": "オリジナル", "title": "琥珀のエトワール"}, {"genre": "オリジナル", "title": "白銀の輪舞"}, {"genre": "オリジナル", "title": "海を渡る時計師"}, {"genre": "オリジナル", "title": "薄紅の革命"}, {"genre": "オリジナル", "title": "銀河のラブレター"}, {"genre": "オリジナル", "title": "冬の宮廷と夏の嘘"}, {"genre": "オリジナル", "title": "夢幻のラピスラズリ"}, {"genre": "再演案", "title": "エリザベート"}, {"genre": "再演案", "title": "ベルサイユのばら"}, {"genre": "再演案", "title": "ロミオとジュリエット"}, {"genre": "再演案", "title": "ファントム"}, {"genre": "再演案", "title": "ME AND MY GIRL"}, {"genre": "再演案", "title": "オーシャンズ11"}, {"genre": "再演案", "title": "王家に捧ぐ歌"}, {"genre": "再演案", "title": "うたかたの恋"}, {"genre": "再演案", "title": "激情"}, {"genre": "再演案", "title": "あかねさす紫の花"}, {"genre": "再演案", "title": "スカーレット・ピンパーネル"}, {"genre": "再演案", "title": "グレート・ギャツビー"}, {"genre": "再演案", "title": "銀ちゃんの恋"}, {"genre": "再演案", "title": "風と共に去りぬ"}, {"genre": "再演案", "title": "1789 ―バスティーユの恋人たち―"}, {"genre": "再演案", "title": "ポーの一族"}, {"genre": "再演案", "title": "はいからさんが通る"}, {"genre": "再演案", "title": "カサブランカ"}, {"genre": "再演案", "title": "PUCK"}, {"genre": "再演案", "title": "黒い瞳"}];
+const V15_TROUPES=['花組','月組','雪組','星組','宙組'];
+function v15Hash(s){let h=2166136261;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0}
+function v15Future(year,troupe,kind='本公演'){
+ const offset=V15_TROUPES.indexOf(troupe),seed=v15Hash(`${year}|${troupe}|${kind}`);
+ const idx=(year-2027)*7+offset*9+(kind==='本公演'?0:17)+seed%4;
+ const item=V15_FUTURE[((idx%V15_FUTURE.length)+V15_FUTURE.length)%V15_FUTURE.length];
+ return {year,troupe,title:item.title,theatre:kind==='本公演'?'宝塚大劇場':(kind.includes('バウ')?'宝塚バウホール':'梅田芸術劇場シアター・ドラマシティ'),genre:item.genre,forecast:true,fictional:true};
+}
+const v15PastChoose=chooseShow;
+chooseShow=function(){if(game&&game.calendar>=2027)return v15Future(game.calendar,game.troupe,'本公演');return v15PastChoose()};
+const v15PastBoxes=v9RecordBox;
+v9RecordBox=function(featured=false,kind='別箱公演'){
+ if(!game||game.calendar<2028)return v15PastBoxes(featured,kind);
+ const f=v15Future(game.calendar,game.troupe,kind);
+ const row={...f,term:game.year,kind,role:featured?(game.role==='男役'?'主演（ゲーム内配役）':'ヒロイン（ゲーム内配役）'):'別箱出演（ゲーム内配役）',box:true};
+ if(featured){row.partner=choosePartner();game.leadWorks.push(row)}
+ game.performances.push(row);return row;
+};
+function v15Ensure(){if(!game)return;game.v15??={year:2026,groups:JSON.parse(JSON.stringify(V15_BASE)),retired:[],seen:[],topWorks:{},tenures:{},profileByName:{},history:[]};
+ const v=game.v15;v.groups??=JSON.parse(JSON.stringify(V15_BASE));v.retired??=[];v.seen??=[];v.topWorks??={};v.tenures??={};v.profileByName??={};v.history??=[];
+ for(const g of V15_TROUPES){v.topWorks[g]??=0;v.tenures[g]??=3+v15Hash(g+'tenure')%8}
+}
+// 登場生徒の芸名を使い、退団を予測しても「実際の発表」としては扱わない。
+function v15AllPeople(){const v=game.v15;return [...new Map(REAL_PEOPLE.concat(typeof V8_MEN==='undefined'?[]:V8_MEN.flatMap(([term,g,names])=>names.split(',').map(name=>({name,group:g,position:`${term}期`,kind:'現役'})))).map(p=>[p.name.replace(/\s/g,''),p])).values()].filter(p=>p.name&&!v.retired.includes(p.name))}
+function v15PersonScore(p,year){const term=pplTerm(p)||100;const years=year-entryTerm(term)+1;
+ let score=17+Math.min(18,years)*2+(v15Hash(p.name+'ability')%39)+(v15Hash(p.name+'fans')%25);
+ if(/主演|トップ|2番手|3番手/.test(p.position||''))score+=24;
+ score+=(v15Hash(p.name+'family')%12); // ゲーム内の架空の家庭環境補正
+ if(/娘役/.test(p.kind||''))score-=10;
+ return score;
+}
+function v15IsRoad(p){return /主演|ヒロイン|トップ|2番手|3番手/.test(p.position||'')||Object.values(game.v15.groups).some(g=>[g.top,g.heroine,...g.ranks].includes(p.name))}
+function v15Candidate(troupe,year,exclude=[]){return v15AllPeople().filter(p=>!exclude.includes(p.name)&&groupInYear(p.name,year)===troupe&&entryTerm(pplTerm(p))<=year&&year-entryTerm(pplTerm(p))>=5&&v15IsRoad(p)).sort((a,b)=>v15PersonScore(b,year)-v15PersonScore(a,year))[0]}
+function v15PlayerScore(){return game.stats.song*.18+game.stats.dance*.18+game.stats.acting*.24+game.stats.aura*.18+game.stats.pop*.45+(game.parentBoost||0)*40+(game.flags.rookie||0)*12+(game.flags.bau||0)*18+(game.flags.tojo||0)*24}
+function v15Notice(y,title,message,major=false){const k=y+'|'+title+'|'+message.slice(0,28);if(game.v15.seen.includes(k))return;game.v15.seen.push(k);game.v15.history.push({year:y,title,message});feed(title,message);if(major&&game.calendar===y)popMajor(title,message)}
+function v15FillVacancy(g,y,post){const line=game.v15.groups[g];const excluded=[line.top,line.heroine,...line.ranks].filter(Boolean);let candidate=post==='top'?line.ranks.map(name=>v15AllPeople().find(p=>p.name===name)).filter(Boolean).sort((a,b)=>v15PersonScore(b,y)-v15PersonScore(a,y))[0]:v15Candidate(g,y,excluded);
+ const playerEligible=game.calendar===y&&game.troupe===g&&!game.ended&&game.role==='男役'&&game.flags.tojo>0&&game.year>=10;
+ if(playerEligible&&(!candidate||v15PlayerScore()>v15PersonScore(candidate,y)+5))candidate={name:game.name,player:true};
+ if(!candidate)return null;
+ if(post==='top'){line.top=candidate.name;line.ranks=line.ranks.filter(name=>name!==candidate.name);if(candidate.player){game.flags.top=true;game.flags.rank=1;game.topStartYear=y;v15Notice(y,'トップスター就任',`${game.name}が${g}のトップスターに就任した。`,true)}}
+ else line.ranks[post]=candidate.name;
+ if(!candidate.player)v15Notice(y,'番手昇格（仮想人事）',`${g}の${candidate.name}が${post==='top'?'トップスター':post===0?'2番手':(post+2)+'番手'}へ。`,true);
+ return candidate.name;
+}
+function v15AdvanceRoster(y){v15Ensure();const v=game.v15; if(y<=v.year)return;
+ for(let yr=v.year+1;yr<=y;yr++){
+  // 2027年以降の未発表人事のみを仮想進行。発表済みの月組人事を優先。
+  if(yr===2027){const m=v.groups['月組'];m.top='風間柚乃';m.heroine='瑠璃花夏';m.ranks=m.ranks.filter(x=>x!=='風間柚乃');v15Notice(yr,'月組トップ交代','鳳月杏・天紫珠李の退団に伴い、風間柚乃・瑠璃花夏が新トップコンビへ。',true)}
+  for(const g of V15_TROUPES){const line=v.groups[g];
+   v.topWorks[g]+=1+((yr+V15_TROUPES.indexOf(g))%2);
+   const replaceTop=yr>2027&&v.topWorks[g]>=v.tenures[g];
+   if(replaceTop){const prev=line.top;v.retired.push(prev);line.top='';v15Notice(yr,'トップ退団（仮想人事）',`${g}の${prev}がトップとしての出演を終え、退団する。`,true);v15FillVacancy(g,yr,'top');v.topWorks[g]=0;v.tenures[g]=3+v15Hash(g+'top'+yr)%8}
+   if(yr===2027&&g==='月組'){v.retired.push('鳳月杏','天紫珠李');}
+   // 既存の2番手をトップに繰り上げた場合など欠員は上位順に詰める。
+   line.ranks=line.ranks.filter(x=>x&&!v.retired.includes(x)&&x!==line.top);
+   // 娘役トップの交代はトップスターと同時とは限らず別に判定。
+   if(yr>2027&&yr%5===V15_TROUPES.indexOf(g)&&line.heroine){const old=line.heroine;v.retired.push(old);const cand=v15AllPeople().filter(p=>p.kind==='娘役'&&groupInYear(p.name,yr)===g).sort((a,b)=>v15PersonScore(b,yr)-v15PersonScore(a,yr))[0];line.heroine=cand?.name||'（新トップ娘役選考中）';v15Notice(yr,'トップ娘役交代（仮想人事）',`${g}の${old}が退団。新トップ娘役：${line.heroine}。`,true)}
+   // 路線外：研3〜10、路線：研8〜18の退団モデル。実際の退団情報ではない。
+   for(const p of v15AllPeople().filter(p=>groupInYear(p.name,yr)===g)){
+    if([line.top,line.heroine,...line.ranks].includes(p.name)||v.retired.includes(p.name))continue;
+    const term=pplTerm(p),tenure=yr-entryTerm(term)+1,road=v15IsRoad(p);
+    const lower=road?8:3,upper=road?18:10;
+    if(tenure>=upper||(tenure>=lower&&(v15Hash(p.name+'exit'+yr)%100)<(road?7:12))){v.retired.push(p.name);v15Notice(yr,'生徒退団（仮想人事）',`${g}の${p.name}が退団。以後、交友・配役候補から外れる。`)}
+   }
+   while(line.ranks.length<3){const next=v15FillVacancy(g,yr,line.ranks.length);if(!next)break;}
+   if(!line.top)v15FillVacancy(g,yr,'top');
+  }
+ }v.year=y;
+}
+function v15RosterPanel(){v15Ensure();const y=game.calendar;const future=y>=2027;
+ if(future)v15AdvanceRoster(y);
+ const data=future?game.v15.groups:V15_BASE;
+ return `<section class="panel"><h2>五組のスター体制</h2><p class="note">${future?`${y}年・ゲーム内の仮想人事（発表済みの2027年月組を除き予測）`:'2026年11月時点の参考名簿'}。番手は公式の順位制度ではなく、公演やカレンダー等を参考にした目安です。</p>
+ ${V15_TROUPES.map(g=>{const x=data[g];return `<div class="history"><b style="color:#a44876">${g}</b><br>トップスター：<b>${esc(x.top||'選考中')}</b><br>トップ娘役：<b>${esc(x.heroine||'選考中')}</b><br>${x.ranks.map((n,i)=>`${i===0?'2番手':i===1?(x.doubleSecond?'2番手（併記）':'3番手'):(x.doubleSecond?'3番手候補':'4番手候補')}：${esc(n)}`).join('<br>')}</div>`}).join('')}
+ <button class="btn" onclick="openTab('timeline')">← 人生の記録へ</button></section>`;
+}
+const v15OldScreen=gameScreen;
+gameScreen=function(){let html=v15OldScreen();if(!game)return html;
+ const nav=`<button class="btn" onclick="openTab('roster')">五組のスター体制</button>`;
+ if(tab==='roster')return `<div class="row" style="margin-bottom:10px">${nav}</div>`+v15RosterPanel()+statsSide();
+ // 画面上部には常に参照ボタンを置く。会（FC）タブは復活させない。
+ return `<div class="row" style="margin-bottom:10px">${nav}</div>`+html;
+};
+const v15OldStep=step;
+step=function(){if(!game||game.ended||game.pending)return;v15Ensure();
+ const beforeYear=game.calendar;v15OldStep();if(!game)return;
+ if(game.phase>=3&&game.calendar>beforeYear&&game.calendar>=2027)v15AdvanceRoster(game.calendar);
+ save();
+};
+// 主人公の進行は原則従来の職歴条件を尊重し、現実の生徒と同一の人物が二重に配置されないようにする。
+const v15OldCostume=v8Costume;
+v8Costume=function(){const c=v15OldCostume(),w=game?.performances?.at(-1),t=w?.title||'',r=w?.role||'';
+ if(/エリザベート/.test(t))return {id:'elisabeth',label:`${t}・${r||'役名未登録'}`,coat:/ルキーニ/.test(r)?'#755645':game.role==='男役'?'#243752':'#e9d2e9',trim:'#e3bc70'};
+ if(/ベルサイユのばら/.test(t))return {id:'versailles',label:`${t}・${r||'役名未登録'}`,coat:/アンドレ/.test(r)?'#37425e':game.role==='男役'?'#396da4':'#f3a4c1',trim:'#f5cf78'};
+ if(/ロミオとジュリエット/.test(t))return {id:'romeo',label:`${t}・${r||'役名未登録'}`,coat:game.role==='男役'?'#516b94':'#e7b4dc',trim:'#f5e7bd'};
+ if(/ファントム/.test(t))return {id:'phantom',label:`${t}・${r||'役名未登録'}`,coat:game.role==='男役'?'#25263b':'#ece5c7',trim:'#c8a2ca'};
+ return c;
+};
+const v15OldPixel=v8PixelSvg;
+v8PixelSvg=function(){let svg=v15OldPixel();if(!game||game.role!=='男役')return svg;
+ // 男役は肩章・パンツ・ネクタイを追加したドット絵シルエットにする。
+ const c=v8Costume();const center=`<g shape-rendering="crispEdges"><rect x="111" y="81" width="21" height="9" fill="${c.trim}"/><rect x="161" y="81" width="21" height="9" fill="${c.trim}"/><path d="M142 79h10l-5 12-5-12M147 91l-5 23 5 9 5-9-5-23" fill="${c.trim}"/><rect x="133" y="145" width="5" height="19" fill="#293b55"/><rect x="154" y="145" width="5" height="19" fill="#293b55"/></g>`;
+ const special=c.id==='elisabeth'?'<path d="M120 21L128 11L144 17L160 10L171 23" fill="none" stroke="#c9b6db" stroke-width="5"/><path d="M119 89L103 150L125 140L127 91M171 89L186 150L163 140L163 91" fill="#24263f" stroke="#b8acc9" stroke-width="2"/><rect x="117" y="82" width="13" height="4" fill="#c9b6db"/><rect x="160" y="82" width="13" height="4" fill="#c9b6db"/>':c.id==='versailles'?'<path d="M115 86L102 139L116 142" stroke="#f1cb70" stroke-width="6" fill="none"/><path d="M112 78L121 80L132 93L119 98Z" fill="#e8c36e"/><path d="M171 78L166 80L156 93L169 98Z" fill="#e8c36e"/><path d="M120 96L169 112" stroke="#f7fafb" stroke-width="7"/>':'';
+ return svg.replace('</svg>',center+special+'</svg>');
+};
+const v15OldEnsure=ensureExtra;
+ensureExtra=function(){v15OldEnsure();v15Ensure()};
+const v15OldNew=newGame;
+newGame=function(){v15OldNew();if(game)v15Ensure()};
+
+const v15BeforeExtraYear=extraYear;
+extraYear=function(){
+ if(game?.flags?.top&&game.calendar>game.entry+18){
+  const yearsSince=Math.max(0,game.calendar-(game.topStartYear??game.calendar));
+  if(yearsSince<3){game.year++;game.calendar=game.entry+game.year-1;game.part=0;gain('energy',10);return}
+ }
+ v15BeforeExtraYear();
+};
+
+function v15CatalogPanel(){const headings=['原作候補','海外ミュージカル候補','オリジナル','再演案'];return `<section class="panel"><h2>2027年以降・未来公演の企画案</h2><p class="note">掲載作品はゲーム用の架空の企画・再演案です。実際の上演決定や版権の取得を意味しません。公演ごとに組・年度から候補を割り当てます。</p>${headings.map(g=>`<h3>${esc(g)}（${V15_FUTURE.filter(x=>x.genre===g).length}作品）</h3>${V15_FUTURE.filter(x=>x.genre===g).map(x=>`<div class="history">${esc(x.title)}</div>`).join('')}`).join('')}<button class="btn" onclick="openTab('timeline')">← 人生の記録へ</button></section>`}
+const v15OriginalGameScreen=gameScreen;
+gameScreen=function(){const html=v15OriginalGameScreen();if(!game)return html;
+ const btn=`<button class="btn" onclick="openTab('catalog')">未来演目45作</button>`;
+ if(tab==='catalog')return `<div class="row" style="margin-bottom:10px">${btn}</div>`+v15CatalogPanel()+statsSide();
+ return `<div class="row" style="margin-bottom:10px">${btn}</div>`+html;
+};
+
+// v16: 歴代トップ在任記録と、2027年以降の仮想組替え。既往の就任日/退任日は資料記載に準拠。
+const V16_TOP_HISTORY={"花組":[["真飛聖","2007-12-25","2011-04-25"],["蘭寿とむ","2011-04-25","2014-05-12"],["明日海りお","2014-05-12","2019-11-25"],["柚香光","2019-11-25","2024-05-27"],["永久輝せあ","2024-05-27","9999-12-31"]],"月組":[["霧矢大夢","2009-12-28","2012-04-23"],["龍真咲","2012-04-23","2016-09-05"],["珠城りょう","2016-09-05","2021-08-16"],["月城かなと","2021-08-16","2024-07-08"],["鳳月杏","2024-07-08","2027-01-01"]],"雪組":[["音月桂","2010-09-13","2012-12-25"],["壮一帆","2012-12-25","2014-09-01"],["早霧せいな","2014-09-01","2017-07-24"],["望海風斗","2017-07-24","2021-04-12"],["彩風咲奈","2021-04-12","2024-10-14"],["朝美絢","2024-10-14","9999-12-31"]],"星組":[["柚希礼音","2009-04-27","2015-05-11"],["北翔海莉","2015-05-11","2016-11-21"],["紅ゆずる","2016-11-21","2019-10-14"],["礼真琴","2019-10-14","2025-08-11"],["暁千星","2025-08-11","9999-12-31"]],"宙組":[["大和悠河","2007-02-13","2009-07-06"],["大空祐飛","2009-07-06","2012-07-02"],["凰稀かなめ","2012-07-02","2015-02-16"],["朝夏まなと","2015-02-16","2017-11-20"],["真風涼帆","2017-11-20","2023-06-12"],["芹香斗亜","2023-06-12","2025-04-28"],["桜木みなと","2025-04-28","9999-12-31"]]};
+const V16_HEROINE_BY_YEAR={"花組":[[2009,2009,"桜乃彩音"],[2010,2014,"蘭乃はな"],[2015,2016,"花乃まりあ"],[2017,2018,"仙名彩世"],[2019,2020,"華優希"],[2021,2023,"星風まどか"],[2024,2026,"星空美咲"]],"月組":[[2009,2009,"羽桜しずく"],[2010,2012,"蒼乃夕妃"],[2013,2017,"愛希れいか"],[2018,2020,"美園さくら"],[2021,2023,"海乃美月"],[2024,2026,"天紫珠李"]],"雪組":[[2009,2009,"愛原実花"],[2010,2012,"舞羽美海"],[2013,2014,"愛加あゆ"],[2015,2017,"咲妃みゆ"],[2018,2021,"真彩希帆"],[2022,2022,"朝月希和"],[2023,2025,"夢白あや"],[2026,2026,"音彩唯"]],"星組":[[2009,2015,"夢咲ねね"],[2016,2016,"妃海風"],[2017,2019,"綺咲愛里"],[2020,2023,"舞空瞳"],[2024,2024,"舞空瞳"],[2025,2026,"詩ちづる"]],"宙組":[[2009,2012,"野々すみ花"],[2013,2017,"実咲凜音"],[2018,2020,"星風まどか"],[2021,2022,"潤花"],[2023,2026,"春乃さくら"]]};
+function v16HistoryRoster(year){
+ const snapshot={};const today=`${year}-12-31`;
+ for(const g of V15_TROUPES){
+  const rec=(V16_TOP_HISTORY[g]||[]).find(row=>row[1]<=today&&today<row[2]);
+  const woman=(V16_HEROINE_BY_YEAR[g]||[]).find(row=>row[0]<=year&&year<=row[1]);
+  snapshot[g]={top:rec?rec[0]:'（記録未収録）',heroine:woman?woman[2]:'（未設定・空席）',ranks:[],isHistory:true};
+ }
+ return snapshot;
+}
+// 確認済みの過去人事はゲーム内の予測で上書きしない。年ごとの通知は実際の就任日で記録。
+function v16HistoryNotice(year){
+ if(year>2026||year<2009)return;
+ for(const g of V15_TROUPES){for(const row of V16_TOP_HISTORY[g]){
+  if(Number(row[1].slice(0,4))!==year)continue;
+  const old=(V16_TOP_HISTORY[g].find(x=>x[2]===row[1])||[])[0];
+  const description=`${row[1]}付、${g}トップスターに${row[0]}が就任。${old?`前任は${old}。`:''}`;
+  v15Notice(year,'歴代トップ交代',description);
+ }}
+}
+// 未来の組替えはゲーム独自の予測。実在の未発表組替えを事実と断定しない。
+const v16BaseGroupInYear=groupInYear;
+groupInYear=function(name,year){
+ if(!game||year<=2026||!game.v15?.futureTransfers)return v16BaseGroupInYear(name,year);
+ const m=game.v15.futureTransfers.filter(t=>t.name===name&&t.year<=year).sort((a,b)=>a.year-b.year);
+ return m.length?m[m.length-1].to:v16BaseGroupInYear(name,year);
+};
+const v16BeforeEnsure=v15Ensure;
+v15Ensure=function(){v16BeforeEnsure();if(game?.v15)game.v15.futureTransfers??=[]};
+function v16FutureTransfer(year){
+ v15Ensure();if(year<2027)return;
+ const v=game.v15;
+ // 同一年の重複実行を防止。通常は年1名、時折2名。
+ const count=year%4===0?2:1;
+ const already=v.futureTransfers.filter(t=>t.year===year).length;
+ for(let slot=already;slot<count;slot++){
+  const taken=new Set(v.futureTransfers.filter(t=>t.year===year).map(t=>t.name));
+  const pool=v15AllPeople().filter(p=>{
+   const term=pplTerm(p);if(!term||term>108||year-entryTerm(term)<4||year-entryTerm(term)>17)return false;
+   const g=groupInYear(p.name,year);if(!V15_TROUPES.includes(g))return false;
+   const current=v.groups[g];if(!current||[current.top,current.heroine].includes(p.name))return false;
+   if(!v15IsRoad(p))return false;
+   if(taken.has(p.name)||v.futureTransfers.some(t=>t.name===p.name&&year-t.year<4))return false;
+   return true;
+  }).sort((a,b)=>v15Hash(`${year}|${a.name}|transfer`)-v15Hash(`${year}|${b.name}|transfer`));
+  if(!pool.length)break;
+  const person=pool[0],from=groupInYear(person.name,year);
+  const targets=V15_TROUPES.filter(g=>g!==from);
+  // 空席・薄い番手を優先し、同一人物を組をまたいで二重に表示しない。
+  targets.sort((a,b)=>v.groups[a].ranks.length-v.groups[b].ranks.length||v15Hash(person.name+a+year)-v15Hash(person.name+b+year));
+  const to=targets[0];
+  const record={year,name:person.name,from,to,role:person.kind==='娘役'?'娘役':'男役',forecast:true};
+  v.futureTransfers.push(record);
+  v.groups[from].ranks=v.groups[from].ranks.filter(n=>n!==person.name);
+  // 新組での序列はリセットし、空席補充ロジックを通して評価する。
+  v15Notice(year,'組替え（ゲーム内予測）',`${person.name}（${record.role}）が${from}から${to}へ組替え。今後の番手・役付きを再評価する。`);
+ }
+}
+const v16OldAdvance=v15AdvanceRoster;
+v15AdvanceRoster=function(y){
+ if(!game)return;v15Ensure();
+ // 元の年別人事更新の後で予測組替えを処理。翌年の候補判定へ組替え先を反映。
+ let prev=game.v15.year;
+ if(y<=prev)return;
+ for(let year=prev+1;year<=y;year++){
+  v16OldAdvance(year);
+  v16FutureTransfer(year);
+  for(const g of V15_TROUPES){const roster=game.v15.groups[g];
+   roster.ranks=roster.ranks.filter(n=>groupInYear(n,year)===g&&!game.v15.retired.includes(n));
+   while(roster.ranks.length<3){const next=v15FillVacancy(g,year,roster.ranks.length);if(!next)break;}
+  }
+ }
+};
+// 過去のトップスターは、プレイヤーの暦年に合わせて5組のスター体制画面に表示。
+const v16OldRosterPanel=v15RosterPanel;
+v15RosterPanel=function(){
+ if(!game||game.calendar>=2027)return v16OldRosterPanel();
+ const y=game.calendar,data=v16HistoryRoster(y);
+ return `<section class="panel"><h2>五組の歴代トップスター・トップ娘役</h2><p class="note">${y}年末時点の在任者。年内の途中交代は人生の記録に就任日とともに残ります。歴代トップの確認済み記録を優先し、過去の2番手順位は未検証のため表示しません。</p>
+ ${V15_TROUPES.map(g=>`<div class="history"><b style="color:#a44876">${g}</b><br>トップスター：<b>${esc(data[g].top)}</b><br>トップ娘役：<b>${esc(data[g].heroine)}</b></div>`).join('')}
+ <button class="btn" onclick="openTab('timeline')">← 人生の記録へ</button></section>`;
+};
+const v16OldStep=step;
+step=function(){if(!game||game.ended||game.pending)return;
+ const old=game.calendar;
+ v16OldStep();
+ if(!game)return;
+ if(game.calendar!==old&&game.calendar<=2026&&game.calendar>=2009){v15Ensure();v16HistoryNotice(game.calendar);save();render()}
+};
+
+
+// v17: 主人公の組替え抽選とトップ就任時の相手役選考。
+// 既存セーブにも適用し、50%抽選はプレイごとに一度だけ行う。
+function v17Ensure(){
+ if(!game)return;
+ game.v17??={};
+ const d=game.v17;
+ d.transferDecided??=false;
+ d.transferDone??=false;
+ d.partnerSelected??=null;
+ d.partnerPending??=false;
+ d.partnerTransfers??=[];
+}
+function v17PrepareTransfer(){
+ v17Ensure();const d=game.v17;
+ if(d.transferDecided||game.ended||game.flags.top||game.phase!==3)return;
+ // 新規プレイでは研5～10の一度だけ機会を設ける。途中からのセーブでは次年度以降。
+ d.transferDecided=true;
+ d.transferChosen=Math.random()<0.5;
+ d.transferAt=Math.max(game.year,5)+Math.floor(Math.random()*Math.max(1,11-Math.max(game.year,5)));
+ if(game.year>10)d.transferAt=game.year;
+}
+function v17TransferPlayer(force=false){
+ v17PrepareTransfer();const d=game.v17;
+ if(!d.transferChosen||d.transferDone||(!force&&game.ended)||game.phase!==3)return false;
+ if(!force&&game.year<d.transferAt)return false;
+ if(!V15_TROUPES.includes(game.troupe))return false;
+ const from=game.troupe;
+ const other=V15_TROUPES.filter(g=>g!==from);
+ let to;
+ // トップ／2番手の競争が激しい組よりも空きのある組を優先。
+ if(game.calendar>=2027){v15Ensure();to=other.sort((a,b)=>(game.v15.groups[a]?.ranks?.length||0)-(game.v15.groups[b]?.ranks?.length||0))[0]}
+ else to=other[Math.floor(Math.random()*other.length)];
+ game.troupe=to;game.group=to;
+ d.transferDone=true;d.transferAtActual=game.calendar;
+ const record={year:game.calendar,name:game.name,from,to,role:game.role,forecast:true,player:true};
+ game.transferRecords??=[];game.transferRecords.push(record);
+ if(game.v15){
+  game.v15.futureTransfers??=[];game.v15.futureTransfers.push(record);
+  for(const g of V15_TROUPES){const line=game.v15.groups[g];line.ranks=line.ranks.filter(x=>x!==game.name);if(line.top===game.name)line.top='';if(line.heroine===game.name)line.heroine=''}
+ }
+ game.flags.rank=Math.min(game.flags.rank||0,3);
+ feed('主人公の組替え（ゲーム内人事）',`${game.name}が${from}から${to}に組替え。新しい組で番手争いと共演関係が始まる。`);
+ popMajor('組替え決定',`${from} → ${to}。新天地で舞台人生の新章が始まります。`);
+ return true;
+}
+// 主人公が組替えをした場合、登場人物との交友／本公演に使う所属は最新の組を参照。
+const v17BaseGroupInYear=groupInYear;
+groupInYear=function(name,year){
+ if(game?.v17?.partnerTransfers){const rows=game.v17.partnerTransfers.filter(x=>x.name===name&&year>=x.year).sort((a,b)=>a.year-b.year);if(rows.length)return rows.at(-1).to;}
+ return v17BaseGroupInYear(name,year);
+};
+function v17WomanPool(){
+ v17Ensure();const yr=game.calendar;
+ const people=[...REAL_PEOPLE,...(typeof HEROINE_DATA==='undefined'?[]:HEROINE_DATA)];
+ const distinct=new Map();for(const p of people){if(p.kind==='娘役'&&p.name&&!distinct.has(p.name))distinct.set(p.name,p)}
+ const topWomen=new Set();
+ if(yr>=2027){v15Ensure();v15AdvanceRoster(yr);for(const g of V15_TROUPES)topWomen.add(game.v15.groups[g].heroine)}
+ else{const data=v16HistoryRoster(yr);for(const g of V15_TROUPES)topWomen.add(data[g].heroine)}
+ // 史実上の退団者、未来シミュレーションで退団した人を含めない。
+ return [...distinct.values()].filter(p=>{
+  let term=pplTerm(p);if(!term||entryTerm(term)>yr||topWomen.has(p.name))return false;
+  if(game.v15?.retired?.includes(p.name))return false;
+  if(typeof v8RetDate==='function'&&v8RetDate(p)&&Number(v8RetDate(p).slice(0,4))<=yr)return false;
+  if(typeof retiredInYear==='function'&&retiredInYear(p.name,yr))return false;
+  const last=lastActive(p);if(last<yr)return false;
+  return V15_TROUPES.includes(groupInYear(p.name,yr));
+ });
+}
+function v17HeroineOptions(){
+ v17Ensure();const yr=game.calendar,group=game.troupe;
+ const pool=v17WomanPool();
+ const weight=p=>Math.abs((pplTerm(p)||game.term)-game.term)*5+Math.abs(yr-entryTerm(pplTerm(p))-5);
+ const home=pool.filter(p=>groupInYear(p.name,yr)===group).sort((a,b)=>weight(a)-weight(b));
+ const others=pool.filter(p=>groupInYear(p.name,yr)!==group).sort((a,b)=>weight(a)-weight(b));
+ const result=[...home.slice(0,2),...others.slice(0,1)];
+ // 既往の収録が不足する暦年でも重複名は使わず、候補を補う。
+ if(result.length<3){for(const p of [...home,...others]){if(result.length>=3)break;if(!result.some(x=>x.name===p.name))result.push(p)}}
+ return result.map(p=>({name:p.name,group:groupInYear(p.name,yr),term:pplTerm(p),other:groupInYear(p.name,yr)!==group}));
+}
+function v17OnTop(){
+ if(!game||!game.flags.top||game.role!=='男役')return;
+ v17Ensure();const d=game.v17;
+ if(d.partnerSelected||d.partnerPending)return;
+ // 組替え当選者が予定より早くトップへ進んだ場合は、就任前に組替えを処理。
+ if(d.transferChosen&&!d.transferDone)v17TransferPlayer(true);
+ d.partnerPending=true;d.partnerChoices=v17HeroineOptions();
+ // 選考後に本人が決めるまで継続再生はしない（自動設定は記憶する）。
+ save();
+}
+function v17PartnerPanel(){
+ if(!game?.v17?.partnerPending)return '';
+ const choices=game.v17.partnerChoices||[];
+ return `<div class="major-shade"><div class="major-modal" role="dialog" aria-modal="true" style="max-width:490px"><div class="major-mark">✦ ✧ ✦</div><h2>トップ娘役の相手役を選ぶ</h2><p>${esc(game.troupe)}トップスター就任。相手役候補から１名を選択してください。原則として同組２名・他組１名です。他組の候補は組替えします。</p>${choices.map((p,i)=>`<button class="btn" style="display:block;width:100%;margin:8px 0;text-align:left" onclick="v17SelectPartner(${i})"><b>${esc(p.name)}</b>　${esc(p.group)}・${p.term}期 ${p.other?'【他組から組替え】':'【同じ組】'}</button>`).join('')||'<p>当該年度の在籍データで選考可能な娘役がいません。別年度・追加データの登録が必要です。</p>'}</div></div>`;
+}
+function v17SelectPartner(index){
+ if(!game?.v17?.partnerPending)return;
+ const d=game.v17;const option=d.partnerChoices?.[index];if(!option)return;
+ const yr=game.calendar;
+ d.partnerPending=false;d.partnerSelected={name:option.name,year:yr,group:game.troupe};
+ if(option.other){
+  const transfer={year:yr,name:option.name,from:option.group,to:game.troupe,role:'娘役',forecast:true,partner:true};
+  d.partnerTransfers.push(transfer);game.transferRecords??=[];game.transferRecords.push(transfer);
+  if(game.v15){game.v15.futureTransfers??=[];game.v15.futureTransfers.push(transfer);game.v15.groups[option.group].ranks=game.v15.groups[option.group].ranks.filter(n=>n!==option.name)}
+  feed('相手役の組替え（ゲーム内人事）',`${option.name}が${option.group}から${game.troupe}に組替え。トップ娘役として新コンビを組む。`);
+ }
+ if(yr>=2027){v15Ensure();game.v15.groups[game.troupe].top=game.name;game.v15.groups[game.troupe].heroine=option.name}
+ feed('トップ娘役決定',`トップスター${game.name}の相手役として${option.name}（${option.term}期）がトップ娘役に就任。`);
+ game.friendship??={};game.friendship[option.name]=Math.max(game.friendship[option.name]||0,35);
+ popMajor('新トップコンビ誕生',`${game.name} × ${option.name}（${game.troupe}）。`);
+ save();render();
+}
+// 他の重要発表よりもコンビ選考を優先して表示。
+const v17PriorPopup=popupHtml;
+popupHtml=function(){if(game?.v17?.partnerPending)return v17PartnerPanel();return v17PriorPopup()};
+const v17PriorRender=render;
+render=function(){v17PriorRender();if(game?.v17?.partnerPending&&!(game.popups?.length))document.getElementById('app').insertAdjacentHTML('beforeend',v17PartnerPanel())};
+const v17PriorStep=step;
+step=function(){
+ if(!game||game.ended||game.pending||game?.v17?.partnerPending)return;
+ v17Ensure();v17PrepareTransfer();
+ const wasTop=!!game.flags.top,oldYear=game.calendar;
+ // 組替えは研究科の進行が確定したタイミングで通知。
+ if(game.v17.transferChosen&&!game.v17.transferDone&&game.phase===3&&game.year>=game.v17.transferAt&&!game.flags.top){
+  if(v17TransferPlayer()){save();render();return;}
+ }
+ v17PriorStep();if(!game)return;
+ if(game.calendar!==oldYear&&!game.flags.top&&game.phase===3){v17PrepareTransfer();if(game.v17.transferChosen&&!game.v17.transferDone&&game.year>=game.v17.transferAt)v17TransferPlayer()}
+ if(!wasTop&&game.flags.top)v17OnTop();
+ save();render();
+};
+const v17PriorChoice=runGameChoice;
+runGameChoice=function(index){
+ const wasTop=!!game?.flags?.top;v17PriorChoice(index);
+ if(!game)return;if(!wasTop&&game.flags.top)v17OnTop();save();render();
+};
+// 過去編成は史実優先。プレイヤーの架空コンビが生まれた時だけ併記する。
+const v17PriorRoster=v15RosterPanel;
+v15RosterPanel=function(){
+ let html=v17PriorRoster();if(!game?.v17?.partnerSelected)return html;
+ const p=game.v17.partnerSelected;
+ if(game.calendar<p.year)return html;
+ const note=`<div class="history"><b>主人公のトップコンビ（ゲーム内人事）</b><br>${esc(game.troupe)}：${esc(game.name)} × ${esc(p.name)}（${p.year}年就任）</div>`;
+ return html.replace('</section>',note+'</section>');
 };
 
 </script></body></html>
