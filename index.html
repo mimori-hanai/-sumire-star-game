@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#201323">
+<meta name="description" content="宝塚歌劇団の舞台人生を題材にした非公式・架空の選択式育成ゲーム。音楽学校の受験から初舞台、新人公演、バウホール、組替えを経てトップを目指します。">
+<title>すみれの軌跡｜非公式・宝塚スター育成ゲーム</title>
+<style>
+:root{--bg:#160e1a;--panel:#24182a;--panel2:#2d1f32;--purple:#704c69;--rose:#d79db7;--rose2:#f4c5d4;--gold:#e5c68a;--gold2:#f7e1b1;--cream:#f9f0e9;--muted:#bfb0bd;--line:rgba(232,195,206,.2);--green:#abd4bc;--red:#f5ada7}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -30%,#53304c 0,transparent 63%),radial-gradient(ellipse at 100% 75%,#352039 0,transparent 50%),var(--bg);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;line-height:1.75}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}a{color:var(--gold2)}:focus-visible{outline:3px solid var(--gold2);outline-offset:4px}.wrap{max-width:1180px;margin:auto;padding:18px 22px 52px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;border-bottom:1px solid var(--line);margin-bottom:22px}.wordmark{display:flex;gap:12px;align-items:center;color:var(--cream);font-size:13px;letter-spacing:.16em;font-weight:800}.flower{width:35px;height:35px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold);font-size:19px;background:#3a2635}.minor{font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--muted)}.top-actions{display:flex;gap:8px;align-items:center}.tinybtn{background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--cream);padding:7px 12px;font-size:12px}.tinybtn:hover{background:#463048}.screen{animation:appear .35s ease both}@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.eyebrow{color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.25em}.serif{font-family:"Yu Mincho","Hiragino Mincho ProN",serif}.muted{color:var(--muted)}.gold{color:var(--gold)}h1,h2,h3,p{margin-top:0}.hero{display:grid;grid-template-columns:1fr 1fr;min-height:610px;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:linear-gradient(128deg,#2d1d2d 0%,#1c1422 60%);box-shadow:0 26px 100px #1008138c}.hero-copy{padding:70px 35px 42px 62px;position:relative;z-index:2}.hero h1{font-size:clamp(43px,5vw,72px);font-weight:500;letter-spacing:.16em;line-height:1.55;margin:15px 0 11px;text-shadow:0 2px 22px #100b10}.hero h1 strong{color:var(--gold2);font-weight:500}.hero-desc{font-size:14px;color:#e5d4df;line-height:2.1;margin:24px 0 30px;max-width:360px}.hero-note{font-size:11px;color:var(--muted);margin-top:18px;max-width:380px}.stage-art{position:relative;isolation:isolate;overflow:hidden;min-height:460px;background:radial-gradient(ellipse at 50% 30%,#ad738e33 0,transparent 56%),linear-gradient(#3a283b,#170f1c)}.stage-art:before,.stage-art:after{content:"";position:absolute;top:-10%;height:115%;width:26%;z-index:4;background:repeating-linear-gradient(90deg,#4f2339 0 14%,#7c3855 27%,#4a1d34 51%,#8d405d 71%,#461b34 100%);filter:drop-shadow(3px 3px 9px #120912);border-radius:0 0 35% 10%}.stage-art:before{left:-8%;transform:skewX(-6deg)}.stage-art:after{right:-8%;transform:skewX(6deg)}.stage-glow{position:absolute;width:90%;height:90%;left:5%;top:8%;border-radius:50%;background:radial-gradient(ellipse at 50% 42%,#f9e3c355 0,#c27b8a20 36%,transparent 68%);filter:blur(8px)}.stage-arch{position:absolute;width:73%;height:83%;left:13.5%;top:10%;border:2px solid #cda77090;border-bottom:0;border-radius:48% 48% 0 0;box-shadow:0 0 0 13px #dfae7040,0 0 0 17px #f3ce8a44,0 0 44px #d6ab7a33}.stage-arch:before{content:"";position:absolute;inset:15px;border:1px solid #e8bc7777;border-radius:48% 48% 0 0}.stage-floor{position:absolute;bottom:0;left:0;width:100%;height:21%;background:repeating-linear-gradient(0deg,#7c5470 0 7px,#43263d 7px 21px);transform:perspective(230px) rotateX(36deg);transform-origin:bottom;box-shadow:0 -10px 28px #e2b5ae30}.stage-steps{position:absolute;bottom:10%;left:23%;width:54%;height:110px;background:repeating-linear-gradient(0deg,#c09e8b 0 3px,#5b4252 4px 18px);clip-path:polygon(45% 0,55% 0,100% 100%,0% 100%);filter:drop-shadow(0 0 14px #eecaa344)}.spot{position:absolute;width:7px;height:7px;background:#fff2cb;border-radius:50%;box-shadow:0 0 14px 4px #f6d6a8;animation:twinkle 3s ease-in-out infinite alternate}.spot:nth-of-type(1){left:34%;top:22%}.spot:nth-of-type(2){left:73%;top:43%;animation-delay:1s}.spot:nth-of-type(3){left:58%;top:12%;animation-delay:2s}.spot:nth-of-type(4){left:28%;top:66%;animation-delay:.6s}@keyframes twinkle{to{opacity:.28;transform:scale(.45)}}.stage-center{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);text-align:center;z-index:3;color:#f6e7d0;text-shadow:0 0 25px #f0caadbd}.stage-center .big{font-size:66px;line-height:1}.stage-center .small{margin-top:9px;letter-spacing:.36em;font-size:11px}.stage-caption{position:absolute;bottom:34px;left:0;width:100%;text-align:center;z-index:4;font-family:"Yu Mincho",serif;font-size:12px;letter-spacing:.22em;color:#ffebdb}.btn{border:none;border-radius:11px;min-height:48px;padding:12px 22px;background:linear-gradient(120deg,#f8e0b3,#dfbb81);color:#301e28;font-weight:800;box-shadow:0 7px 20px #0d06154d;transition:transform .18s,filter .18s;text-align:center}.btn:hover{filter:brightness(1.09);transform:translateY(-1px)}.btn.secondary{background:#483044;color:var(--cream);border:1px solid #a47d90;box-shadow:none}.btn.ghost{background:transparent;color:var(--gold);border:1px solid #ab8a74;box-shadow:none}.btnrow{display:flex;gap:11px;flex-wrap:wrap}.info-strip{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0 0}.info-strip span{font-size:11px;color:#bfb0bb;border:1px solid #63495b;border-radius:100px;padding:5px 12px}.section-lead{max-width:670px;margin:30px auto 14px;text-align:center}.section-lead h2{font-family:"Yu Mincho",serif;font-weight:500;font-size:30px;margin:8px 0}.setup{max-width:740px;margin:30px auto;border:1px solid var(--line);border-radius:18px;padding:36px;background:linear-gradient(150deg,#332237,#201725)}.setup h2{font-weight:500;font-size:32px;letter-spacing:.08em}.field{margin:23px 0}.field>label{display:block;margin-bottom:10px;font-size:13px;font-weight:700;color:var(--rose2)}input[type=text]{width:100%;padding:13px 15px;border:1px solid #7a6275;border-radius:10px;background:#1b1220;color:var(--cream);font-size:16px;outline-offset:4px}.radio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.radio-grid.three{grid-template-columns:repeat(3,1fr)}.radio-card{position:relative;cursor:pointer;border:1px solid #675265;background:#26192b;border-radius:12px;padding:15px;min-height:90px;transition:background .18s,border-color .18s}.radio-card input{position:absolute;opacity:0;inset:0;cursor:pointer}.radio-card:has(input:checked){background:#5c3a55;border-color:var(--gold);box-shadow:inset 0 0 0 1px #d1ab76}.radio-card:has(input:focus-visible){outline:3px solid var(--gold2);outline-offset:2px}.radio-card b{display:block;color:var(--cream);font-size:15px}.radio-card span{display:block;font-size:11px;color:#c8b8c6;margin-top:5px}.notice{padding:15px 17px;border:1px solid #92734f88;border-radius:10px;background:#563e2d40;color:#eadbc4;font-size:12px;line-height:1.9}.game-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:20px;align-items:start}.main-card,.side-card{border:1px solid var(--line);background:linear-gradient(165deg,#332339,#201725 75%);border-radius:17px;overflow:hidden}.main-card{min-height:620px}.scene-head{padding:23px 31px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px;align-items:center}.stage-tag{font-size:11px;letter-spacing:.12em;color:var(--gold);background:#513949;border-radius:40px;padding:5px 13px}.chapter{font-size:12px;color:#c4b0bf}.scene-content{padding:34px 35px 42px}.scene-content h2{font-family:"Yu Mincho",serif;letter-spacing:.04em;font-size:clamp(28px,3vw,38px);font-weight:500;line-height:1.55;margin:8px 0 22px}.scene-story{font-size:15px;line-height:2.15;white-space:pre-line;color:#f0e4e9;margin:0 0 23px}.scene-quote{border-left:3px solid var(--gold);padding:10px 14px;margin:24px 0;color:#e4c8d7;font-size:13px;background:#67455e30}.choice-heading{font-size:11px;color:var(--gold);font-weight:800;letter-spacing:.13em;margin:24px 0 11px}.choices{display:grid;gap:11px}.choice{display:block;width:100%;border:1px solid #766075;background:linear-gradient(110deg,#493149,#322438);color:var(--cream);text-align:left;padding:16px 19px;border-radius:12px;transition:transform .15s,background .15s,border-color .15s}.choice:hover{background:#63445c;border-color:#e5bba1;transform:translateX(3px)}.choice b{display:block;font-size:14px}.choice small{display:block;color:#d2b9ca;margin-top:5px;font-size:11px}.side-card{padding:21px;margin-bottom:16px}.profile-top{display:flex;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:16px}.avatar{width:51px;height:51px;border:1px solid #c6a67d;border-radius:50%;display:grid;place-items:center;font-family:"Yu Mincho",serif;font-size:23px;color:#f5e2b9;background:#5b3c55}.profile-name{font-size:17px;font-weight:700;line-height:1.4;word-break:break-all}.profile-meta{font-size:12px;color:var(--muted)}.side-heading{font-size:12px;letter-spacing:.1em;font-weight:800;color:var(--gold);margin:19px 0 13px}.stat-row{display:grid;grid-template-columns:52px 1fr 31px;align-items:center;gap:8px;margin:11px 0;font-size:12px}.track{height:6px;border-radius:20px;background:#57405a;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#bc789f,#f1cfc8);border-radius:20px;transition:width .2s}.fill.low{background:linear-gradient(90deg,#b97b75,#f2b5ad)}.stat-value{text-align:right;color:#ebd8e4;font-variant-numeric:tabular-nums}.record{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dotted #564557;font-size:12px}.record strong{color:var(--gold2)}.milestones{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:12px}.badge{font-size:10px;text-align:center;padding:8px 5px;border:1px solid #5c4a5f;border-radius:7px;color:#ae9eaf;background:#2a2030}.badge.got{border-color:#ba9363;background:#584134;color:#fae1b9}.mini-journal{font-size:11px;color:#c3b1c4;line-height:1.7;max-height:240px;overflow-y:auto}.mini-journal p{border-left:2px solid #865f7d;padding-left:10px;margin:0 0 11px}.outcome-icon{height:87px;width:87px;margin:0 auto 25px;border:1px solid #cdac74;border-radius:50%;display:grid;place-items:center;font-size:44px;color:var(--gold);background:#7f5c5b4d;box-shadow:0 0 45px #aa7d6852}.outcome{text-align:center;padding:54px 45px}.outcome h2{font-family:"Yu Mincho",serif;font-weight:500;font-size:36px}.outcome p{white-space:pre-line;text-align:left;max-width:550px;margin:25px auto 31px;line-height:2.1}.outcome .btn{min-width:220px}.changes{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}.chip{font-size:11px;border:1px solid #5e736a;border-radius:30px;background:#34504455;padding:3px 10px;color:#bedbc7}.chip.neg{border-color:#85645f;background:#55352e55;color:#edb8ae}.finish-banner{padding:34px 30px;text-align:center;background:radial-gradient(ellipse at center,#ad7d8360,transparent 75%);border-bottom:1px solid var(--line)}.finish-banner .crown{font-size:57px;color:var(--gold);text-shadow:0 0 18px #f4ddaa99}.finish-banner h1{font-family:"Yu Mincho",serif;font-size:clamp(31px,4vw,52px);font-weight:500;margin:10px 0;color:#fce7ba}.finish-body{padding:32px 38px}.finish-body h3{color:var(--gold);font-size:14px}.finish-body p{white-space:pre-line;line-height:2.1}.credits{max-width:900px;margin:30px auto;padding:28px;background:#25192b;border:1px solid var(--line);border-radius:16px}.credits h2{font-family:"Yu Mincho",serif;font-size:30px;font-weight:500}.credits h3{color:var(--gold);font-size:14px;margin:22px 0 6px}.credits p,.credits li{font-size:13px;color:#dbcdd7;line-height:2}.credits ul{padding-left:20px}.credits li{margin:8px 0}.credits a{word-break:break-word;text-decoration-thickness:1px;text-underline-offset:3px}.foot{text-align:center;font-size:10px;color:#b5a4af;margin-top:26px;line-height:2}.ledger{margin-top:22px;padding:15px;background:#1b1520;border-radius:10px;max-height:300px;overflow:auto}.ledger div{padding:8px 0;border-bottom:1px solid #524051;font-size:12px}.progress{height:3px;background:#513d53}.progress>div{height:100%;background:linear-gradient(90deg,var(--rose),var(--gold));transition:width .3s}.mobile-stats{display:none}.notfound{margin:80px auto;text-align:center}.debug{font-size:11px;color:#9c879e}
+@media(max-width:900px){.hero{min-height:520px}.hero-copy{padding:55px 25px 30px 34px}.game-grid{grid-template-columns:1fr 255px}.scene-content{padding:30px 26px}.side-card{padding:16px}}
+@media(max-width:700px){.wrap{padding:10px 13px 35px}.topbar{min-height:54px;margin-bottom:13px}.minor{font-size:9px}.wordmark{gap:7px;font-size:11px}.flower{width:30px;height:30px}.tinybtn{padding:7px 9px;font-size:11px}.hero{display:flex;flex-direction:column-reverse;border-radius:14px}.stage-art{min-height:260px}.stage-center .big{font-size:48px}.hero-copy{padding:24px 24px 33px}.hero h1{font-size:43px;margin:9px 0}.hero-desc{margin:12px 0 22px;font-size:13px}.stage-caption{bottom:15px}.stage-steps{height:65px}.setup{padding:25px 18px;margin:13px 0}.setup h2{font-size:27px}.radio-grid.three{grid-template-columns:1fr}.radio-card{min-height:69px;padding:11px 13px}.game-grid{grid-template-columns:1fr}.game-grid>aside{order:-1;display:none}.mobile-stats{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 15px;border-bottom:1px solid var(--line);background:#1f1523;font-size:11px;color:#eacbdf}.mobile-stats span{margin-right:8px}.main-card{min-height:0}.scene-head{padding:13px 17px}.scene-content{padding:23px 18px 28px}.scene-content h2{font-size:29px;margin:5px 0 16px}.scene-story{font-size:14px;line-height:2}.choice{padding:13px 14px}.choice b{font-size:13px}.outcome{padding:39px 23px}.outcome h2{font-size:30px}.outcome p{font-size:14px}.finish-body{padding:22px}.credits{padding:21px 18px}.btn{width:100%}.btnrow{flex-direction:column}.info-strip{gap:7px}.foot{font-size:9px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="topbar">
+  <div class="wordmark"><div class="flower">✦</div><div>すみれの軌跡<div class="minor">A STAR'S JOURNEY — FAN MADE</div></div></div>
+  <nav class="top-actions"><button class="tinybtn" id="homeBtn" type="button">タイトル</button><button class="tinybtn" id="sourcesBtn" type="button">資料・考証</button></nav>
+</header>
+<main id="app" aria-live="polite"></main>
+<footer class="foot">本作は宝塚歌劇団・宝塚音楽学校・阪急阪神グループとは無関係の非公式・架空のファンメイド作品です。<br>配役・人事・合格確率の数値化はゲーム独自の創作であり、実際の選考基準ではありません。</footer>
+</div>
+<script>
+'use strict';
+const STORE='sumire-no-kiseki-save-v1';
+const TROUPES=['花組','月組','雪組','星組','宙組'];
+const STAT_LABEL={song:'歌唱',dance:'舞踊',acting:'芝居',aura:'華',team:'協調',energy:'体力'};
+const START_SCENES=[
+{phase:'入学試験',title:'第一次試験 ― 面接',intro:'春。大勢の受験生が宝塚音楽学校の門をくぐる。\n面接の扉の向こうでは、あなた自身の言葉と舞台人としての可能性が問われる。',fact:'公式の入学試験は、第一次＝面接、第二次＝面接・歌唱・舞踊、第三次＝面接。',choices:[
+['舞台への憧れを、自分の言葉で真っすぐ伝える','華・芝居を伸ばす',{aura:8,acting:4,energy:-2}],
+['落ち着いて質問を聞き、丁寧に答える','協調・芝居を伸ばす',{team:7,acting:6,energy:-1}],
+['緊張を受け入れ、堂々と姿勢を見せる','華・体力を伸ばす',{aura:6,energy:3,song:2}]]},
+{phase:'入学試験',title:'第二次試験 ― 歌唱と舞踊',intro:'歌唱と舞踊。限られた時間で、自分の魅力を届ける試験が続く。\n得意な表現を伸ばすか、苦手を補うか。今のあなたが選ぶ準備は？',fact:'公式募集要項では第二次試験で歌唱・舞踊が実施される。',choices:[
+['課題曲の呼吸と音程を磨いて臨む','歌唱を大きく伸ばす',{song:12,team:2,energy:-4}],
+['振りを正確に覚え、身体で表現する','舞踊を大きく伸ばす',{dance:12,aura:2,energy:-5}],
+['表情、姿勢、歌、踊りを総合的に整える','すべてを少しずつ伸ばす',{song:5,dance:5,aura:4,energy:-3}]]},
+{phase:'入学試験',title:'第三次試験 ― 最後の面接',intro:'最終面接。審査が終わると、桜の季節に向けて結果を待つことになる。\nここまで積み重ねてきた自分を、どのように示す？',fact:'実際の試験は、点数だけで自動判定されるものではない。本作の合否判定は創作。',event:'audition',choices:[
+['役を通して届けたい夢を語る','芝居・華を伸ばす',{acting:7,aura:6,energy:-2}],
+['これまでの努力を具体的に伝える','歌唱・舞踊を伸ばす',{song:4,dance:5,team:3,energy:-2}],
+['同期になるかもしれない受験生への敬意も忘れない','協調・華を伸ばす',{team:8,aura:4,energy:1}]]},
+{phase:'予科',title:'予科生 ― 基礎をつくる一年',intro:'音楽学校の予科生として、規則正しい授業が始まる。\nバレエ、声楽、日本舞踊、演劇。舞台の基本を身体に刻む毎日だ。',fact:'音楽学校の修学年限は予科1年・本科1年の計2年。',choices:[
+['クラシックバレエの基礎を徹底する','舞踊・体力を伸ばす',{dance:10,energy:4,team:1}],
+['声楽と発声の土台を育てる','歌唱・芝居を伸ばす',{song:10,acting:4,energy:-2}],
+['演劇と日本舞踊にじっくり向き合う','芝居・華を伸ばす',{acting:9,aura:5,energy:-2}]]},
+{phase:'予科',title:'同期と向き合う稽古場',intro:'失敗を繰り返しながら、一つの舞台をともにつくる難しさを知る。\n自分を磨くだけでは、作品は完成しない。',fact:'音楽学校では演劇・合唱・ダンスなど、共同で取り組む授業がある。',choices:[
+['同期の苦手を一緒に練習する','協調・歌唱を伸ばす',{team:11,song:3,energy:-4}],
+['放課後の自主練習を計画的に行う','体力と舞踊を伸ばす',{dance:7,energy:5,team:2}],
+['休養を意識し、授業中の集中を高める','体力を回復し芝居を伸ばす',{energy:13,acting:4}]]},
+{phase:'本科',title:'本科生 ― 舞台への意識',intro:'二年目の本科生。後輩が入学し、あなたも上級生となった。\n卒業が近づくなか、より実践的な表現を磨く。',fact:'学校の公式年間行事には本科の劇場実習や化粧講習が掲載されている。',choices:[
+['舞台化粧や見せ方を研究する','華・芝居を伸ばす',{aura:10,acting:4,energy:-2}],
+['一曲を丁寧に歌い切る表現力を磨く','歌唱・協調を伸ばす',{song:10,team:4,energy:-3}],
+['舞台全体を見て踊ることを習得する','舞踊・協調を伸ばす',{dance:9,team:6,energy:-3}]]},
+{phase:'本科',title:'卒業文化祭 ― はじめての集大成',intro:'宝塚バウホールで行われる文化祭。\n歌、踊り、芝居。一つひとつが、二年間の成長を観客に伝える機会になる。',fact:'文化祭は宝塚バウホールで行われる音楽学校の卒業公演。',choices:[
+['歌のソロパートで聴かせる表現を目指す','歌唱・華を伸ばす',{song:9,aura:5,energy:-5}],
+['群舞の精度と一体感を追求する','舞踊・協調を伸ばす',{dance:9,team:6,energy:-5}],
+['短い場面でも人物の心を描く','芝居・華を伸ばす',{acting:10,aura:4,energy:-5}]]},
+{phase:'入団・初舞台',title:'初舞台 ― ラインダンスの先に',intro:'音楽学校を卒業し、宝塚歌劇団へ入団。\n初舞台公演で同期と並び、照明の中で客席に向かう。物語は、ここから始まる。',fact:'公式年間行事では3月に卒業・入団、春に初舞台公演を案内している（年によって変更あり）。',event:'debut',choices:[
+['一人ひとりとの呼吸を合わせる','舞踊・協調を伸ばす',{dance:7,team:8,energy:-4}],
+['一瞬の表情まで磨き上げる','華・芝居を伸ばす',{aura:9,acting:6,energy:-5}],
+['本番に備えて体調と基礎を整える','体力・歌唱を伸ばす',{energy:9,song:5}]]},
+{phase:'組回り',title:'組回り ― 五組の舞台に触れる',intro:'あなたの期は、初舞台の後に組回りへ進む。複数の公演現場で学び、やがて配属先が決まる。\nどんな力を大切にする？',fact:'2026年の第112期では初舞台直後に組配属せず、班ごとに公演出演後、翌年2月の組配属を予定と公式発表。全期が同一方式とは限らない。',choices:[
+['新しい座組に積極的になじむ','協調・華を伸ばす',{team:10,aura:4,energy:-3}],
+['与えられた場面の芝居を丁寧に磨く','芝居・華を伸ばす',{acting:10,aura:3,energy:-4}],
+['基礎を維持し公演の変化に対応する','歌唱・舞踊を伸ばす',{song:6,dance:6,energy:-2}]]},
+{phase:'組配属',title:'運命の組配属',intro:'花・月・雪・星・宙。五つの組のうち、どこで舞台人生を始めるのか。\n配属は劇団によって決まる。あなたはその発表を受け止める。',fact:'組配属は本人のゲーム上の希望で自由に決まる制度ではないため、本作でも抽選演出で表現。',event:'troupe',choices:[
+['どの組でも学ぶ姿勢を忘れない','協調・体力を伸ばす',{team:7,energy:7}],
+['自分ならではの個性を磨いておく','華・芝居を伸ばす',{aura:9,acting:4}],
+['技術を土台に作品へ貢献したい','歌唱・舞踊を伸ばす',{song:6,dance:6}]]}
+];
+const TRAINING_DATA={
+1:['組子としての初めての一年','本公演の稽古場では、先輩の立ち位置、歌、芝居の間合いにすべて学びがある。早くも自分の弱さを痛感した。'],
+2:['小さな台詞の重み','本公演で小さな台詞を任された。出番が短くても、客席へ物語を届ける責任は変わらない。'],
+3:['同期間の切磋琢磨','同期の中から、目立つ役に抜擢される人が現れ始めた。焦りを覚えながらも、舞台には明日がある。'],
+4:['大劇場の群舞と立ち位置','ショーの場面で、あなたは群舞の要所に立つ。自分だけが目立つのではなく、舞台全体を輝かせたい。'],
+5:['上級生の背中','役の大小だけでなく、後輩への向き合い方や稽古場での振る舞いも見られるようになった。'],
+6:['新しい挑戦を前に','新人公演に参加できる時期は残りわずか。心の中に、もう一度大きな役へ挑みたい気持ちがある。'],
+7:['長の期として','新人公演に出演できる最後の学年。新しい下級生も増え、責任の重さを感じる。']
+};
+const CAREER_DATA={
+1:{title:'組配属後、最初の本公演',type:'minor',body:'宝塚大劇場の長い公演期間。舞台の端であっても、すべての瞬間が生きている。少しでも客席に印象を残すには。'},
+2:{title:'本公演での抜擢',type:'minor',body:'次の本公演の配役が発表された。台詞のある役をつかむ可能性が生まれる。どんな準備をする？'},
+3:{title:'新人公演 ― 初めての大役争い',type:'rookie',body:'新しい公演の新人公演配役が近づく。本役を研究し、先輩が演じる役を下級生だけで上演する大きな学びの場だ。'},
+4:{title:'新人公演 ― 役の解像度を上げる',type:'rookie',body:'新人公演での経験を積む一方、本公演では別の役を演じ続ける。新人公演の主役級へ、一歩近づけるだろうか。'},
+5:{title:'バウホール公演への出演',type:'bau',body:'大劇場とは違う密度の空間。バウホール公演で、主役またはヒロインを任される可能性がある。'},
+6:{title:'新人公演 ― 後輩と競い合う',type:'rookie',body:'新人公演の残りのチャンスは多くない。後輩たちも着実に力をつけ、稽古場の空気が引き締まる。'},
+7:{title:'新人公演ラストイヤー',type:'rookie',body:'研7。新人公演に参加できる最後の年。これまでのすべてを賭けて、本役から学んだものを舞台に届けたい。'},
+8:{title:'若手を卒業する転機',type:'bau',body:'新人公演のない舞台人生が始まる。別箱公演の中心を担う機会をつかみ、自分の名前で観客を惹きつけられるだろうか。'},
+9:{title:'東上公演という挑戦',type:'tojo',body:'東京の劇場でも上演される別箱公演。公演を背負う立場に近づくため、役に向き合う。'},
+10:{title:'組替え発表の季節',type:'transfer',body:'組の編成に変化が生まれる。組替えは本人の自由な選択ではなく、劇団の人事によるもの。新たな環境となる可能性もある。'},
+11:{title:'東上公演 ― 実力を問われる',type:'tojo',body:'主演、またはヒロインとして作品を支える大きなチャンス。これまでの舞台経験をどう生かすか。'},
+12:{title:'全国ツアーの舞台',type:'tour',body:'各地の劇場を巡る公演。客席との距離も環境も変わる中、主演またはヒロイン級の役付きが巡ってくる可能性がある。'},
+13:{title:'組の中核を担う',type:'rank',body:'舞台上の責任も、見られる目も変わってきた。フィナーレの階段降りや役付きから、ファンは今後のスター像を語り合う。'},
+14:{title:'大劇場のフィナーレ',type:'rank',body:'大階段に並ぶ一瞬に、舞台人生の重みが宿る。座組を支えながら、大きな責任を引き受ける覚悟が問われる。'},
+15:{title:'次期トップ人事の知らせ',type:'top',body:'一つの時代の終わりが近づく。次期トップコンビがどうなるか、ファンの間にも様々な声が飛び交う。正式な発表まで、結論は誰にも分からない。'},
+16:{title:'再び訪れる転機',type:'top',body:'別の公演の千秋楽が近づき、新しい体制の話題が広がる。経験の積み重ねが、次の舞台を切り開くかもしれない。'},
+17:{title:'次の舞台を選び取る',type:'top',body:'大劇場で積んできた時間、同期や後輩との舞台。トップを目指す気持ちと、一人の舞台人としての誇りが交差する。'},
+18:{title:'最後の大きな人事の波',type:'top',body:'節目の年。劇団から次期トップ人事が告げられる季節が再び巡る。自分の歩んできた役を心に刻む。'},
+19:{title:'舞台人生の次章へ',type:'final',body:'まばゆい舞台に立ち続けた年月。トップという役職に届かなかったとしても、あなたが演じてきた一つひとつの役が残っている。'}
+};
+function trainScene(year){let d=TRAINING_DATA[year];return {phase:'研'+year,year,title:d[0],intro:d[1],fact:year===7?'新人公演に出演できるのは、公式FAQでは入団7年目まで。':'宝塚では入団後の在籍年数を一般に「研究科◯年」や「研◯」と表現する。',choices:[
+['歌唱を鍛え、声で感情を届ける','歌唱・芝居を伸ばす',{song:10,acting:4,energy:-5}],
+['ダンスと立ち姿を磨く','舞踊・華を伸ばす',{dance:9,aura:5,energy:-6}],
+['芝居と共演者との関係性を深める','芝居・協調を伸ばす',{acting:8,team:8,energy:-3}],
+['ケアと休養を優先し、長く舞台に立つ','体力を回復する',{energy:18,team:2}]]}}
+function careerScene(year){let d=CAREER_DATA[year];return {phase:'研'+year,year,title:d.title,intro:d.body,fact:year===7?'新人公演は研7まで。翌年以降は出られない。':year===10?'組替えは公式から発表される人事異動。本作での発生は架空の抽選。':year===13?'「路線」「2番手」などの序列はファンの観察・解釈に基づく場合があり、公式選考制度ではない。':'別箱公演の主演・ヒロイン歴などは、ファンがスターの歩みを考察する際に取り上げることがある。',event:d.type,choices:careerChoices(d.type,year)}}
+function careerChoices(type,year){
+ if(type==='transfer')return [['環境の変化に備え、新しい作品への対応力を磨く','芝居・協調を伸ばす',{acting:7,team:8,energy:-4},'embrace'],['今いる組で築いた表現を深める','華・歌唱を伸ばす',{aura:8,song:6,energy:-3},'steady'],['先輩・後輩とのつながりを大切にする','協調・体力を伸ばす',{team:10,energy:6},'steady']];
+ if(type==='final')return [['トップ以外の立場でも、最後まで役を愛する','芝居・協調を伸ばす',{acting:7,team:7},'steady'],['まだ見ぬ役への意欲を胸に刻む','華・歌唱を伸ばす',{aura:8,song:6},'embrace'],['舞台人生で得たものを後輩へ渡す','協調・体力を伸ばす',{team:9,energy:6},'steady']];
+ if(type==='minor')return [['与えられた役の解釈を深める','芝居・華を伸ばす',{acting:9,aura:6,energy:-5},'embrace'],['群舞でも目を引く動きを目指す','舞踊・華を伸ばす',{dance:9,aura:5,energy:-4},'embrace'],['座組全体の呼吸を大切にする','歌唱・協調を伸ばす',{song:6,team:8,energy:-3},'steady']];
+ if(type==='top')return [['次の公演で、役の幅と求心力を示す','芝居・華を大きく伸ばす',{acting:8,aura:8,energy:-7},'embrace'],['舞台の完成度と座組の一体感を高める','歌唱・協調を伸ばす',{song:7,team:10,energy:-5},'steady'],['心身の状態を整え、長期的に舞台を見据える','体力・舞踊を伸ばす',{energy:14,dance:5},'rest']];
+ if(type==='rank')return [['役付きの重みを受け止め、存在感を磨く','華・芝居を伸ばす',{aura:10,acting:6,energy:-6},'embrace'],['歌とダンスで作品を支える','歌唱・舞踊を伸ばす',{song:8,dance:8,energy:-6},'embrace'],['座組での信頼を積み上げる','協調・体力を伸ばす',{team:12,energy:7},'steady']];
+ return [['主役級の役に向けて研究と稽古を重ねる','芝居・華を伸ばす／抜擢への挑戦',{acting:9,aura:7,energy:-7},'embrace'],['歌・踊り・芝居の総合力を整える','歌唱・舞踊を伸ばす／堅実な挑戦',{song:8,dance:8,energy:-5},'steady'],['どんな配役でも完成度とチームワークを重視する','協調・体力を伸ばす／支える道',{team:11,energy:8,acting:3},'rest']];
+}
+const SCENES=[...START_SCENES];
+function topChanceScene(year,role){
+ let girl=role==='娘役';
+ return {phase:'研'+year,year,
+ title:girl?'トップ娘役人事 ― 相手役の行方':'次期トップスター人事 ― 世代交代',
+ intro:girl?'トップスターの新体制を控え、次期トップ娘役が発表される時期。新人公演や別箱でのヒロイン経験は一つの材料にすぎず、相手役との芝居や座組の巡り合わせもある。正式な人事発表を待つ。':'トップスターの交代が近づく。新人公演、バウホール、東上公演、番手をめぐる歩みが注目されるが、抜擢や組替えを含む人事は発表まで確定しない。',
+ fact:'トップ就任の選考基準は公表されていません。抜擢歴・番手・相性などは、公式制度ではなくファンによる観察や考察を参考にしたゲーム上の設定です。',
+ event:'top',choices:careerChoices('top',year)}
+}
+function buildScenes(role){
+ SCENES.splice(0,SCENES.length,...START_SCENES);
+ for(let y=1;y<=19;y++){
+  if(y<=7)SCENES.push(trainScene(y));
+  SCENES.push(careerScene(y));
+  if(role==='娘役'&&[5,7,9,11,13].includes(y))SCENES.push(topChanceScene(y,role));
+  if(role==='男役'&&[10,12,14].includes(y))SCENES.push(topChanceScene(y,role));
+ }
+}
+buildScenes('男役');
+let state=null,view='home';
+function h(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function r(n){return Math.floor(Math.random()*n)}
+function clamp(n,a=0,b=100){return Math.max(a,Math.min(b,n))}
+function save(){try{if(state)localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}}
+function getSaved(){try{let raw=localStorage.getItem(STORE);if(!raw)return null;let x=JSON.parse(raw);if(x&&typeof x.idx==='number'&&x.stats&&x.flags&&Array.isArray(x.log))return x;}catch(e){}return null;}
+function reset(){state=null;try{localStorage.removeItem(STORE)}catch(e){}view='home';render()}
+function stageName(){return state?.role==='男役'?'トップスター':'トップ娘役'}
+function isGirl(){return state?.role==='娘役'}
+function totalSkill(){let z=state.stats;return Math.round((z.song+z.dance+z.acting+z.aura+z.team)/5)}
+function milestoneNames(){return isGirl()?['新人公演ヒロイン','バウヒロイン','東上ヒロイン','全国ツアーヒロイン']:['新人公演主演','バウ主演','東上主演','全国ツアー主演']}
+function updateLog(label,detail){state.log.push({year:SCENES[Math.max(0,state.idx-1)]?.year||0,label,detail});if(state.log.length>100)state.log.shift()}
+function applyEffect(effect){let chips=[];for(const [key,num] of Object.entries(effect||{})){let old=state.stats[key],n=clamp(old+num);state.stats[key]=n;let real=n-old;if(real)chips.push({text:STAT_LABEL[key]+(real>0?' +':' ')+real,neg:real<0})}return chips}
+function randPass(p){return Math.random()<clamp(p,0,0.96)}
+function probScene(type,aim,year){let z=state.stats,f=state.flags;
+ let base=0.0;
+ if(type==='minor')base=.23;
+ if(type==='rookie')base=.09;
+ if(type==='bau')base=.07;
+ if(type==='tojo')base=.04;
+ if(type==='tour')base=.045;
+ if(type==='rank')base=.05;
+ let score=(z.acting+z.aura+z.song+z.dance+z.team)/5;
+ let mastery=(score-42)*.006;
+ let resume=type==='rookie'?0:type==='bau'?Math.min(.15,f.rookie*.075):type==='tojo'?Math.min(.24,f.bau*.10+f.rookie*.035):type==='tour'?Math.min(.24,f.tojo*.12+f.bau*.05):type==='rank'?Math.min(.24,f.tojo*.13+f.tour*.08):0;
+ let recovery=z.energy<20?-.18:z.energy<36?-.09:0;
+ let effort=aim==='embrace'?.14:aim==='steady'?.055:-.075;
+ if(isGirl()&&['bau','tojo'].includes(type))base+=.055;
+ if(!isGirl()&&type==='rank')base+=.025;
+ return clamp((base+mastery+resume+recovery+effort)*(state.mode==='story'?1.20:.79),.025,.86)
+}
+function makeResult(title,body,chips,flair='✦'){state.pending={title,body,chips,flair};save();render()}
+function choose(i){if(!state||state.pending||state.ended)return;let scene=SCENES[state.idx];if(!scene)return;let choice=scene.choices[i];if(!choice)return;let [label,desc,effect,aim]=choice;let chips=applyEffect(effect);let outcome='';let headline='一歩ずつ、舞台へ';let sparkle='✧';
+ state.idx++;
+ let type=scene.event,year=scene.year||0;
+ if(type==='audition'){
+   let x=state.stats,merit=(x.song+x.dance+x.acting+x.aura+x.team)/5;
+   let pass=randPass((state.mode==='story'?.82:.59)+(merit-48)*.007+state.attempt*.12);
+   if(pass){headline='宝塚音楽学校、合格';outcome='合格者として、憧れの音楽学校への入学が決まった。\nこれから予科・本科の二年間が始まる。';sparkle='✦';updateLog('音楽学校合格','合格発表で自分の番号を見つけた。');}
+   else{state.attempt++;if(state.attempt>=3){state.ended='audition';state.idx=SCENES.length;headline='受験の季節を終えて';outcome='何度も挑戦したが、今回は音楽学校への入学はかなわなかった。\nそれでも、ここまでに磨いた表現と努力には意味がある。別の物語として、また最初から挑戦できる。';}else{state.idx=0;headline='今回は届かなかった';outcome='合格者の一覧に、あなたの番号はなかった。\n悔しさを抱えながらも、もう一度受験することを決めた。（'+(state.attempt+1)+'回目の挑戦）';}sparkle='◇';updateLog('入学試験','入学試験への挑戦を経験した。');}
+ }else if(type==='debut'){state.flags.debut=1;headline='初舞台を踏んだ';outcome='同期とともに初舞台に立った。入団後は研1。これから先、与えられる役も道も一人ひとり違う。';updateLog('初舞台','初めて宝塚の舞台を踏んだ。');}
+ else if(type==='troupe'){let choiceIndex=r(TROUPES.length);state.troupe=TROUPES[choiceIndex];headline=state.troupe+'への配属が決定';outcome='あなたの配属先は「'+state.troupe+'」。\n希望を選ぶのではなく、劇団の発表を受けて新しい日々を迎える。';updateLog('組配属',state.troupe+'へ配属された。');}
+ else if(type==='transfer'){
+   let p=aim==='embrace'?.43:aim==='steady'?.29:.20;
+   if(randPass(p)){let choices=TROUPES.filter(t=>t!==state.troupe);let next=choices[r(choices.length)];let old=state.troupe;state.troupe=next;state.flags.transfers++;headline='組替えが発表された';outcome=old+'から'+next+'への組替えが発表された。\n新しい座組では、これまでとは異なる役と人との出会いが待っている。';updateLog('組替え',old+'から'+next+'へ移った。');}
+   else{headline='今の組で舞台を重ねる';outcome='今回の発表で、あなたに組替えはなかった。\n'+state.troupe+'で培ってきた表現を、次の作品に生かしていく。';}
+ }
+ else if(type==='final'){state.ended='career';state.idx=SCENES.length;headline='舞台人生の節目';outcome='研19の節目。主役ではない場面にも、忘れられない時間があった。\nあなたの舞台人生を振り返ろう。';sparkle='❖';updateLog('節目','舞台人生の節目を迎えた。');}
+ else if(type){let success=randPass(probScene(type,aim,year));let role=isGirl();let f=state.flags;
+  if(success){
+   let label='';
+   if(type==='minor'){f.goodRoles++;label=role?'本公演の印象的な役':'本公演での役付き';}
+   if(type==='rookie'){f.rookie++;label=role?'新人公演ヒロイン':'新人公演主演';}
+   if(type==='bau'){f.bau++;label=role?'バウホール公演ヒロイン':'バウホール公演主演';}
+   if(type==='tojo'){f.tojo++;label=role?'東上公演ヒロイン':'東上公演主演';}
+   if(type==='tour'){f.tour++;label=role?'全国ツアー公演ヒロイン':'全国ツアー公演主演';}
+   if(type==='rank'){f.rank++;label=role?'大劇場本公演の主要な娘役':'フィナーレでの大きな役割';}
+   if(type==='top'){/* handled separately below */}
+   if(type!=='top'){headline=label+'に抜擢';outcome='配役が発表され、あなたは「'+label+'」の機会を得た。\n役に向き合う時間は、次の舞台への財産になる。';updateLog(label,'研'+year+'で'+label+'の機会を得た。');sparkle='✦';}
+  }else if(type!=='top'){
+   headline='今回の配役は、別の形に';outcome=type==='rookie'?'新人公演の主役級は別の生徒が務めることになった。あなたにも役があり、稽古から学ぶことがある。':type==='rank'?'今回の公演では目立った番手上の変化はなかった。役に向き合い、周りを支える時間が続く。':'主役級の役は別の生徒へ。あなたは与えられた配役で、作品の完成度を高めていく。';state.stats.team=clamp(state.stats.team+3);
+  }
+  if(type==='top'){
+    let yearOK=role?year>=5:year>=9;
+    let rankScore=role?(f.rookie*.04+f.bau*.09+f.tojo*.14+f.tour*.09+f.goodRoles*.02):(f.rookie*.04+f.bau*.09+f.tojo*.15+f.tour*.09+f.rank*.13);
+    let readiness=(totalSkill()-55)*.0045;
+    let chance=(.055+rankScore+readiness+(aim==='embrace'?.08:aim==='steady'?.035:-.09))*(state.mode==='story'?1.08:.72);
+    if(role&&year<=5)chance*=.38;
+    else if(role&&year<=7)chance*=.72;
+    if(!role&&year<=10)chance*=.20;
+    else if(!role&&year<=12)chance*=.45;
+    else if(!role&&year<=14)chance*=.70;
+    if(!role&&f.rank===0)chance*=.45;
+    if(role&&!(f.rookie||f.bau||f.tojo||f.tour))chance*=.45;
+    if(state.stats.energy<20)chance*=.35;
+    else if(state.stats.energy<35)chance*=.72;
+    if(yearOK&&randPass(chance*.20)){
+      state.top=true;state.topYear=year;state.ended='top';state.idx=SCENES.length;headline=state.troupe+' 次期'+stageName()+'に決定';outcome='劇団から、次期'+stageName()+'就任が正式に発表された。\n研'+year+'。これまで共演してきた仲間と、客席で見守ってくれた人たちへの思いが胸にあふれる。\nいよいよ、トップお披露目公演が始まる。';sparkle='✦';updateLog('トップ就任',state.troupe+'の'+stageName()+'に就任した。');
+    }else{headline='新体制の発表';outcome='次期'+stageName()+'は、別の生徒に決定した。\n一人の舞台人として、次の作品で何を届けるか。その問いは続いていく。';}
+  }
+ }else{outcome='選んだ稽古を重ね、少しずつ表現を磨いた。';}
+ // コマンド選択による疲労は次の時間の経過で少しずつ回復する。
+ if(scene.phase.startsWith('研')&&state.stats.energy<85)state.stats.energy=clamp(state.stats.energy+3);
+ state.log.push({year:year||0,label:scene.title,detail:label});
+ makeResult(headline,outcome,chips,sparkle);
+}
+function startingStats(role,focus){let base={song:38,dance:38,acting:38,aura:38,team:42,energy:84};if(role==='娘役'){base.song+=3;base.acting+=3}else{base.dance+=3;base.aura+=3}if(focus==='song')base.song+=16;if(focus==='dance')base.dance+=16;if(focus==='acting')base.acting+=16;if(focus==='aura')base.aura+=16;return base}
+function startGame(){let f=document.getElementById('newGame');if(!f)return;let data=new FormData(f),name=String(data.get('name')||'').trim().slice(0,18)||'すみれ';let role=data.get('role')==='娘役'?'娘役':'男役';let focus=['song','dance','acting','aura'].includes(data.get('focus'))?data.get('focus'):'acting';let mode=data.get('mode')==='strict'?'strict':'story';buildScenes(role);state={name,role,focus,mode,idx:0,attempt:0,troupe:'未定',stats:startingStats(role,focus),flags:{rookie:0,bau:0,tojo:0,tour:0,rank:0,goodRoles:0,transfers:0,debut:0},log:[],pending:null,top:false,topYear:null,ended:null,created:Date.now()};view='game';save();render()}
+function continueGame(){state=getSaved();if(state){buildScenes(state.role);view='game';render()}else render()}
+function next(){if(!state)return;state.pending=null;save();render();window.scrollTo({top:0,behavior:'smooth'})}
+function render(){let el=document.getElementById('app');if(view==='sources'){el.innerHTML=renderSources();return}if(view==='setup'){el.innerHTML=renderSetup();return}if(view==='game'&&state){el.innerHTML=renderGame();return}el.innerHTML=renderHome()}
+function renderHome(){let s=getSaved();return `<section class="hero screen"><div class="hero-copy"><div class="eyebrow">FICTIONAL TAKARAZUKA CAREER SIMULATOR</div><h1 class="serif">すみれの<br><strong>軌跡</strong></h1><p class="muted" style="font-family:serif;letter-spacing:.18em">― 夢の大階段へ ―</p><p class="hero-desc">音楽学校の受験から、予科・本科、初舞台、組配属、新人公演へ。<br>バウホール、東上公演、組替え、そして次期トップ人事。<br>選択と巡り合わせで変わる、あなただけの舞台人生。</p><div class="btnrow"><button class="btn" data-action="setup">新しく物語を始める</button>${s?'<button class="btn secondary" data-action="continue">保存した続きから</button>':''}</div><p class="hero-note">配役・人事は実際と同様に選択だけで確定しません。公式情報をもとにした舞台制度と、架空の物語・抽選を組み合わせたゲームです。</p></div><div class="stage-art" aria-hidden="true"><div class="stage-glow"></div><div class="stage-arch"></div><div class="stage-floor"></div><div class="stage-steps"></div><div class="spot"></div><div class="spot"></div><div class="spot"></div><div class="spot"></div><div class="stage-center"><div class="big">✧</div><div class="small">YOUR DREAM STAGE</div></div><div class="stage-caption">いつか、この大階段の真ん中へ。</div></div></section><div class="info-strip"><span>男役／娘役の2ルート</span><span>花・月・雪・星・宙の5組</span><span>新人公演は研7まで</span><span>ローカル自動保存</span><span>複数の結末</span></div>`}
+function renderSetup(){return `<section class="setup screen"><div class="eyebrow">CHAPTER ZERO / CHARACTER CREATION</div><h2 class="serif">あなたの舞台人生を、始めよう。</h2><p class="muted" style="font-size:13px">主人公・同期・出演作品のストーリーは架空です。制度や公演形態の考証は「資料・考証」を参照してください。</p><form id="newGame"><div class="field"><label for="starname">芸名（架空の名前を入力）</label><input id="starname" name="name" type="text" maxlength="18" placeholder="例：花乃宮 すみれ" autocomplete="off"></div><div class="field"><label>目指す道</label><div class="radio-grid"><label class="radio-card"><input type="radio" name="role" value="男役" checked><b>男役</b><span>目標：トップスター</span></label><label class="radio-card"><input type="radio" name="role" value="娘役"><b>娘役</b><span>目標：トップ娘役</span></label></div></div><div class="field"><label>得意な分野</label><div class="radio-grid"><label class="radio-card"><input type="radio" name="focus" value="song"><b>歌唱</b><span>音程・声・表現力</span></label><label class="radio-card"><input type="radio" name="focus" value="dance"><b>舞踊</b><span>バレエ・ダンス</span></label><label class="radio-card"><input type="radio" name="focus" value="acting" checked><b>芝居</b><span>人物の心を表現</span></label><label class="radio-card"><input type="radio" name="focus" value="aura"><b>華</b><span>舞台上の存在感</span></label></div></div><div class="field"><label>ゲームの難易度</label><div class="radio-grid"><label class="radio-card"><input type="radio" name="mode" value="story" checked><b>物語重視</b><span>抜擢の機会がやや多い</span></label><label class="radio-card"><input type="radio" name="mode" value="strict"><b>難関ルート</b><span>トップへの道はさらに険しい</span></label></div></div><p class="notice">配属先・組替え・トップ就任は自由選択ではなく、抽選と蓄積した舞台経験で結果が変わります。数値はすべてゲーム上の仕組みで、実際の劇団の評価・合格基準を示すものではありません。</p><div class="btnrow" style="margin-top:22px"><button type="submit" class="btn">第一次試験へ進む</button><button class="btn ghost" type="button" data-action="home">戻る</button></div></form></section>`}
+function renderGame(){let s=state,scene=SCENES[s.idx];let total=Math.round((s.idx/SCENES.length)*100);let mobile=`<div class="mobile-stats"><span><b>${h(s.name)}</b> · ${h(s.role)}</span><span>${h(s.troupe)}</span><span>${scene?.year?'研'+scene.year:scene?.phase||'節目'}</span><button type="button" class="tinybtn" data-action="profile">詳細</button></div>`;let main='';if(s.pending)main=renderOutcome();else if(s.ended||!scene)main=renderEnd();else main=`<div class="scene-head"><span class="stage-tag">${h(scene.phase)}</span><span class="chapter">SCENE ${String(s.idx+1).padStart(2,'0')} / ${SCENES.length}</span></div>${mobile}<div class="progress"><div style="width:${total}%"></div></div><div class="scene-content screen"><div class="eyebrow">YOUR STORY · ${h(s.troupe==='未定'?'FIRST STEPS':s.troupe)}</div><h2>${h(scene.title)}</h2><p class="scene-story">${h(replaceRole(scene.intro))}</p>${scene.fact?`<p class="scene-quote"><b style="color:var(--gold)">考証メモ：</b>${h(scene.fact)}</p>`:''}<div class="choice-heading">あなたは、どう行動する？</div><div class="choices">${scene.choices.map((c,i)=>`<button type="button" class="choice" data-choice="${i}"><b>${h(c[0])}</b><small>${h(c[1])}</small></button>`).join('')}</div></div>`;return `<div class="game-grid screen"><section class="main-card">${main}</section><aside>${renderProfile()}${renderJournal()}</aside></div>`}
+function replaceRole(text){return String(text).replaceAll('主役またはヒロイン',isGirl()?'ヒロイン':'主演').replaceAll('主演またはヒロイン',isGirl()?'ヒロイン':'主演').replaceAll('主役級',isGirl()?'ヒロイン級':'主演級')}
+function renderProfile(){let s=state,f=s.flags,m=milestoneNames();let badges=[f.rookie,f.bau,f.tojo,f.tour];return `<div class="side-card"><div class="profile-top"><div class="avatar">✧</div><div><div class="profile-name">${h(s.name)}</div><div class="profile-meta">${h(s.role)} · ${h(s.troupe)}<br>${s.idx<3?'受験生':s.idx<7?'音楽学校生':SCENES[s.idx]?.year?'研究科'+SCENES[s.idx].year+'年':'舞台人'}</div></div></div><div class="side-heading">舞台力</div>${Object.entries(STAT_LABEL).map(([k,v])=>`<div class="stat-row"><span>${v}</span><div class="track"><div class="fill ${k==='energy'&&s.stats[k]<28?'low':''}" style="width:${s.stats[k]}%"></div></div><span class="stat-value">${s.stats[k]}</span></div>`).join('')}<div class="side-heading">主な舞台歴</div><div class="milestones">${m.map((x,i)=>`<div class="badge ${badges[i]?'got':''}">${h(x)}<br>${badges[i]?badges[i]+'回':'未経験'}</div>`).join('')}</div><div class="record"><span>本公演の抜擢</span><strong>${f.goodRoles}回</strong></div><div class="record"><span>${isGirl()?'主要な娘役':'番手につながる役付き'}</span><strong>${f.rank}回</strong></div><div class="record"><span>組替え</span><strong>${f.transfers}回</strong></div></div>`}
+function renderJournal(){let recent=state.log.slice(-7).reverse();return `<div class="side-card"><div class="side-heading" style="margin-top:0">舞台日誌</div><div class="mini-journal">${recent.length?recent.map(x=>`<p><b>${x.year?'研'+x.year+' · ':''}${h(x.label)}</b><br>${h(x.detail||'稽古を重ねた。')}</p>`).join(''):'<p>あなたの物語は、ここから始まる。</p>'}</div></div><div class="side-card"><button type="button" class="tinybtn" style="width:100%" data-action="profile">全記録・能力を表示</button><p class="muted" style="font-size:10px;margin:10px 0 0">各選択後に自動保存。ブラウザのデータを削除すると記録も消えます。</p></div>`}
+function renderOutcome(){let p=state.pending;return `<div class="outcome screen"><div class="eyebrow">THE NEXT PAGE OF YOUR STORY</div><div class="outcome-icon" aria-hidden="true">${h(p.flair)}</div><h2>${h(p.title)}</h2><p>${h(p.body)}</p><div class="changes">${p.chips.map(c=>`<span class="chip ${c.neg?'neg':''}">${h(c.text)}</span>`).join('')}</div><div style="margin-top:31px"><button class="btn" data-action="next">${state.ended?'舞台人生を振り返る':'次の章へ進む'}</button></div></div>`}
+function endText(){let s=state,f=s.flags,n=s.name,target=stageName();if(s.ended==='audition')return {title:'挑戦の記録',sub:'夢に向かった季節',body:`${n}は音楽学校の入学試験へ挑んだ。合格には届かなかったが、歌と踊り、芝居に向き合った時間は残った。\n\n別の選択を重ねる、新しい物語を始めることができる。`};if(s.top)return {title:'トップ就任',sub:`${s.troupe} ${target}、誕生。`,body:`研${s.topYear}。${n}は${s.troupe}の${target}となった。\n\n新人公演${isGirl()?'ヒロイン':'主演'} ${f.rookie}回、バウホール${isGirl()?'ヒロイン':'主演'} ${f.bau}回、東上${isGirl()?'ヒロイン':'主演'} ${f.tojo}回。\n\nそして迎えるトップお披露目公演。大階段の中央に立つその姿に、音楽学校時代の自分が重なる。\n\nこれからは、トップとして座組を率い、作品を届けていく。`};let score=f.rookie+f.bau*2+f.tojo*3+f.tour*2+f.rank*2+f.goodRoles;let title=score>=10?'記憶に残るスター':'舞台を支えた表現者';let sub=score>=10?'主役とは異なる、あなたの輝き。':'すべての役には、物語がある。';return {title,sub,body:`${n}は${s.troupe}で舞台を重ねた。\n\n新人公演${isGirl()?'ヒロイン':'主演'} ${f.rookie}回、バウホール${isGirl()?'ヒロイン':'主演'} ${f.bau}回、東上${isGirl()?'ヒロイン':'主演'} ${f.tojo}回。\n\n${target}就任には届かなかった。しかし、一人の舞台人として客席に届けた時間があった。\n\n配役や組替え、仲間と過ごした舞台は、${n}だけのかけがえのない軌跡となった。`}}
+function renderEnd(){let s=state,e=endText(),m=milestoneNames();return `<div class="finish-banner screen"><div class="crown" aria-hidden="true">✦</div><div class="eyebrow">FINAL CURTAIN</div><h1>${h(e.title)}</h1><p style="font-size:14px;letter-spacing:.1em;color:#f2dfda">${h(e.sub)}</p></div><div class="finish-body screen"><h3>EPILOGUE · ${h(s.name)} の物語</h3><p>${h(e.body)}</p><h3>舞台の歩み</h3><div class="milestones">${m.map((x,i)=>`<div class="badge ${[s.flags.rookie,s.flags.bau,s.flags.tojo,s.flags.tour][i]?'got':''}">${h(x)}<br>${[s.flags.rookie,s.flags.bau,s.flags.tojo,s.flags.tour][i]}回</div>`).join('')}</div><div class="ledger">${s.log.filter(x=>x.detail).map(x=>`<div>${x.year?'研'+x.year+' · ':''}<b>${h(x.label)}</b><br>${h(x.detail)}</div>`).join('')||'記録された舞台歴はありません。'}</div><div class="btnrow" style="margin-top:26px"><button class="btn" data-action="setup">別の人生を始める</button><button class="btn secondary" data-action="sources">資料・考証を読む</button></div></div>`}
+function renderSources(){return `<section class="credits screen"><div class="eyebrow">NOTES / RESEARCH</div><h2>資料・考証</h2><p>このゲームは、実際の宝塚歌劇団の組制度・公演形態・学校制度を調べ、舞台人としての歩みを題材にした<strong>架空の育成シミュレーション</strong>です。ゲーム内の人物、配役、人事、合否、年数に応じた抜擢確率、能力値は創作です。ファンブログの推測や用語を公式決定・内部制度と混同しないよう区別しています。</p><h3>公式資料（制度・公演形態の根拠）</h3><ul><li><a href="https://www.tms.ac.jp/guidance/admissions.html" target="_blank" rel="noopener noreferrer">宝塚音楽学校：募集要項</a> — 予科1年・本科1年の修学年限。</li><li><a href="https://www.tms.ac.jp/guidance/examination.html" target="_blank" rel="noopener noreferrer">宝塚音楽学校：入学試験</a> — 第一次〜第三次試験の内容。</li><li><a href="https://www.tms.ac.jp/school_life/curriculum.html" target="_blank" rel="noopener noreferrer">宝塚音楽学校：カリキュラム</a> — 声楽、バレエ、演劇、日本舞踊など。</li><li><a href="https://www.tms.ac.jp/school_life/school_life.html" target="_blank" rel="noopener noreferrer">宝塚音楽学校：年間スケジュール</a> — 文化祭、卒業、初舞台。</li><li><a href="https://kageki.hankyu.co.jp/beginner/5min.html" target="_blank" rel="noopener noreferrer">宝塚歌劇：初心者ガイド</a> — 五組と専科、トップスターとトップ娘役。</li><li><a href="https://faq.kageki.hankyu.co.jp/faq/show/44?category_id=7&site_domain=default" target="_blank" rel="noopener noreferrer">宝塚歌劇：新人公演について（公式FAQ）</a> — 入団7年目まで。</li><li><a href="https://kageki.hankyu.co.jp/news/20260618_003.html" target="_blank" rel="noopener noreferrer">宝塚歌劇：第112期初舞台生の組回り</a> — 2026年の班編成と組配属予定。</li><li><a href="https://kageki.hankyu.co.jp/news/20260518_001.html" target="_blank" rel="noopener noreferrer">宝塚歌劇：鳳月杏の舞台歴</a> — 組替え、バウホール主演、トップ就任等の具体例。</li><li><a href="https://kageki.hankyu.co.jp/news/20260518_002.html" target="_blank" rel="noopener noreferrer">宝塚歌劇：天紫珠李の舞台歴</a> — 新公ヒロイン、バウ公演、男役から娘役への転向の具体例。</li></ul><h3>ファンによる分析・考察（公式な昇格基準ではない）</h3><ul><li><a href="https://note.com/takarazuka_db/n/n87f10124cd23" target="_blank" rel="noopener noreferrer">宝塚fanDB：トップ娘役はどうやって決まるの？</a> — 明文化されたトップ就任ルートはないと整理。</li><li><a href="https://takarazuka.blog/2025/08/13/doukisakusen/" target="_blank" rel="noopener noreferrer">くららのビバ宝塚！：同期２人人事</a> — 新人公演、バウ、東上、全国ツアーの経歴を比較。</li><li><a href="https://takarazuka-life.com/takarazuka-topmusumeyaku-heroine-history/" target="_blank" rel="noopener noreferrer">新・宝塚は生きる糧：トップ娘役就任前のヒロイン歴</a> — 抜擢歴とトップ就任が必ずしも一致しない事例。</li><li><a href="https://note.com/mami_k/n/n50371cc14b66" target="_blank" rel="noopener noreferrer">まろん：各組学年分布（2026年11月）</a> — 「番手」は観察による非公式な整理と明記。</li></ul><h3>創作上の主な簡略化</h3><p>①実際には配属・抜擢・人事が能力数値で機械的に決まることはありません。②文化祭・初舞台・組回りの時期と方式は期によって異なります。③「新人公演主演→バウ主演→東上主演→トップ」などはファンが語る代表的な歩みで、必須条件ではありません。④娘役には男役と同一の明確な番手制度を当てはめていません。⑤本作では受験、組配属、組替え、退団・就任の時期をゲーム向けに圧縮しています。</p><div class="notice">写真・音源・歌詞・衣装・公式ロゴ・実在生徒の肖像は使用していません。実際の配役、トップ人事の予想を目的としたゲームではありません。</div><div class="btnrow" style="margin-top:20px"><button class="btn secondary" data-action="${state?'game':'home'}">${state?'ゲームに戻る':'タイトルに戻る'}</button></div></section>`}
+function showProfile(){if(!state)return;let s=state;let page=`<section class="credits screen"><div class="eyebrow">STAR PROFILE</div><h2>${h(s.name)}の記録</h2><p>${h(s.role)} · ${h(s.troupe)} · ${h(stageName())}を目指す物語</p>${renderProfile()}<h3>活動日誌</h3><div class="ledger">${s.log.map(x=>`<div>${x.year?'研'+x.year+' · ':''}<b>${h(x.label)}</b>${x.detail?'<br>'+h(x.detail):''}</div>`).join('')}</div><div class="btnrow" style="margin-top:24px"><button class="btn" data-action="game">ゲームへ戻る</button></div></section>`;document.getElementById('app').innerHTML=page}
+function confirmSetup(){if(state&&!state.ended&&state.idx>0){if(!confirm('新しい物語を始めますか？ 現在のセーブデータは新しいゲーム開始時に上書きされます。'))return}view='setup';render()}
+document.addEventListener('click',function(ev){let ch=ev.target.closest('[data-choice]');if(ch){choose(Number(ch.dataset.choice));return}let target=ev.target.closest('[data-action]');if(!target)return;let a=target.dataset.action;if(a==='setup'){confirmSetup()}else if(a==='continue'){continueGame()}else if(a==='home'){view='home';render()}else if(a==='sources'){view='sources';render()}else if(a==='game'){view='game';render()}else if(a==='next'){next()}else if(a==='profile'){showProfile()}window.scrollTo({top:0,behavior:'smooth'})});
+document.getElementById('newGame');document.addEventListener('submit',function(ev){if(ev.target.id==='newGame'){ev.preventDefault();startGame()}});
+document.getElementById('homeBtn').addEventListener('click',()=>{view='home';render()});document.getElementById('sourcesBtn').addEventListener('click',()=>{view='sources';render()});
+render();
+</script>
+</body>
+</html>
