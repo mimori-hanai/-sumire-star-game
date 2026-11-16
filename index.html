@@ -796,4 +796,214 @@ fcPanel=function(){
 // 40種類の運営イベントは既存のFC_EVENTSを使用し、全種類の内容を選択イベントとして展開する。
 // 年間の決算処理が回るまでは進行を待つ。会発足前のファン交流は継続。
 
+
+// ===== v12: キャリア年次の実例補正・自由退団・交友拡張・四択UI =====
+// 参照モデル（年度は研究科の年度で計算）:
+// 礼真琴 2009入団→新公2013/バウ2014/東上2017/トップ2019
+// 永久輝せあ 2011→2015/2019/2022/2024
+// 朝美絢 2009→2014/2015/2021/2024
+// 暁千星 2012→2014/2015/2022/2025
+// 同一の昇進経路を保証せず、時期の幅をもたせるゲーム上の抽選モデル。
+const V12_CAREER={rookieMin:3,bauMin:6,tojoMin:9,secondMin:10,topMin:11};
+function v12Career(){if(!game)return null;game.careerYears??={rookie:null,bau:null,tojo:null,second:null,top:null};return game.careerYears}
+function v12Milestone(kind){const a=v12Career();if(a&&a[kind]==null)a[kind]=game.year}
+function v12CanBau(){const a=v12Career();return game.year>=V12_CAREER.bauMin && game.flags.rookie>0 && game.year >= (a.rookie??5)+1}
+function v12CanTojo(){const a=v12Career();return game.year>=V12_CAREER.tojoMin && game.flags.bau>0 && game.year >= (a.bau??7)+2}
+function v12CanSecond(){const a=v12Career();return game.year>=V12_CAREER.secondMin && game.flags.tojo>0 && game.year >= (a.tojo??9)+1}
+function v12CanTop(){const a=v12Career();return game.year>=V12_CAREER.topMin && v12CanSecond() && game.year >= (a.second??game.year)+2 && game.stats.pop>=20}
+function v12RecordMilestones(before){if(!game)return;const a=v12Career();for(const key of ['rookie','bau','tojo']){if((game.flags[key]||0)>(before[key]||0))v12Milestone(key)}if(before.rank!==2&&game.flags.rank===2)v12Milestone('second');if(!before.top&&game.flags.top)v12Milestone('top')}
+function v12Prior(){return {rookie:game.flags.rookie||0,bau:game.flags.bau||0,tojo:game.flags.tojo||0,rank:game.flags.rank,top:!!game.flags.top}}
+// 元の順位判定を、実際のキャリア段階に近い必要経験・時間差で補正。
+const v12BeforeRank=adjustRank;
+adjustRank=function(){if(!game)return;v12Career();
+ if(game.flags.top){game.flags.rank=1;return}
+ if(game.role!=='男役'){v12BeforeRank();return}
+ if(v12CanSecond()&&game.stats.pop>=14){game.flags.rank=2;v12Milestone('second')}
+ else if(game.flags.bau>0&&game.year>=7){game.flags.rank=3}
+ else if(game.flags.rookie>0){game.flags.rank=4}
+ else game.flags.rank=0;
+};
+const v12BeforeRankInfo=rankInfo;
+rankInfo=function(){let r=v12BeforeRankInfo();if(game?.role==='男役'&&!game.flags.top){
+ if(!v12CanSecond()&&(game.flags.rank===2||r.stage.includes('2番手')))return {...r,stage:game.flags.bau>0?'3番手候補（東上経験・時期の条件未達）':'路線候補'};
+ }return r};
+// 代表モデルの最短時期に合わせ、バウや東上を研5直後に連続取得しない。
+const v12PriorCareerChoices=v9CareerChoices;
+v9CareerChoices=function(){
+ if(game.year<3)return stagedChoice('新人公演の基礎を学ぶ',`研${game.year}。本公演と新人公演の稽古に参加し、先輩や同期から役作りを学ぶ。主演への抜擢はもう少し先の段階。`,[{label:'発声と歌の表現を研究する',effect:'song'},{label:'芝居の基礎を繰り返す',effect:'acting'}]);
+ if(game.year<=7)return v12PriorCareerChoices();
+ if(game.flags.rookie===0)return v12PriorCareerChoices();
+ if(game.flags.bau===0&&!v12CanBau()){
+  const wait=Math.max(1,V12_CAREER.bauMin-game.year,(v12Career().rookie??5)+1-game.year);
+  return stagedChoice('バウ主演へ向けた経験期間',`新人公演主演・ヒロイン後は、通常の本公演や別箱で力量と集客力を蓄える時期。主演選考の目安まで約${wait}年。`,[
+   {label:'本公演で芝居を磨く',effect:'acting'},{label:'歌唱のソロを磨く',effect:'song'}]);
+ }
+ if(game.flags.bau>0&&!game.flags.tojo&&!v12CanTojo()){
+  const wait=Math.max(1,V12_CAREER.tojoMin-game.year,(v12Career().bau??7)+2-game.year);
+  return stagedChoice('東上主演へ向けた経験期間',`バウ主演後、別箱の主要役や本公演での存在感を重ねる時期。東上挑戦の目安まで約${wait}年。`,[
+   {label:'主要役の解釈を深める',effect:'acting'},{label:'番組出演で表現力を磨く',effect:'aura'}]);
+ }
+ return v12PriorCareerChoices();
+};
+const v12PriorChoice=runGameChoice;
+runGameChoice=function(index){if(!game?.pending?.choices?.[index])return;
+ const c=game.pending.choices[index];const before=v12Prior();
+ if(c.effect==='bau'&&!v12CanBau()){game.pending=null;improve('acting',1);feed('次の主演に備える','バウ主演の選考はまだ先。今回の別箱では助演として力を蓄えた。','choice');save();render();return}
+ if(c.effect==='tojo'&&!v12CanTojo()){game.pending=null;improve('acting',1);feed('東上主演に向けて','主演に必要な経験を重ねる時期。稽古に専念した。','choice');save();render();return}
+ if(c.effect==='bau'||c.effect==='tojo'){
+  const a=v12Career();const isBau=c.effect==='bau';game.pending=null;
+  const minYear=isBau?Math.max(V12_CAREER.bauMin,(a.rookie??5)+1):Math.max(V12_CAREER.tojoMin,(a.bau??7)+2);
+  const since=Math.max(0,game.year-minYear);
+  const chance=Math.min(.68,(isBau?.24:.19)+since*.10+game.stats.pop*.0025+(game.parentBoost||0));
+  if(Math.random()<chance){
+   if(isBau)game.flags.bau=(game.flags.bau||0)+1;else game.flags.tojo=(game.flags.tojo||0)+1;
+   gain('pop',isBau?4:5);
+   const r=v9RecordBox(true,isBau?'バウホール公演':'東上公演');v9NaturalGrowth(r);
+   feed(isBau?'バウ主演・ヒロイン決定':'東上主演・ヒロイン決定',`『${r.title}』で${game.role==='男役'?'主演':'ヒロイン'}に抜擢。相手役：${r.partner}。`,'choice');
+   popMajor(isBau?'バウ主演決定':'東上主演決定',`研${game.year}、『${r.title}』の主演が決まりました。`);
+  }else{
+   let r=v9RecordBox(false,isBau?'バウホール公演':'東上公演');
+   improve('acting',1);feed('主演選考の結果',`『${r.title}』に出演。今回は主演に届かなかった。次の役へ向けて経験を積む。`,'choice');
+  }
+  adjustRank();v12RecordMilestones(before);save();render();return;
+ }
+ v12PriorChoice(index);
+ if(!game)return;v12RecordMilestones(before);
+ save();render();
+};
+// 年次の経過で突然トップに昇進しないよう、既存の年次判定後にも調整。
+const v12PriorStep=step;
+step=function(){if(!game||game.ended||game.pending)return;const before=v12Prior();const eventLength=game.events.length;const popupLength=game.popups?.length||0;
+ // 後続のスポンサー80%抽選は十分な経験を積むまで温存する。
+ const priorSponsor=game.sponsorTopTrial;
+ if(game.sponsor&&!v12CanTop())game.sponsorTopTrial=true;
+ v12PriorStep();
+ if(!game)return;
+ // 一時的な試行済みフラグを復旧（実際の試行が将来できるように）。
+ if(game.sponsor&&!v12CanTop()&&!priorSponsor)game.sponsorTopTrial=false;
+ // 古い年次処理のトップ抜擢条件にも年次の下限を適用。
+ if(!before.top && game.flags.top && !v12CanTop()){
+  game.flags.top=false;game.flags.rank=before.rank===1?3:before.rank;game.ended=false;
+  game.events=game.events.filter((e,i)=>i<eventLength||!/(トップ就任|トップスター就任|トップ娘役就任)/.test(e.name));
+  if(game.popups)game.popups=game.popups.filter((p,i)=>i<popupLength||!p.title.includes('トップ就任'));
+  feed('スターとして経験を積む',`研${game.year}。主演経験を積み、次の組内人事に備える。`);
+ }
+ adjustRank();v12RecordMilestones(before);save();render();
+};
+// 既存データも記録から初回主演年を推定。ロード後に突然「研1バウ主演」にならないよう扱う。
+const v12PriorEnsure=ensureExtra;
+ensureExtra=function(){v12PriorEnsure();if(!game)return;const a=v12Career();
+ const works=game.leadWorks||[];
+ for(const [key,rx] of [['rookie',/新人公演/],['bau',/バウ/],['tojo',/東上/]]){
+  if(a[key]==null){let m=works.find(w=>rx.test(w.kind||''));if(m)a[key]=Number(m.term)||Math.max(1,(m.year||game.calendar)-game.entry+1)}
+ }
+};
+// 退団は本人の任意の選択。画面上の常設ボタンから確認できる。
+function v12RetireAsk(){if(!game||game.ended)return;
+ const yes=confirm(`研${game.year||0}・${game.name}。本当に退団しますか？\n現在の出演・交友・称号履歴は保存されます。`);
+ if(!yes)return;
+ if(game.pending)game.pending=null;
+ game.ended=true;game.flags.retired=true;game.retireYear=game.calendar;
+ v8AutoRequested=false;playing=false;clearTimeout(timer);
+ feed('退団を決意',`${game.name}は自分の意思で宝塚歌劇団を退団した。これまでの舞台経験を胸に新しい生活へ向かう。`,'choice');
+ awardTitles();popMajor('退団',`研${game.year}で舞台人生を締めくくりました。`);save();render();
+}
+const v12BeforeScreen=gameScreen;
+gameScreen=function(){let html=v12BeforeScreen();if(!game||game.ended)return html;
+ const btn=`<button class="btn" style="border-color:#bc788c;color:#9d526d" onclick="v12RetireAsk()">退団を選ぶ</button>`;
+ // ゲーム画面の一番上に固定的に設ける（称号・会の画面にも表示）。
+ return `<div class="row" style="margin:4px 0 10px;justify-content:flex-end">${btn}</div>`+html;
+};
+const v12BeforeProfileScreen=profileScreen;
+profileScreen=function(){let html=v12BeforeProfileScreen();if(game?.phase>0){
+ html=html.replace(/<button class="btn primary" onclick="tab='timeline';render\(\)">舞台人生を始める →<\/button>/,'<button class="btn primary" onclick="openTab(\'timeline\')">← 人生の記録へ戻る</button>');
+ html=html.replace(/<button class="btn" onclick="newGame\(\)">プロフィールを再抽選<\/button>/,'<button class="btn" onclick="v12NewLifeConfirm()">新しい人生を始める</button>');
+ html=html.replace('芸名と男役・娘役の志望を決めて、人生を進めてください。','現在のステータスとプロフィールを確認できます。');
+ }return html;
+};
+function v12NewLifeConfirm(){if(confirm('今のセーブを上書きして新しい人生を始めますか？'))newGame()}
+// 撮影や他組合同のスカイ・ステージ企画を機会に、他組の知人が増える。
+const v12PriorFeed=feed;
+feed=function(name,description,kind='auto'){
+ v12PriorFeed(name,description,kind);
+ if(!game||game.phase<3||!/スカイ.?ステージ|歌劇誌|歌劇.*撮影|GRAPH|雑誌|カレンダー|対談|番組収録/.test(name+' '+description))return;
+ const groupMates=v8Roster().filter(p=>groupInYear(p.name,game.calendar)!==game.troupe && Math.abs(pplTerm(p)-game.term)<=5);
+ if(!groupMates.length)return;
+ // 同じ出演企画の人物として選出した相手のみ、以後遊べる相手に登録する。
+ const p=pick(groupMates);game.crossTroupeFriends??={};game.crossTroupeFriends[p.name]=true;
+ bumpFriend(p.name,3);
+ const last=game.events.at(-1);if(last)last.text+=` 他組の${p.name}（${groupInYear(p.name,game.calendar)}）とも共演・交流した。`;
+};
+const v12BeforeFriends=v10FriendList;
+v10FriendList=function(){let old=v12BeforeFriends();if(!game)return old;
+ let extra=v8Roster().filter(p=>game.crossTroupeFriends?.[p.name]&&groupInYear(p.name,game.calendar)!==game.troupe);
+ return [...new Map([...old,...extra].map(p=>[p.name,p])).values()];
+};
+// 選択イベントは原則4択に。右側に予想結果・リスクを表示する（抽選成功は保証しない）。
+function v12EffectHint(c){
+ if(c.effect==='rookie')return '新人公演の主演・ヒロイン選考に挑戦（抽選）／不選出時も舞台経験';
+ if(c.effect==='bau')return 'バウ主演選考へ（抽選）／役付き・人気が変化';
+ if(c.effect==='tojo')return '東上主演選考へ（抽選）／選考に漏れる可能性';
+ if(c.effect==='nonlead')return '助演の別箱出演・芝居経験・交友を重ねる';
+ if(c.effect==='voluntaryRetirement')return '退団して人生を終了／履歴は保存';
+ if(c.effect==='continueCareer')return '在団を継続／体力を少し回復';
+ if(c.effect==='switchToMusume')return '娘役へ転向／男役の主演実績をリセット';
+ if(c.effect==='stayOtoko')return '男役を続ける／進路は維持';
+ const skill=SKILLS[c.effect];return skill?`${skill}の成長判定（練習の成果には個人差）`:'運営・人間関係・評価が選択に応じて変化';
+}
+const v12PriorStaged=stagedChoice;
+stagedChoice=function(name,body,choices){if(!Array.isArray(choices))return v12PriorStaged(name,body,choices);
+ let arr=choices.map(c=>({...c}));
+ if(arr.length===2){
+ const existing=new Set(arr.map(c=>c.effect));
+ const opts=[['発声と歌唱の強化に集中する','song'],['振付と舞踊の表現を磨く','dance'],['舞台での演技力を高める','acting'],['仲間との信頼関係を深める','team'],['華と存在感を高める','aura'],['休養をとってコンディションを整える','rest']];
+ for(const [label,effect] of opts){if(arr.length>=4)break;if(!existing.has(effect)){arr.push({label,effect});existing.add(effect)}}
+ }
+ arr=arr.map(c=>({...c,detail:v12EffectHint(c)}));
+ return v12PriorStaged(name,body,arr);
+};
+// 従来の会イベント2択も4択に拡張。
+const v12BeforeFcEventSelection=fcEventSelection;
+fcEventSelection=function(){v12BeforeFcEventSelection();if(!game?.pending||game.pending.fcType!=='event')return;
+ let base=game.pending.choices;
+ if(base.length===2)game.pending.choices=[...base,
+  {id:2,label:'代表・スタッフと改善策を立て、慎重に運営する',detail:'安定運営を目指す／会員数・信頼度は結果次第'},
+  {id:3,label:'会員から意見を募り、参加型で解決する',detail:'参加を促進／調整力により運営の成否が変化'}];
+ save();render();
+};
+function v12ChoiceButtons(){return game.pending.choices.map((c,i)=>`<button onclick="runGameChoice(${i})"><b>${i+1}. ${esc(c.label)}</b><small style="display:block;margin-top:5px;font-size:11px;line-height:1.45;opacity:.8">→ ${esc(c.detail||v12EffectHint(c))}</small></button>`).join('')}
+const v12PriorJournal=journal;
+journal=function(){let html=v12PriorJournal();if(!game?.pending?.choices)return html;
+ // replace only the pending choices container, not timeline event cards.
+ return html.replace(/(<div class="actions">)[\s\S]*?(<\/div><\/div>)/,`$1${v12ChoiceButtons()}$2`);
+};
+// 会の別画面でも選択結果の説明を表示。
+const v12PriorFcPanel=fcPanel;
+fcPanel=function(){let h=v12PriorFcPanel();if(game?.pending?.fcType&&game.pending?.choices){h=h.replace(/(<div class="actions">)[\s\S]*?(<\/div><\/div>)/,`$1${v12ChoiceButtons()}$2`)}return h};
+const v12PriorProfile=revisedProfile;
+revisedProfile=function(){let h=v12PriorProfile();const a=v12Career();
+ return h.replace('</section>',`<div class="history"><b>主演・昇進の年次</b><br>新人公演：${a.rookie?'研'+a.rookie:'未経験'} ／ バウ：${a.bau?'研'+a.bau:'未経験'} ／ 東上：${a.tojo?'研'+a.tojo:'未経験'}<br>2番手：${a.second?'研'+a.second:'未経験'} ／ トップ：${a.top?'研'+a.top:'未就任'}<br><small>実例を参考にしたゲーム内の昇格条件：バウは研6以降、東上は研9以降、2番手は研10以降、トップは研11以降が目安。</small></div></section>`);
+};
+
+
+
+// ===== v13: 会のナビゲーションタブを撤去。会の制度とイベントは保持 =====
+// 会の内容は「お金を使う」に折りたたみ形式で移設する。
+const v13PreviousShop=shop;
+shop=function(){
+  const base=v13PreviousShop();
+  const details=`<details class="panel" id="club-details" style="margin-top:14px;border:1px solid #e5b4c7;border-radius:12px;padding:12px;background:#fff6fa"><summary style="cursor:pointer;font-weight:bold;color:#963e69">私設ファンクラブの運営状況・会員数を確認する</summary><div style="margin-top:10px">${fcPanel()}</div></details>`;
+  return base+details;
+};
+// 過去の「club」表示状態を残したセーブでも操作画面が消えないようにする。
+const v13PreviousOpenTab=openTab;
+openTab=function(t){v13PreviousOpenTab(t==='club'?'shop':t)};
+const v13PreviousScreen=gameScreen;
+gameScreen=function(){
+  if(tab==='club')tab='shop';
+  let html=v13PreviousScreen();
+  // 旧版・二重差込みによる会ボタンをすべて除去する。発足イベントや会の状態は消さない。
+  return html.replace(/<button\b[^>]*>\s*(?:♡\s*)?会（ファンクラブ）(?:\s*\d+名)?\s*<\/button>/g,'');
+};
+
 </script></body></html>
