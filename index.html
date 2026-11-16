@@ -1498,4 +1498,562 @@ revisedWorks=function(){
  return leadPanel+original;
 };
 
+
+
+// ===== v19: 複数番手・動物番組・専科・宝塚風ドット舞台 =====
+// 番手は公称の役職ではなくゲーム内の扱い。史実の確定情報と予測を明確に区別する。
+function v19State(){
+ if(!game)return;
+ game.v19??={animalYears:[],crossFriends:[],senkaOffered:[],senkaVisited:[],senkaLastGroup:'',senkaChosen:false};
+ game.v19.animalYears??=[];game.v19.crossFriends??=[];game.v19.senkaOffered??=[];game.v19.senkaVisited??=[];
+}
+const V19_HIST_DOUBLE={
+ 2026:{'花組':{second:['聖乃あすか','極美慎'],third:['希波らいと']}},
+};
+function v19Term(name){if(name===game?.name)return game.term;const p=v15AllPeople().find(x=>x.name===name);return p?pplTerm(p):null}
+function v19SortRanks(line){
+ const prior=[...(line.ranks||[])];line.ranks=[...new Set(prior.filter(x=>x&&x!==line.top&&x!==line.heroine&&!game.v15.retired.includes(x)))];
+ // 学年が上の生徒が基本的に先順位。ごくまれな逆転は昇進実績・能力差によって許容する。
+ const oldPositions=new Map(prior.map((n,i)=>[n,i]));
+ line.ranks.sort((a,b)=>{
+  const ta=v19Term(a),tb=v19Term(b);
+  const oa=oldPositions.get(a)??99,ob=oldPositions.get(b)??99;
+  const sa=(100-(ta??110))*3+Math.max(0,25-oa*8)+v15PersonScore({name:a,position:'',kind:'現役'},game.calendar)*.22;
+  const sb=(100-(tb??110))*3+Math.max(0,25-ob*8)+v15PersonScore({name:b,position:'',kind:'現役'},game.calendar)*.22;
+  return sb-sa;
+ });
+}
+function v19RestoreRanks(){
+ if(!game||game.calendar<2027)return;
+ v15Ensure();for(const group of V15_TROUPES){const line=game.v15.groups[group];v19SortRanks(line);
+  if(line.doubleSecond&&line.ranks.length<2)line.doubleSecond=false;
+  if(line.doubleThird&&line.ranks.length<3)line.doubleThird=false;
+  // W2番手は史実2026花組の例外を継承しない。未来は原則単独。
+  if(game.calendar>2027&&line.doubleSecond&&v15Hash(group+'w2'+game.calendar)%100>=4)line.doubleSecond=false;
+ }
+}
+const v19OldRanks=v18RanksFor;
+v18RanksFor=function(year,group){
+ const base=v19OldRanks(year,group);
+ if(year<=2026){
+  const special=V19_HIST_DOUBLE[year]?.[group];
+  if(special)return {...base,second:special.second.join('・')+'（W2番手）',third:special.third.join('・'),secondNames:special.second,thirdNames:special.third};
+  if(year===2026&&group==='月組')return {...base,third:'礼華はる・彩海せら（3番手級の並列扱い）',thirdNames:['礼華はる','彩海せら']};
+  return base;
+ }
+ v19RestoreRanks();const line=game.v15.groups[group];
+ if(!line)return base;
+ return {...base,second:line.doubleSecond?line.ranks.slice(0,2).join('・')+'（W2番手）':(line.ranks[0]||'空席'),
+  third:line.doubleSecond?(line.ranks[2]||'空席'):(line.doubleThird?line.ranks.slice(1,3).join('・')+'（W3番手）':(line.ranks[1]||'空席'))};
+};
+// 年度ごとの推計人事で、2番手が複数となるのは非常に稀、3番手の並列は時折起こる。
+const v19OldAdvance=v15AdvanceRoster;
+v15AdvanceRoster=function(year){
+ v19OldAdvance(year);
+ if(!game||year<2027)return;
+ v19State();
+ game.v19.rankYears??=[];
+ for(let y=2027;y<=year;y++){
+  if(game.v19.rankYears.includes(y))continue;
+  game.v19.rankYears.push(y);
+  for(const troupe of V15_TROUPES){
+   const line=game.v15.groups[troupe];
+   v19SortRanks(line);
+   const enough=line.ranks.length>=3;
+   const r=v15Hash(`${troupe}|${y}|duplicate`)%1000;
+   // W2: 約1.5%/組年、W3: 約8%/組年。二重設定不可。
+   line.doubleSecond=enough&&r<15;
+   line.doubleThird=enough&&!line.doubleSecond&&r>=15&&r<95;
+   if(line.doubleSecond)v15Notice(y,'W2番手体制（ゲーム内予測）',`${troupe}で${line.ranks.slice(0,2).join('・')}がW2番手相当となった。`,true);
+   if(line.doubleThird)v15Notice(y,'W3番手体制（ゲーム内予測）',`${troupe}で${line.ranks.slice(1,3).join('・')}がW3番手相当となった。`);
+  }
+ }
+};
+// 主演・番手の昇格候補も、年上が基本優先（能力が大幅に上回れば逆転あり）。
+const v19OldFill=v15FillVacancy;
+v15FillVacancy=function(group,year,post){
+ if(!game)return null;
+ const line=game.v15.groups[group];
+ const names=[line.top,line.heroine,...line.ranks].filter(Boolean);
+ if(post==='top'&&line.ranks.length){
+  const cands=line.ranks.map(n=>v15AllPeople().find(p=>p.name===n)).filter(Boolean);
+  cands.sort((a,b)=>{
+   const as=v15PersonScore(a,year)+(110-(pplTerm(a)||110))*2.4;
+   const bs=v15PersonScore(b,year)+(110-(pplTerm(b)||110))*2.4;
+   return bs-as;
+  });
+  if(cands[0])line.ranks=[cands[0].name,...line.ranks.filter(n=>n!==cands[0].name)];
+ }
+ const outcome=v19OldFill(group,year,post);
+ // 昇格後、W編成の空席は自動解除。
+ if(outcome&&post==='top'){line.doubleSecond=false;line.doubleThird=false;}
+ return outcome;
+};
+
+// スカイ・ステージ「TAKARAZUKAあにまるハウス」を参考にした創作の収録イベント。
+// 生き物の種類によらず応募可能。年度あたり最大一回・最初の飼育翌年以降。
+function v19AnimalPool(){
+ v19State();let y=game.calendar;
+ const rows=v8Roster().filter(p=>p.name!==game.name&&groupInYear(p.name,y)!=='不明'&&
+  groupInYear(p.name,y)!=='専科'&&groupInYear(p.name,y)!==game.troupe&&
+  !game.v15?.retired?.includes(p.name));
+ return rows.sort((a,b)=>Math.abs(pplTerm(a)-game.term)-Math.abs(pplTerm(b)-game.term)).slice(0,35);
+}
+function v19AnimalEvent(){
+ if(!game?.pet||game.phase!==3||game.year<2)return false;
+ v19State();let y=game.calendar;
+ if(game.v19.animalYears.includes(y))return false;
+ if(Math.random()>=.35)return false;
+ const pool=v19AnimalPool();if(!pool.length)return false;
+ const partner=pick(pool);const g=groupInYear(partner.name,y);
+ game.v19.animalYears.push(y);
+ const petLabel=V10_PETS[game.pet.kind]?.[0]||'ペット';
+ const options=[
+  {label:'ペットの特技を紹介する',text:`${game.pet.name}の可愛らしい一面を披露した。`,run:()=>{bumpFriend(partner.name,8);improve('aura');gain('pop',1)}},
+  {label:'共演者と飼育の話をする',text:`${partner.name}との会話が弾み、交流が始まった。`,run:()=>{bumpFriend(partner.name,14);improve('team')}},
+  {label:'写真や思い出をじっくり紹介',text:'ペットへの思いをファンに届けた。',run:()=>{bumpFriend(partner.name,7);gain('pop',2)}},
+  {label:'共演者のペットについて質問する',text:`${partner.name}との距離が縮まった。`,run:()=>{bumpFriend(partner.name,11);improve('acting')}}
+ ];
+ if(!game.v19.crossFriends.includes(partner.name))game.v19.crossFriends.push(partner.name);
+ addEvent('スカイ・ステージ「TAKARAZUKAあにまるハウス」出演',
+  `${petLabel}の${game.pet.name}と番組に出演。${g}の${partner.name}と共演することになった。`, 'choice',options);
+ feed('他組との共演',`${g}の${partner.name}と動物番組で共演し、交流するようになった。`);
+ return true;
+}
+const v19OldFriendList=v10FriendList;
+v10FriendList=function(){
+ const base=v19OldFriendList();v19State();if(!game)return base;
+ const map=new Map(base.map(p=>[p.name,p]));
+ for(const name of game.v19.crossFriends){
+  const p=v8Roster().find(x=>x.name===name);
+  if(p&&!game.v15?.retired?.includes(name))map.set(name,p);
+ }
+ return [...map.values()];
+};
+
+// 専科は5組のいずれにも固定所属せず、複数組へ特別出演する。
+function v19SenkaEligible(){return game&&game.phase===3&&!game.ended&&!game.flags.top&&game.year>=13&&game.troupe!=='専科'}
+function v19SenkaOffer(){
+ v19State();const year=game.calendar;if(!v19SenkaEligible()||game.v19.senkaOffered.includes(year))return false;
+ // 研13以降、年に1度のキャリア選択（自発的な異動希望として扱う）。
+ game.v19.senkaOffered.push(year);
+ const from=game.troupe;
+ addEvent('専科への異動を考える',
+  `研${game.year}。各組の作品を支えるスペシャリストとして、専科への異動も選択肢に入った。`, 'choice',[
+  {label:'専科への異動を希望する',text:'新たな舞台への挑戦を決めた。',run:()=>{
+   game.troupe='専科';game.group='専科';game.v19.senkaChosen=true;game.v19.senkaLastGroup=from;
+   game.flags.rank=0;
+   game.transferRecords??=[];game.transferRecords.push({year:game.calendar,name:game.name,from,to:'専科',role:game.role,forecast:true,player:true});
+   feed('専科異動（ゲーム内人事）',`${game.name}が${from}から専科へ異動。以降、各組への特別出演を中心に活動する。`);
+   popMajor('専科への異動',`${from}から専科へ。5組の作品に特別出演するキャリアが始まる。`);
+  }},
+  {label:'現在の組で路線を追う',text:'組内の番手・配役の機会を引き続き目指す。',run:()=>improve('acting')},
+  {label:'現在の組で専門性を磨く',text:'個性的な役や歌唱力を磨いた。',run:()=>improve('song')},
+  {label:'後輩指導に力を入れる',text:'若手の育成に時間を割いた。',run:()=>improve('team')}
+ ]);
+ return true;
+}
+function v19SenkaAppearance(){
+ if(game.troupe!=='専科')return false;
+ v19State();const year=game.calendar;
+ const seen=game.v19.senkaVisited.some(x=>x.year===year);
+ if(seen)return false;
+ const visiting=V15_TROUPES[(v15Hash(`${game.name}|${year}|senka`))%5];
+ const title=(game.calendar>=2027?v15Future(year,visiting,'本公演'):REAL_SHOWS.find(x=>x.year===year&&x.troupe===visiting))?.title||'特別出演公演';
+ const role=game.stats.acting>45?'特別出演・重要な助演':'専科から特別出演';
+ const row={year,term:game.year,title,kind:'本公演（専科特別出演）',role,troupe:visiting,senka:true};
+ game.performances.push(row);game.v19.senkaVisited.push({year,troupe:visiting,title});
+ const p=v8Roster().find(p=>groupInYear(p.name,year)===visiting);
+ if(p)bumpFriend(p.name,6);
+ feed('専科から特別出演',`${visiting}『${title}』へ専科から参加。${p?`${p.name}ら組子と稽古を重ねた。`: '各組の生徒と新しい舞台を作り上げた。'}`);
+ improve('acting');return true;
+}
+const v19OldStep=step;
+step=function(){
+ if(!game||game.ended||game.pending||game?.v17?.partnerPending)return;
+ v19State();
+ if(game.phase===3&&game.troupe==='専科'&&game.part===1){
+  game.part=3;feed('専科での舞台活動', '組所属時とは異なり、客演先の組子と演技を磨いた。');save();render();return;
+ }
+ if(game.phase===3&&game.part===0){
+  if(game.troupe==='専科'&&v19SenkaAppearance()){game.part=1;save();render();return}
+  if(v19SenkaEligible()&&v19SenkaOffer()){save();render();return}
+  if(game.pet&&v19AnimalEvent()){save();render();return}
+ }
+ v19OldStep();
+ if(game?.calendar>=2027)v19RestoreRanks();
+};
+// 過去の人物年表には専科が正しく表示されるようにする。
+const v19PrevProfile=fmtProfile;
+fmtProfile=function(){const html=v19PrevProfile();if(!game||game.troupe!=='専科')return html;
+ return html.replace('</section>',`<p class="note">専科所属。各組の公演に特別出演する立場です。過去の所属：${esc(game.v19?.senkaLastGroup||'記録なし')}</p></section>`)};
+
+// 宝塚風のショー舞台：宮廷・軍服・テールコートの舞台装飾と、役柄に応じた衣装の細部。
+const v19BasePixel=v8PixelSvg;
+v8PixelSvg=function(){
+ let svg=v19BasePixel();if(!game)return svg;
+ const male=game.role==='男役',c=v8Costume();
+ const suit=male?
+ `<g shape-rendering="crispEdges"><path d="M119 94L130 102L137 98L145 117L152 98L161 102L174 94L168 148L121 148Z" fill="#1b213d" stroke="${c.trim}" stroke-width="3"/><path d="M131 103L144 116L156 102" fill="none" stroke="#f6f0e8" stroke-width="5"/><path d="M143 109L148 109L147 133L143 133Z" fill="${c.trim}"/><rect x="124" y="146" width="17" height="20" fill="#25233b"/><rect x="151" y="146" width="17" height="20" fill="#25233b"/><rect x="118" y="95" width="11" height="6" fill="${c.trim}"/><rect x="162" y="95" width="12" height="6" fill="${c.trim}"/><rect x="133" y="65" width="4" height="4" fill="#ffe0ed"/></g>`:
+ `<g shape-rendering="crispEdges"><path d="M124 96L170 96L177 145L109 145Z" fill="${c.coat}" stroke="${c.trim}" stroke-width="4"/><path d="M113 142L100 166H192L176 142Z" fill="#eabedb" stroke="${c.trim}" stroke-width="3"/><path d="M132 96L145 109L158 96" fill="none" stroke="#fff4dd" stroke-width="5"/><rect x="142" y="102" width="7" height="7" fill="#ffe8a9"/></g>`;
+ const flourish=`<g shape-rendering="crispEdges"><path d="M27 143L44 115L58 144M228 145L247 113L263 143" stroke="#e8a9c9" stroke-width="3" fill="none"/><path d="M24 136L35 130L45 136L35 142Z" fill="#edc56c"/><path d="M246 131L256 125L266 131L256 137Z" fill="#edc56c"/><rect x="32" y="36" width="3" height="9" fill="#f3d474"/><rect x="256" y="40" width="3" height="9" fill="#f3d474"/></g>`;
+ return svg.replace('</svg>',flourish+suit+'</svg>');
+};
+
+
+// ===== v20: 未来の番手人事の欠番修正・バウ主演経験の必須化・組替え通知 =====
+// 実際のバウ主演記録はV14_BOXESの劇場・主演・年度から抽出したもの。
+const V20_CONFIRMED_BOW = {"侑輝大弥":2026,"稀惺かずと":2026,"礼華はる":2023,"天飛華音":2023,"華世京":2025,"希波らいと":2025,"極美慎":2022,"風色日向":2024,"風間柚乃":2021,"凪七瑠海":2020,"彩海せら":2024,"聖乃あすか":2021,"天華えま":2023,"鷹翔千空":2023,"一之瀬航季":2022,"瀬央ゆりあ":2018,"縣千":2022,"愛月ひかる":2021,"朝美絢":2015,"和希そら":2018,"珠城りょう":2015,"瑠風輝":2019,"永久輝せあ":2019,"轟悠":2015,"美弥るりか":2019,"愛希れいか":2018,"水美舞斗":2018,"暁千星":2015,"桜木みなと":2015,"七海ひろき":2017,"星条海斗":2016,"瀬戸かずや":2016,"北翔海莉":2016,"礼真琴":2016,"月城かなと":2015,"鳳月杏":2015};
+// バウ主演の実績がない生徒を番手として扱わない。未来の架空公演で
+// 主演を割り当てた場合はその記録を明示的に保存してから候補に含める。
+function v20BauEligible(name, year){
+ if(name===game?.name)return (game.flags.bau||0)>0;
+ if(V20_CONFIRMED_BOW[name]!==undefined && V20_CONFIRMED_BOW[name]<=year)return true;
+ return !!game?.v20?.futureBowLeads?.some(r=>r.name===name&&r.year<=year);
+}
+function v20FutureBow(name,year,title){
+ if(!game)return;
+ game.v20??={futureBowLeads:[]};game.v20.futureBowLeads??=[];
+ if(!game.v20.futureBowLeads.some(r=>r.name===name&&r.year===year))
+   game.v20.futureBowLeads.push({name,year,title:title||'バウホール主演（ゲーム内予測）'});
+}
+function v20EligibleRankPerson(name,group,year){
+ if(!name || name===game.v15.groups[group]?.top)return false;
+ if(game.v15.retired.includes(name))return false;
+ if(name===game.name)return game.troupe===group&&game.role==='男役'&&v20BauEligible(name,year);
+ const person=v15AllPeople().find(p=>p.name===name);
+ if(!person)return false;
+ if(groupInYear(name,year)!==group)return false;
+ if(entryTerm(pplTerm(person))>year)return false;
+ return v20BauEligible(name,year);
+}
+// 2026年の人事は史実を優先し、2027年からのゲーム内推計だけを整える。
+function v20NormalizeRank(group,year){
+ if(!game?.v15||year<2027)return;
+ const line=game.v15.groups[group];if(!line)return;
+ const previous=[...line.ranks];
+ line.ranks=[...new Set(previous)].filter(n=>v20EligibleRankPerson(n,group,year));
+ // 通常は2番手・3番手各1名。W2/W3の追加枠がある場合のみ3人目を保持。
+ line.ranks=line.ranks.slice(0,(line.doubleSecond||line.doubleThird)?3:2);
+ if(line.ranks.length<2){line.doubleSecond=false;line.doubleThird=false;}
+ if(line.ranks.length<3){line.doubleThird=false;}
+}
+// 未主演の夢奈瑠音は候補にできない。実際の出演・助演歴は残す。
+const v20PreviousCandidate=v15Candidate;
+v15Candidate=function(group,year,exclude=[]){
+ const pool=v15AllPeople().filter(p=>p.name!==game?.name&&!exclude.includes(p.name)&&
+   groupInYear(p.name,year)===group && entryTerm(pplTerm(p))<=year &&
+   year-entryTerm(pplTerm(p))>=5 && v20BauEligible(p.name,year));
+ return pool.sort((a,b)=>v15PersonScore(b,year)-v15PersonScore(a,year))[0];
+};
+const v20PreviousFill=v15FillVacancy;
+v15FillVacancy=function(group,year,post){
+ if(year<2027)return v20PreviousFill(group,year,post);
+ const line=game?.v15?.groups?.[group];if(!line)return null;
+ if(post==='top'){
+   // バウ主演歴のある2番手候補のみトップへの昇格を認める。
+   const prior=[...line.ranks];
+   line.ranks=line.ranks.filter(n=>v20EligibleRankPerson(n,group,year));
+   const result=v20PreviousFill(group,year,post);
+   if(!result)line.ranks=prior.filter(n=>v20EligibleRankPerson(n,group,year));
+   return result;
+ }
+ if(typeof post!=='number'||post>2)return null;
+ // 3人目はW番手の時だけ許可。4番手発表は行わない。
+ if(post===2 && !line.doubleSecond && !line.doubleThird)return null;
+ const chosen=v20PreviousFill(group,year,post);
+ if(chosen&&!v20BauEligible(chosen,year)){
+   line.ranks=line.ranks.filter(n=>n!==chosen);
+   return null;
+ }
+ return chosen;
+};
+const v20PreviousNotice=v15Notice;
+v15Notice=function(year,title,message,major=false){
+ // 未来の組替えが生じた年だけポップアップ。過去イベントの再生時は表示しない。
+ if(year>=2027&&/組替え/.test(title))major=true;
+ // 旧コードで「4番手」とされた通知は正しい3番手候補の表記へ。
+ if(/番手昇格（仮想人事）/.test(title)&&/4番手/.test(message))message=message.replace(/4番手/g,'3番手候補');
+ return v20PreviousNotice(year,title,message,major);
+};
+const v20PreviousAdvance=v15AdvanceRoster;
+v15AdvanceRoster=function(year){
+ if(!game?.v15)return v20PreviousAdvance(year);
+ const before=game.v15.year;
+ // 年初時点のデータを整理し、旧処理が不適格者を昇格させないようにする。
+ if(before>=2027)for(const g of V15_TROUPES)v20NormalizeRank(g,before);
+ const out=v20PreviousAdvance(year);
+ if(year>=2027){
+   for(const g of V15_TROUPES){
+     const line=game.v15.groups[g];
+     v20NormalizeRank(g,year);
+     while(line.ranks.length<2){
+       const prior=line.ranks.length;
+       if(!v15FillVacancy(g,year,prior)||line.ranks.length===prior)break;
+       v20NormalizeRank(g,year);
+     }
+   }
+ }
+ return out;
+};
+// 画面表示でも、2番手の次は3番手のみ。未適格候補を昇格済みと誤表示しない。
+const v20PreviousRanks=v18RanksFor;
+v18RanksFor=function(year,group){
+ const prior=v20PreviousRanks(year,group);
+ if(year<2027||!game?.v15)return prior;
+ v20NormalizeRank(group,year);
+ const line=game.v15.groups[group];
+ const second=line.doubleSecond&&line.ranks.length>=2
+  ?line.ranks.slice(0,2).join('・')+'（W2番手）':(line.ranks[0]||'空席');
+ const third=line.doubleSecond?(line.ranks[2]||'空席'):
+  (line.doubleThird&&line.ranks.length>=3?line.ranks.slice(1,3).join('・')+'（W3番手）':(line.ranks[1]||'空席'));
+ return {...prior,second,third,secondNames:line.doubleSecond?line.ranks.slice(0,2):line.ranks.slice(0,1),thirdNames:line.doubleSecond?line.ranks.slice(2,3):line.doubleThird?line.ranks.slice(1,3):line.ranks.slice(1,2)};
+};
+
+
+// ===== v21: 生徒組替え／未来別箱45作／称号説明／エトワール／路線実績 =====
+const V21_BOX_FUTURE = [
+['バウ','桜時計の約束'],['バウ','花霞のモノローグ'],['バウ','銀の寓話'],['バウ','レモン色の手紙'],['バウ','朝焼けの庭園'],['バウ','星のオルゴール'],['バウ','月の図書室'],['バウ','青薔薇の肖像'],['バウ','虹を待つ旅人'],['バウ','冬すみれの秘密'],['バウ','風見鶏の歌'],['バウ','薔薇の小径'],['バウ','琥珀のアトリエ'],['バウ','湖畔のアリア'],['バウ','夢みる船乗り'],
+['東上','蒼いリボンの誓い'],['東上','白銀のラプソディ'],['東上','時計仕掛けの王国'],['東上','ロンドン霧のワルツ'],['東上','紅のタペストリー'],['東上','マスカレードの夜'],['東上','星砂のラブレター'],['東上','ブロードウェイの雨'],['東上','カメリアの微笑'],['東上','天上の回廊'],['東上','ミラノの星灯'],['東上','蒼穹の庭師'],['東上','クリスタルの航路'],['東上','風のアンダンテ'],['東上','紫紺の夜明け'],
+['その他別箱','花園の奇跡'],['その他別箱','真珠の海を越えて'],['その他別箱','星の劇場から'],['その他別箱','薔薇色の寄港地'],['その他別箱','砂漠のオデット'],['その他別箱','レヴュー・シトラス'],['その他別箱','夢を紡ぐ街'],['その他別箱','水晶のパリ'],['その他別箱','夜明けのマリンブルー'],['その他別箱','春待ちのコンチェルト'],['その他別箱','白鳥の小箱'],['その他別箱','空色のカンタータ'],['その他別箱','パールの首飾り'],['その他別箱','海辺のソネット'],['その他別箱','花束のシンフォニー']
+];
+function v21BoxWork(year,troupe,kind='別箱公演'){
+ const type=/バウ/.test(kind)?'バウ':/東上|ドラマシティ/.test(kind)?'東上':'その他別箱';
+ const rows=V21_BOX_FUTURE.filter(x=>x[0]===type);
+ const item=rows[v15Hash(`BOX|${year}|${troupe}|${kind}`)%rows.length];
+ return {year,troupe,kind,title:item[1],theatre:type==='バウ'?'宝塚バウホール':type==='東上'?'梅田芸術劇場シアター・ドラマシティ':'梅田芸術劇場メインホール',forecast:true,fictional:true,genre:'未来別箱オリジナル'};
+}
+const v21OldFuture=v15Future;
+v15Future=function(year,troupe,kind='本公演'){
+ if(year>=2027 && kind!=='本公演')return v21BoxWork(year,troupe,kind);
+ return v21OldFuture(year,troupe,kind);
+};
+const v21OldCatalog=v15CatalogPanel;
+v15CatalogPanel=function(){
+ let html=v21OldCatalog();let extra=`<h3>未来の別箱作品 45作（別途）</h3><p class="note">バウ15作・東上15作・その他別箱15作。いずれも架空の公演案です。</p>${V21_BOX_FUTURE.map(([type,title])=>`<div class="history">${esc(type)}｜${esc(title)}</div>`).join('')}`;
+ return html.replace('<button class="btn" onclick="openTab(\'timeline\')">',extra+'<button class="btn" onclick="openTab(\'timeline\')">');
+};
+// 各人の組替えはキャリアで一度だけ抽選。50％の抽選を確率モデルとして保存。
+function v21Transfers(year){
+ if(!game||year<2027)return;
+ v15Ensure();const v=game.v15;
+ v.v21TransferPlan??={};v.v21ExtraDone??=[];
+ // 未来の路線スター・娘役を対象。本人と歴代トップ・既退団者は除く。
+ const pool=v15AllPeople().filter(p=>{
+   const term=pplTerm(p);const tenure=year-entryTerm(term)+1;
+   if(!term||p.name===game.name||tenure<5||tenure>17||v.retired.includes(p.name))return false;
+   const troupe=groupInYear(p.name,year);
+   if(!V15_TROUPES.includes(troupe)||Object.values(v.groups).some(x=>x.top===p.name||x.heroine===p.name))return false;
+   return v15IsRoad(p)||p.kind==='娘役';
+ });
+ for(const p of pool){
+   let plan=v.v21TransferPlan[p.name];
+   if(!plan){
+     const hash=v15Hash(`${game.seed}|${p.name}|v21`);
+     const selected=hash%100<50;
+     // 計画年を入団から5〜11年目に設定。2027年以前のキャリアは未来最初の数年に分配。
+     const earliest=Math.max(2027,entryTerm(pplTerm(p))+4);
+     const planned=earliest+(Math.floor(hash/101)%6);
+     plan=v.v21TransferPlan[p.name]={selected,year:planned};
+   }
+   if(!plan.selected||plan.year!==year||v.v21ExtraDone.includes(p.name))continue;
+   // 既存の未来予測で組替え済みなら二重発生させない。
+   if(v.futureTransfers?.some(t=>t.name===p.name)){v.v21ExtraDone.push(p.name);continue;}
+   const from=groupInYear(p.name,year);
+   const destinations=V15_TROUPES.filter(t=>t!==from);
+   destinations.sort((a,b)=>v.groups[a].ranks.length-v.groups[b].ranks.length||v15Hash(p.name+a)-v15Hash(p.name+b));
+   const to=destinations[0];
+   v.futureTransfers??=[];
+   v.futureTransfers.push({year,name:p.name,from,to,role:p.kind==='娘役'?'娘役':'男役',forecast:true,v21:true});
+   v.v21ExtraDone.push(p.name);
+   v.groups[from].ranks=v.groups[from].ranks.filter(n=>n!==p.name);
+   v15Notice(year,'組替え（仮想人事）',`${p.name}（${p.kind==='娘役'?'娘役':'男役'}）が${from}から${to}へ。新しい組での舞台活動が始まる。`,true);
+ }
+}
+const v21OldAdvance=v15AdvanceRoster;
+v15AdvanceRoster=function(year){
+ if(!game)return;
+ v15Ensure();const previous=game.v15.year;
+ v21OldAdvance(year);
+ for(let y=Math.max(2027,previous+1);y<=year;y++)v21Transfers(y);
+};
+// 他組に異動後も仲良し度1以上がある生徒とは会える。退団済みは除外。
+const v21OldFriends=v10FriendList;
+v10FriendList=function(){
+ const original=v21OldFriends();if(!game)return original;
+ const friendly=v8Roster().filter(p=>{
+   const f=game.friendship?.[p.name]||0;
+   return f>=1 && (p.name!==game.name) && !game.v15?.retired?.includes(p.name) && v8Active(p,game.calendar);
+ });
+ return [...new Map([...original,...friendly].map(p=>[p.name,p])).values()];
+};
+// トップ就任の研究科上限と、番手に就きながら上限を超えた生徒の翌年退団。
+function v21TopLimits(year){
+ if(!game?.v15||year<2027)return;
+ const v=game.v15;v.v21RetireAt??={};v.v21TopLimitSeen??=[];
+ for(const g of V15_TROUPES){
+  const line=v.groups[g];
+  for(const name of [...line.ranks]){
+   if(name===game.name)continue;
+   const person=v15AllPeople().find(p=>p.name===name);if(!person)continue;
+   const age=year-entryTerm(pplTerm(person))+1;
+   if(age>18){
+    const retirement=entryTerm(pplTerm(person))+18;
+    if(!v.v21TopLimitSeen.includes(name)){
+      v.v21TopLimitSeen.push(name);
+      v15Notice(year,'番手スターの退団（ゲーム内予測）',`${g}の${name}は研18までにトップ就任に至らず、次の進路を選んだ。`,true);
+    }
+    line.ranks=line.ranks.filter(n=>n!==name);
+    if(!v.retired.includes(name))v.retired.push(name);
+   }
+  }
+ }
+ // 主人公がトップに就任できないまま研18を越えて番手だった場合、1年以内に退団。
+ if(game.year>=19&&!game.flags.top && game.flags.rank>0 && game.flags.rank<=3 && !game.ended && !game.v21RetirePrompted){
+  game.v21RetirePrompted=true;
+  game.pending={name:'研18を越えて迎えた進路の節目',text:'番手スターとして歩んできたが、研18までにトップ就任はかなわなかった。この人生のシミュレーションでは、この一年を区切りに卒業する。',choices:[{label:'千秋楽まで舞台を務め、退団する',effect:'voluntaryRetirement',detail:'舞台人生を締めくくる'}]};
+ }
+}
+const v21OldStep=step;
+step=function(){
+ if(!game||game.ended||game.pending)return;
+ const previous=game.calendar;
+ v21OldStep();
+ if(game?.phase===3&&game.calendar!==previous&&game.calendar>=2027){
+   v15AdvanceRoster(game.calendar);
+   v21TopLimits(game.calendar);
+   v21AnnualExtras(game.calendar);
+   save();render();
+ }
+};
+// 初期能力の個性：歌唱／舞踊／芝居／華のうち一つが抜きん出る場合もある。
+const v21OldNewGame=newGame;
+newGame=function(){
+ v21OldNewGame();
+ if(!game)return;
+ const stats=game.stats;
+ const talents=['song','dance','acting','aura','team'];
+ for(const k of talents){const n=Math.random();stats[k]=Math.round(n<.12?16+Math.random()*9:n>.88?37+Math.random()*12:21+Math.random()*14)}
+ if(Math.random()<.62){const star=pick(talents);stats[star]=Math.max(stats[star],44+rand(14));}
+ game.v21EtHits=[];game.v21Annual=[];save();render();
+};
+function v21AnnualExtras(year){
+ if(!game||game.phase!==3||game.ended)return;
+ game.v21Annual??=[];
+ if(game.v21Annual.includes(year))return;game.v21Annual.push(year);
+ // エトワールは娘役の歌唱を評価する機会として追加（実際には男役が務める場合もある）。
+ if(game.role==='娘役' && game.stats.song>=48 && Math.random()<Math.min(.65,.08+(game.stats.song-45)*.011)){
+  const show=game.performances.filter(w=>w.year===year&&w.troupe===game.troupe).at(-1);
+  const title=show?.title||v15Future(Math.max(year,2027),game.troupe).title;
+  game.v21EtHits??=[];
+  game.v21EtHits.push({year,title,troupe:game.troupe,kind:'パレード・エトワール'});
+  gain('pop',2);improve('song');
+  feed('エトワールに抜擢',`『${title}』のパレードでエトワールを務めた。豊かな歌声が客席に響き、注目を集めた。`);
+  if(show)show.etOrole=true;
+  popMajor('エトワール抜擢',`『${title}』のパレード・エトワールを担当。`);
+ }
+ // SNSが普及した年代に限定した、華が高いキャラクターの年1回30%抽選。
+ if(year>=2015 && game.stats.aura>=65 && Math.random()<.30){
+  const up=8+rand(11);gain('pop',up);
+  feed('舞台写真がSNSで話題に',`華やかな舞台姿を紹介する投稿が広まり、人気が急上昇した（人気 +${up}）。`);
+  popMajor('SNSで注目を集める',`舞台写真が拡散され、人気が${up}上昇した。`);
+ }
+}
+// 強制の単調な追加2択ではなく、イベントごとに10通りの補助選択を入れ替える。
+const V21_EVENT_PATTERNS=[
+ [['先輩の歌稽古を見学する','song'],['舞台の動線を繰り返し確認する','team']],
+ [['振付助手に動きの癖を相談する','dance'],['役の背景をノートに整理する','acting']],
+ [['同期と自主稽古を組む','team'],['喉と身体の回復を優先する','rest']],
+ [['得意な見せ場に集中して磨く','aura'],['苦手な場面を集中的に練習する','acting']],
+ [['声楽の個人レッスンを受ける','song'],['体幹と柔軟性を鍛える','dance']],
+ [['本役の所作を研究する','acting'],['スタッフに舞台の見え方を相談する','aura']],
+ [['歌のフレージングを作り直す','song'],['アンサンブルの呼吸を重ねる','team']],
+ [['レッスンの量を減らして本番に備える','rest'],['台詞の相手との間合いを追求する','acting']],
+ [['ダンス場面の先頭で表現を試す','dance'],['同期に率直な感想を求める','team']],
+ [['舞台写真の表情を改善する','aura'],['稽古終了後に発声を見直す','song']]
+];
+const v21OldStaged=stagedChoice;
+stagedChoice=function(name,text,choices){
+ if(!Array.isArray(choices))return v21OldStaged(name,text,choices);
+ const arr=choices.map(x=>({...x}));
+ if(arr.length===2){
+   const counter=(game.v21ChoiceCount||0);game.v21ChoiceCount=counter+1;
+   const idx=(counter+v15Hash(name+String(game.term)))%10;
+   const extras=V21_EVENT_PATTERNS[idx];
+   for(const [label,effect] of extras)arr.push({label,effect,detail:v12EffectHint({effect})});
+ }
+ return v21OldStaged(name,text,arr.slice(0,4));
+};
+// 称号の取得条件と説明を獲得前後ともに明記。
+const V21_TITLE_DESC={
+ '長期政権の星':'トップとして大劇場本公演を8作以上務める','トップスターの誉れ':'男役トップスターに就任する','トップ娘役の華':'トップ娘役に就任する','三度の新人公演':'新人公演の主演・ヒロインを3回以上務める','二度の新人公演':'新人公演の主演・ヒロインを2回以上務める','新人公演初主演':'新人公演で主演・ヒロインを務める','バウ主演の実力':'バウ主演を1回達成する','バウ二冠':'バウ主演を2回以上達成する','東上主演の栄誉':'東上主演を達成する','三役の頂':'新人公演2回・バウ主演1回を経てトップに就任する','姉妹で番手付き':'姉妹設定があり双方が番手スターとなる','姉妹スター':'姉妹がいる主人公がトップになる','スポンサード・スター':'スポンサーを獲得する','スポンサーからの飛躍':'スポンサー獲得後にトップとなる','二番手の矜持':'2番手に就任する','三番手の躍進':'3番手に就任する','路線への挑戦':'4番手相当の立ち位置に立つ','歌の申し子':'歌唱75以上','舞踊の達人':'舞踊75以上','芝居巧者':'芝居75以上','舞台の華':'華75以上','信頼の座長':'協調性75以上','五拍子の芸':'歌・踊り・芝居・華・協調性がすべて65以上','不屈の表現者':'研15以上で芝居60以上','百万の拍手':'人気70以上','熱狂のファン':'人気55以上','ファンクラブの誇り':'お茶会5回以上','お茶会の名手':'お茶会10回以上','長き劇団生活':'研17以上','舞台歴十五年':'研15以上','主演作品十作':'主演・ヒロイン作品10作以上','主演作品五作':'主演・ヒロイン作品5作以上','主演作品三作':'主演・ヒロイン作品3作以上','舞台百戦錬磨':'出演記録20作品以上','作品の旅人':'3組以上の公演に出演する','組替えの経験者':'組替えの経験がある','資産家ジェンヌ':'貯蓄5,000万円以上','堅実な貯蓄家':'貯蓄2,000万円以上','私生活も充実':'買い物・支出15回以上','交友の花':'仲良し度35以上の相手が5名以上','絆の舞台':'仲良し度85以上の相手がいる','愛犬家スター':'犬と暮らしてトップに就任する','愛猫家スター':'猫と暮らしてトップに就任する','転向の先の頂点':'男役から娘役へ転向してトップ就任','地方からの栄光':'京阪神・首都圏以外の出身でトップに就任する',
+ 'エトワールの歌姫':'パレード・エトワールを3公演以上担当する'};
+TITLE_RULES.push(['エトワールの歌姫',g=>(g.v21EtHits||[]).length>=3]);
+titlesPanel=function(){awardTitles();const earned=game.achievements||[];
+ return `<section class="panel"><h2>称号コレクション ${earned.length} / ${TITLE_RULES.length}</h2><p class="note">達成条件を表示しています。未取得の称号も確認できます。</p>${TITLE_RULES.map(([name])=>`<div class="history"><b>${earned.includes(name)?'✦ 獲得済':'◇ 未獲得'}｜${esc(name)}</b><div class="muted">${esc(V21_TITLE_DESC[name]||'複数のキャリア実績を積み重ねる')}</div></div>`).join('')}</section>`;
+};
+// 路線実績の作品は既存データで確認できる名称だけを表示し、未確認を作らない。
+function v21PersonCredits(p,year){
+ const all=game?.v20?.futureBowLeads||[];
+ const rookie=(p.kind==='娘役'?(p.credits||[]):[]).filter(c=>c.year<=year).map(c=>c.title);
+ const men=(p.kind==='娘役'?[]:(typeof V8_MEN!=='undefined'?V8_MEN:[]));
+ const confirmed=(p.kind==='娘役'?[]:REAL_SHOWS.filter(w=>w.year<=year&&w.troupe===groupInYear(p.name,w.year)&&new RegExp(p.name).test(JSON.stringify(w.cast||{})) ).map(w=>w.title));
+ const bow=all.filter(w=>w.name===p.name&&w.year<=year).map(w=>w.title);
+ const actualBau=V20_CONFIRMED_BOW[p.name]&&V20_CONFIRMED_BOW[p.name]<=year?['主演年：'+V20_CONFIRMED_BOW[p.name]+'年（作品名未照合）']:[];
+ return {rookie:p.kind==='娘役'?rookie:confirmed,bow:[...bow,...actualBau],tojo:[],heroine:[],eto:[]};
+}
+const v21OldPeople=revisedPeople;
+revisedPeople=function(){
+ const original=v21OldPeople();if(!game)return original;
+ const men=v15AllPeople().filter(p=>p.kind!=='娘役'&&v15IsRoad(p)&&entryTerm(pplTerm(p))<=game.calendar&&v8Active(p,game.calendar));
+ const ladies=[...new Map(HEROINE_DATA.filter(p=>entryTerm(pplTerm(p))<=game.calendar&&v8Active(p,game.calendar)).map(p=>[p.name,p])).values()];
+ const fmt=(labels)=>labels.length?labels.map(x=>esc(x)).join('、'):'未登録';
+ let section=`<details class="panel"><summary><b>路線スター・娘役の公演実績一覧</b></summary><p class="note">作品名は登録・照合済みの情報のみ表示。未登録は実績ゼロを意味しません。未来の出演・主演はゲーム内予測です。</p><h3>男役の路線一覧</h3>`;
+ section+=men.map(p=>{let c=v21PersonCredits(p,game.calendar);return `<div class="history"><b>${esc(p.name)}（${pplTerm(p)}期・${esc(groupInYear(p.name,game.calendar))}）</b><br>新人公演主演：${c.rookie.length}件・${fmt(c.rookie)}<br>バウ主演：${c.bow.length}件・${fmt(c.bow)}<br>東上主演：${c.tojo.length}件・${fmt(c.tojo)}</div>`}).join('');
+ section+='</details><details class="panel"><summary><b>娘役の路線一覧</b></summary>';
+ section+=ladies.map(p=>{let c=v21PersonCredits(p,game.calendar);return `<div class="history"><b>${esc(p.name)}（${pplTerm(p)}期・${esc(groupInYear(p.name,game.calendar))}）</b><br>新人公演ヒロイン：${c.rookie.length}件・${fmt(c.rookie)}<br>別箱ヒロイン：${c.heroine.length}件・${fmt(c.heroine)}<br>エトワール：${c.eto.length}件・${fmt(c.eto)}</div>`}).join('');
+ section+='</details>';
+ return original.replace('</section>',section+'</section>');
+};
+const v21OldWorks=revisedWorks;
+revisedWorks=function(){let html=v21OldWorks();if(!game)return html;
+ const eto=game.v21EtHits||[];
+ const block=`<h3>エトワール担当歴（${eto.length}回）</h3>${eto.map(p=>`<div class="history">${p.year}年 ${esc(p.troupe)}『${esc(p.title)}』｜パレード・エトワール</div>`).join('')||'<p class="muted">まだ担当歴はありません。</p>'}`;
+ return html.replace('</section>',block+'</section>');
+};
+
+// 既存の「毎年必ず1〜2名組替え」方式を停止し、個人ごとの50%抽選に一本化。
+// 公式発表済みの組替えは VERIFIED_TRANSFERS で引き続き処理する。
+v16FutureTransfer=function(){return;};
+// 出演経歴の検索対象として、登録済みの実在別箱主演記録も読み取る。
+v21PersonCredits=function(p,year){
+ const norm=x=>String(x||'').replace(/\s/g,'');
+ const name=norm(p.name);
+ const boxes=V14_BOXES.filter(w=>w.year<=year&&norm(w.lead)===name);
+ const bow=boxes.filter(w=>w.theatre==='宝塚バウホール').map(w=>`${w.year}『${w.title}』`);
+ const tojo=boxes.filter(w=>w.theatre.includes('ドラマシティ')).map(w=>`${w.year}『${w.title}』`);
+ const rookie=(p.kind==='娘役'?(p.credits||[]):[]).filter(c=>c.year<=year).map(c=>`${c.year}『${c.title}』`);
+ const future=game?.v20?.futureBowLeads?.filter(w=>w.name===p.name&&w.year<=year).map(w=>`${w.year}『${w.title}』（予測）`)||[];
+ const actualBau=V20_CONFIRMED_BOW[p.name]&&V20_CONFIRMED_BOW[p.name]<=year&&!bow.length?[`${V20_CONFIRMED_BOW[p.name]}年（主演作の作品名未収録）`]:[];
+ const sourceRookie=(p.kind==='娘役'?[]:REAL_SHOWS.filter(w=>w.year<=year&&JSON.stringify(w.cast?.rookie||[]).includes(p.name)).map(w=>`${w.year}『${w.title}』`));
+ return {rookie:p.kind==='娘役'?rookie:sourceRookie,bow:[...new Set([...bow,...future,...actualBau])],tojo:[...new Set(tojo)],heroine:[],eto:[]};
+};
+
+// トップ就任可能時期のゲーム内上限（研18）を本人にも適用する。
+const v21PriorCanTop=v12CanTop;
+v12CanTop=function(){return game?.year<=18 && v21PriorCanTop()};
+const v21PriorPlayerScore=v15PlayerScore;
+v15PlayerScore=function(){return game?.year>18&&!game?.flags?.top?-100000:v21PriorPlayerScore()};
+
+// 現役期間の過去年代にもエトワール・SNSイベントを適用する。
+const v21PreviousStep=step;
+step=function(){
+ if(!game||game.ended||game.pending)return;
+ const before=game.calendar;
+ v21PreviousStep();
+ if(game&&game.phase===3&&game.calendar!==before&&game.calendar>=2015&&game.calendar<2027){
+  v21AnnualExtras(game.calendar);save();render();
+ }
+};
+
 </script></body></html>
