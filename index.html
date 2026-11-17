@@ -2605,6 +2605,62 @@ step=function(){
   save();render();
 };
 
+
+// ===== v27: トップ就任直前の停止対策 =====
+// 相手役の候補が0人の場合、以前は押せるボタンが一つもない
+// モーダルが開いたままとなり、以後の進行を永久に妨げていた。
+function v27PartnerRecovery(){
+ if(!game?.v17?.partnerPending)return;
+ game.v17.partnerPending=false;
+ game.v17.partnerChoices=[];
+ game.v17.partnerDeferred=true;
+ // 人事編成は保持する。相手役を未定として後から選べるようにする。
+ if(typeof feed==='function')feed('トップ娘役選考の保留','在籍データ上で選考できる候補が不足しているため、相手役は未定として先に進む。');
+ if(game.v26AutoRequested){playing=true;}
+ save();render();
+ if(playing)schedule();
+}
+const v27OldPartnerPanel=v17PartnerPanel;
+v17PartnerPanel=function(){
+ if(!game?.v17?.partnerPending)return '';
+ const choices=game.v17.partnerChoices||[];
+ if(!choices.length){
+  return `<div class="major-shade"><div class="major-modal" role="dialog" aria-modal="true"><h2>トップ娘役の選考</h2><p>この年度に在籍する候補者を取得できませんでした。相手役を未定として舞台人生を続けられます。</p><button class="btn pink" onclick="v27PartnerRecovery()">相手役を未定にして進む →</button></div></div>`;
+ }
+ return v27OldPartnerPanel();
+};
+// 「相手役選考中」または重要通知が表示中は自動タイマーを回さない。
+// 選択後はON状態を保持して再開する。
+const v27OldSchedule=schedule;
+schedule=function(){
+ if(!game||game.ended||game.v17?.partnerPending||game.pending?.choices||(game.popups?.length||0)>0){
+   clearTimeout(timer);return;
+ }
+ return v27OldSchedule();
+};
+const v27OldFastTick=fastTick;
+fastTick=function(){
+ if(!game||game.ended||game.v17?.partnerPending||(game.popups?.length||0)>0){
+   clearTimeout(timer);return;
+ }
+ return v27OldFastTick();
+};
+// トップ就任時に候補選考を確定できた場合は、通知と選択を優先する。
+const v27OldSelectPartner=v17SelectPartner;
+v17SelectPartner=function(index){
+ v27OldSelectPartner(index);
+ if(!game?.v17?.partnerPending&&game?.v26AutoRequested&&!(game?.popups?.length)){
+  playing=true;schedule();
+ }
+};
+// 古いセーブデータで候補者リストが不正な場合も、画面操作で解除できる。
+const v27OldContinue=continueGame;
+continueGame=function(){
+ v27OldContinue();
+ if(!game)return;
+ if(game.v17?.partnerPending&&!Array.isArray(game.v17.partnerChoices))game.v17.partnerChoices=[];
+};
+
 </script><style>
 .v25stress{background:#fff5f7;border:1px solid #eacbd5;border-radius:9px;margin-top:10px;padding:10px;font-size:13px;grid-column:1/-1}.v25stress span{display:flex;justify-content:space-between}.v25track{height:9px;background:#e8e0e4;border-radius:20px;overflow:hidden;margin:6px 0}.v25track i{display:block;height:100%;border-radius:20px;transition:width .25s}.v25stress small{color:#805e6d}.v25illustration{background:#fff7fa;border:2px solid #e4b9cf;border-radius:12px;padding:8px;text-align:center;margin:12px auto}.v25illustration svg{display:block;margin:auto;width:min(100%,310px);height:auto}.v25workcaption{font-size:12px;color:#774a66;padding:5px}
 </style></body></html>
