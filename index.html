@@ -220,7 +220,7 @@ function step(){if(!game||game.ended||game.pending)return;ensureExtra();let s=ga
  if(s.part===4){s.part=5;let heroine=HEROINE_CREDITS.filter(c=>c.year===s.calendar&&c.group===s.troupe);if(heroine.length){let h=pick(heroine);bumpFriend(h.name,2);addAuto('新人公演ヒロインの舞台',`『${h.work}』の新人公演では${h.name}がヒロインを務めた。稽古や舞台を通じて交流し、親交が深まった。`,'acting',h.name);return}let [t,d,k]=eventPool();if(k==='pop'&&s.stats.pop<7){k='aura'}let p=eventFriend();addAuto(t,d,k,p?.name);return}
  if(s.part===5){s.part=6;if(s.year>=4&&s.stats.pop>12&&Math.random()<.35){s.club.level=1;s.club.meet++;gain('pop',1);addAuto('私設ファンクラブのお茶会','応援するファンと舞台の思い出を語り合った。','team');return}if(s.stats.pop>18&&Math.random()<.25){addAuto('宝塚カレンダーへの掲載','カレンダーの撮影が行われた。','aura');return}addAuto('舞台のある日常','大切な一年を重ねた。','energy');return}
  if(s.part===6){s.part=7;adjustRank();if(s.year>=11&&s.flags.bau>0&&s.flags.rookie>0&&s.flags.rank===2&&s.stats.pop>=18&&Math.random()<.12){s.flags.top=true;s.flags.rank=1;addAuto('トップ就任',`${s.troupe}の${s.role==='男役'?'トップスター':'トップ娘役'}に就任した。`,'pop');return}addAuto('年度の振り返り',`研${s.year}の公演を終えた。次の舞台へと向かう。`);return}
- if(s.part>=7){if(s.year>=19){s.ended=true;addAuto('退団','これまでの主演作品と舞台人生を振り返り、宝塚を卒業した。');return}s.year++;s.calendar=s.entry+s.year-1;s.part=0;gain('energy',5);save();render();return}}
+ if(s.part>=7){if(s.year>=19&&!s.flags.top){s.ended=true;addAuto('退団','これまでの主演作品と舞台人生を振り返り、宝塚を卒業した。');return}s.year++;s.calendar=s.entry+s.year-1;s.part=0;gain('energy',5);save();render();return}}
 function gameScreen(){ensureExtra();let r=rankInfo();return `<div class="split"><div class="column"><section class="panel"><div class="topbar"><div><span class="age">${currentAge()}</span>歳 <small>${game.calendar}年 · ${game.term}期 · ${game.year?'研'+game.year:game.phase===0?'予科':game.phase===1?'本科':'初舞台準備'}</small></div><small>${esc(game.name)} ／ ${esc(game.troupe)}</small></div><div class="progress"><span style="width:${Math.min(100,game.year/19*100)}%"></span></div><div class="controls"><button class="${playing?'selected':''}" onclick="togglePlay()">${playing?'Ⅱ 停止':'▶ 自動'}</button>${[1,2,4,8,12].map(v=>`<button class="${speed===v?'selected':''}" onclick="speed=${v};if(playing)schedule();render()">${v}×</button>`).join('')}<button onclick="fastTick()" ${game.pending||game.ended?'disabled':''}>次へ »</button><button onclick="openTab('profile')">プロフィール</button></div>${pixelArt()}<div class="identity">${esc(game.name)}　${esc(game.troupe)}／${esc(r.stage)}　　近い期の比較 ${r.rank}/${r.count}位</div><div class="panel sticky">${revisedStats()}</div>${salaryPanel()}<div class="row" style="margin-bottom:12px"><button class="btn ${tab==='timeline'?'primary':''}" onclick="openTab('timeline')">人生の記録</button><button class="btn ${tab==='works'?'primary':''}" onclick="openTab('works')">出演・主演作品</button><button class="btn ${tab==='people'?'primary':''}" onclick="openTab('people')">関係者</button><button class="btn ${tab==='shop'?'primary':''}" onclick="openTab('shop')">お金を使う</button></div>${game.ended?`<div class="end"><h2>宝塚での舞台人生を終えた</h2><p>主演作品 ${game.leadWorks.length}作／総収入 ${JPY(game.totalEarned)}</p></div>`:''}${tab==='works'?revisedWorks():tab==='people'?revisedPeople():tab==='shop'?shop():journal()}<div class="credit">公演年表：<a href="https://zuka-no-susume.com/perfs/" target="_blank">ヅカのすゝめ</a>／配役の照合：<a href="https://kageki.hankyu.co.jp/revue/2025/guysanddolls/cast.html" target="_blank">公式『GUYS AND DOLLS』</a>・<a href="https://www.kageki.hankyu.co.jp/revue/2026/elisabeth/cast.html" target="_blank">公式『エリザベート』</a>。新人公演ヒロイン：<a href="https://momonoyakata.com/futurestars-all20202029/" target="_blank">もものやかた（2020年以降）</a>。転向事例：<a href="https://zuka-note.com/archives/9937" target="_blank">宝塚歌劇ノート</a>。未来年の作品・人事・収入はゲーム内で生成します。</div></section></div>${statsSide()}</div>`}
 function profileScreen(){ensureExtra();return `<div class="split"><div><section class="panel"><h2>最初のステータス</h2>${revisedStats()}</section>${revisedProfile()}<section class="panel"><h3>舞台人生の始まり</h3><p>芸名と男役・娘役の志望を決めて、人生を進めてください。</p><div class="row"><button class="btn primary" onclick="tab='timeline';render()">舞台人生を始める →</button><button class="btn" onclick="newGame()">プロフィールを再抽選</button></div></section></div>${statsSide()}</div>`}
 function continueGame(){let s=saved();if(s&&s.term&&s.events){game=s;ensureExtra();if(game.pending?.choices){game.pending.choices=game.pending.choices.map(c=>({...c,label:c.label||'選択する',effect:c.effect||'acting'}))}tab='timeline';render()}else alert('続きのデータが見つかりません。')}
@@ -1827,15 +1827,57 @@ v18RanksFor=function(year,group){
 
 // ===== v21: 生徒組替え／未来別箱45作／称号説明／エトワール／路線実績 =====
 const V21_BOX_FUTURE = [
-['バウ','桜時計の約束'],['バウ','花霞のモノローグ'],['バウ','銀の寓話'],['バウ','レモン色の手紙'],['バウ','朝焼けの庭園'],['バウ','星のオルゴール'],['バウ','月の図書室'],['バウ','青薔薇の肖像'],['バウ','虹を待つ旅人'],['バウ','冬すみれの秘密'],['バウ','風見鶏の歌'],['バウ','薔薇の小径'],['バウ','琥珀のアトリエ'],['バウ','湖畔のアリア'],['バウ','夢みる船乗り'],
-['東上','蒼いリボンの誓い'],['東上','白銀のラプソディ'],['東上','時計仕掛けの王国'],['東上','ロンドン霧のワルツ'],['東上','紅のタペストリー'],['東上','マスカレードの夜'],['東上','星砂のラブレター'],['東上','ブロードウェイの雨'],['東上','カメリアの微笑'],['東上','天上の回廊'],['東上','ミラノの星灯'],['東上','蒼穹の庭師'],['東上','クリスタルの航路'],['東上','風のアンダンテ'],['東上','紫紺の夜明け'],
-['その他別箱','花園の奇跡'],['その他別箱','真珠の海を越えて'],['その他別箱','星の劇場から'],['その他別箱','薔薇色の寄港地'],['その他別箱','砂漠のオデット'],['その他別箱','レヴュー・シトラス'],['その他別箱','夢を紡ぐ街'],['その他別箱','水晶のパリ'],['その他別箱','夜明けのマリンブルー'],['その他別箱','春待ちのコンチェルト'],['その他別箱','白鳥の小箱'],['その他別箱','空色のカンタータ'],['その他別箱','パールの首飾り'],['その他別箱','海辺のソネット'],['その他別箱','花束のシンフォニー']
+["バウ", "君に届け", "原作もの"],
+["バウ", "坂道のアポロン", "原作もの"],
+["バウ", "図書館戦争", "原作もの"],
+["バウ", "夏目友人帳", "原作もの"],
+["バウ", "ハチミツとクローバー", "原作もの"],
+["バウ", "金色のコルダ", "原作もの"],
+["バウ", "舞姫", "再演"],
+["バウ", "月の燈影", "再演"],
+["バウ", "銀二貫", "再演"],
+["バウ", "ベアタ・ベアトリクス", "再演"],
+["バウ", "桜時計の約束", "新作"],
+["バウ", "銀の寓話", "新作"],
+["バウ", "レモン色の手紙", "新作"],
+["バウ", "琥珀のアトリエ", "新作"],
+["バウ", "湖畔のアリア", "新作"],
+["東上", "昭和元禄落語心中", "原作もの"],
+["東上", "ゴールデンカムイ", "原作もの"],
+["東上", "ジョーカー・ゲーム", "原作もの"],
+["東上", "アンナチュラル", "原作もの"],
+["東上", "ミス・シャーロック", "原作もの"],
+["東上", "バナナフィッシュ", "原作もの"],
+["東上", "双曲線上のカルテ", "再演"],
+["東上", "夜明けの光芒", "再演"],
+["東上", "ドン・ジュアン", "再演"],
+["東上", "心中・恋の大和路", "再演"],
+["東上", "にぎたつの海に月出づ", "再演"],
+["東上", "蒼いリボンの誓い", "新作"],
+["東上", "ロンドン霧のワルツ", "新作"],
+["東上", "紅のタペストリー", "新作"],
+["東上", "ミラノの星灯", "新作"],
+["その他別箱", "SPY×FAMILY", "原作もの"],
+["その他別箱", "ハウルの動く城", "原作もの"],
+["その他別箱", "千と千尋の神隠し", "原作もの"],
+["その他別箱", "ラ・ラ・ランド", "原作もの"],
+["その他別箱", "グレイテスト・ショーマン", "原作もの"],
+["その他別箱", "プラダを着た悪魔", "原作もの"],
+["その他別箱", "TOP HAT", "再演"],
+["その他別箱", "ME AND MY GIRL", "再演"],
+["その他別箱", "大海賊", "再演"],
+["その他別箱", "激情", "再演"],
+["その他別箱", "琥珀色の雨にぬれて", "再演"],
+["その他別箱", "真珠の海を越えて", "新作"],
+["その他別箱", "レヴュー・シトラス", "新作"],
+["その他別箱", "水晶のパリ", "新作"],
+["その他別箱", "花束のシンフォニー", "新作"]
 ];
 function v21BoxWork(year,troupe,kind='別箱公演'){
  const type=/バウ/.test(kind)?'バウ':/東上|ドラマシティ/.test(kind)?'東上':'その他別箱';
  const rows=V21_BOX_FUTURE.filter(x=>x[0]===type);
  const item=rows[v15Hash(`BOX|${year}|${troupe}|${kind}`)%rows.length];
- return {year,troupe,kind,title:item[1],theatre:type==='バウ'?'宝塚バウホール':type==='東上'?'梅田芸術劇場シアター・ドラマシティ':'梅田芸術劇場メインホール',forecast:true,fictional:true,genre:'未来別箱オリジナル'};
+ return {year,troupe,kind,title:item[1],theatre:type==='バウ'?'宝塚バウホール':type==='東上'?'梅田芸術劇場シアター・ドラマシティ':'梅田芸術劇場メインホール',forecast:true,fictional:true,genre:item[2]};
 }
 const v21OldFuture=v15Future;
 v15Future=function(year,troupe,kind='本公演'){
@@ -1844,7 +1886,7 @@ v15Future=function(year,troupe,kind='本公演'){
 };
 const v21OldCatalog=v15CatalogPanel;
 v15CatalogPanel=function(){
- let html=v21OldCatalog();let extra=`<h3>未来の別箱作品 45作（別途）</h3><p class="note">バウ15作・東上15作・その他別箱15作。いずれも架空の公演案です。</p>${V21_BOX_FUTURE.map(([type,title])=>`<div class="history">${esc(type)}｜${esc(title)}</div>`).join('')}`;
+ let html=v21OldCatalog();let extra=`<h3>未来の別箱作品 45作（別途）</h3><p class="note">バウ15作・東上15作・その他別箱15作。原作もの18作・再演14作・新作13作。いずれもゲーム内の公演企画です。</p>${V21_BOX_FUTURE.map(([type,title,genre])=>`<div class="history">${esc(type)}｜${esc(genre)}｜${esc(title)}</div>`).join('')}`;
  return html.replace('<button class="btn" onclick="openTab(\'timeline\')">',extra+'<button class="btn" onclick="openTab(\'timeline\')">');
 };
 // 各人の組替えはキャリアで一度だけ抽選。50％の抽選を確率モデルとして保存。
@@ -2405,7 +2447,7 @@ step=function(){if(!game||game.ended||game.pending)return;
    game.v25RetirementTarget??=11+rand(5);
    if(game.flags.top){game.v25TopStart??=game.topStartYear||game.calendar;
     if(!game.v25TopTenure)game.v25TopTenure=3+rand(4);
-    if(game.calendar-game.v25TopStart+1>=game.v25TopTenure&&!game.v25TopRetired){
+    if(!game.v33?.topPlan&&game.calendar-game.v25TopStart+1>=game.v25TopTenure&&!game.v25TopRetired){
      game.v25TopRetired=true;game.pending={name:'トップ娘役としての卒業',text:`トップ娘役として${game.v25TopTenure}年間舞台を務めた。退団公演を迎える。`,kind:'choice',choices:[{label:'千秋楽をもって卒業する',effect:'voluntaryRetirement',detail:'退団'}]};popMajor('トップ娘役 退団発表','トップ娘役としての舞台人生を締めくくります。');
     }
    }else if(game.year>=game.v25RetirementTarget&&!game.v25RetirementAsked){game.v25RetirementAsked=true;
@@ -2960,4 +3002,302 @@ const v30Offer=v29Offer;v29Offer=function(){if(game?.flags?.top){const d=v29Stat
 const v30LeadScan=v29LeadScan;v29LeadScan=function(start){if(game?.flags?.top)return;return v30LeadScan(start);};
 const v30Step=step;step=function(){if(game?.flags?.top&&!game.ended){v30Migrate();if(game.pending?.choices&&(/番手スターとして|バウ主演への挑戦|東上主演への挑戦|新人公演の配役選考/.test(game.pending.name||''))){game.pending=null;save();render();}}return v30Step();};
 const v30Continue=continueGame;continueGame=function(){v30Continue();if(game?.flags?.top){v30Migrate();if(game.pending?.choices&&/番手スターとして|バウ主演への挑戦|東上主演への挑戦|新人公演の配役選考/.test(game.pending.name||''))game.pending=null;save();render();}};
-</script></body></html>
+// v31: historical baseline and playable alternate personnel are separate.
+function v31Names(value, explicit){
+ if(Array.isArray(explicit))return explicit.filter(Boolean);
+ return String(value||'').replace(/（W[23]番手）|（3番手級の並列扱い）/g,'').split('・').filter(Boolean);
+}
+function v31Lineup(year){
+ const historical=year<=2026;
+ let base;
+ if(historical){base=v16HistoryRoster(year);}else{v15Ensure();v15AdvanceRoster(year);base=game.v15.groups;}
+ const rows={};
+ for(const g of V15_TROUPES){
+  const b=base[g]||{};
+  let second,third,source='',mode='ゲーム内予測';
+  if(historical){const r=v18RanksFor(year,g);second=v31Names(r.second,r.secondNames);third=v31Names(r.third,r.thirdNames);source=r.src;mode=r.mode;}
+  else {const a=b.ranks||[];second=a.slice(0,b.doubleSecond?2:1);third=b.doubleSecond?a.slice(2,3):a.slice(1,b.doubleThird?3:2);}
+  rows[g]={top:b.top,heroine:b.heroine,second,third,source,mode,changed:false};
+ }
+ const g=game.troupe, mine=rows[g], f=game.flags||{};
+ if(!mine||game.ended)return rows;
+ const name=game.name, rank=Number(f.rank), isMan=game.role==='男役';
+ const existingSecond=[...mine.second],existingThird=[...mine.third];
+ const active=!!f.top||(isMan&&(rank===2||rank===3));
+ if(!active)return rows;
+ // Remove stale copies of the protagonist before applying the current appointment.
+ for(const row of Object.values(rows)){row.second=row.second.filter(n=>n!==name);row.third=row.third.filter(n=>n!==name);}
+ mine.changed=true;
+ if(f.top){
+  if(isMan){mine.top=name;const p=game.v17?.partnerSelected;if(p?.name&&p.year<=year&&(!p.group||p.group===g)){
+    if(true){
+     for(const [other,row] of Object.entries(rows)){if(other!==g&&row.heroine===p.name){row.heroine='未選定';row.changed=true;}}
+     mine.heroine=p.name;
+    }
+  }}else mine.heroine=name;
+  const partner=game.v31Partner;
+  if(partner?.name&&partner.group===g){
+   if(isMan)mine.heroine=partner.name;else mine.top=partner.name;
+   for(const [other,row] of Object.entries(rows)){row.second=row.second.filter(n=>n!==partner.name&&n!==name);row.third=row.third.filter(n=>n!==partner.name&&n!==name);if(other!==g){if(row.top===partner.name)row.top='未選定';if(row.heroine===partner.name)row.heroine='未選定';}}
+  }
+ }else if(rank===2){
+  // A player appointment replaces the existing slot, not an automatic W2.
+  // Preserve a second NPC as W2 only when the underlying lineup already has W2.
+  const old=mine.second.filter(n=>!/空席|未照合|未設定|検証中|不在/.test(n));
+  const keepW=existingSecond.length>=2;
+  if(keepW&&old.length){mine.second=[name,old[0]];}
+  else {mine.second=[name];if(old.length)mine.third=[old[0]];}
+ }else if(rank===3){const old=mine.third.filter(n=>!/空席|未照合|未設定|検証中|不在/.test(n));mine.third=existingThird.length>=2&&old.length?[name,old[0]]:[name];}
+ mine.second=mine.second.filter(n=>n!==mine.top&&n!==mine.heroine);mine.third=mine.third.filter(n=>n!==mine.top&&n!==mine.heroine&&!mine.second.includes(n));
+ if(!mine.second.length&&mine.third.length){mine.second=[mine.third.shift()];}
+ return rows;
+}
+function v31RosterPanel(){
+ if(!game)return '';
+ const year=game.calendar, rows=v31Lineup(year);
+ const names=(a)=>a.length?a.join('・')+(a.length>1?'（W番手）':''):'空席';
+ return `<section class="panel"><h2>五組のスター体制</h2><p class="note">${year}年 · ${year<=2026?'史実をベースに主人公の人事を反映した世界線':'ゲーム内の人事予測'}。主人公が就任・昇格すると該当する番手欄を更新します。</p>`+V15_TROUPES.map(g=>{const r=rows[g];return `<div class="history"><h3 style="margin:0 0 7px;color:#a44876">${esc(g)}</h3><div>トップスター（男役主演）：<b>${esc(r.top||'未設定')}</b></div><div>トップ娘役（娘役主演）：<b>${esc(r.heroine||'未設定')}</b></div><div>2番手男役：<b>${esc(names(r.second))}</b></div><div>3番手男役：<b>${esc(names(r.third))}</b></div><small class="muted">${esc(r.changed?'主人公の人事を反映したゲーム内編成':r.mode||'参考編成')}${r.source?` ／ <a href="${esc(r.source)}" target="_blank" rel="noopener noreferrer">番手参考資料</a>`:''}</small></div>`;}).join('')+`${game.flags?.top&&game.v31Partner?`<h3>トップコンビの変遷</h3><div class="history">現在の相手役：${esc(game.v31Partner.name)}（${game.v31Partner.start}年〜）</div>${(game.v31PartnerHistory||[]).slice().reverse().map(h=>`<div class="history">${h.year}年：${esc(h.previous||'就任')} → ${esc(h.name)}</div>`).join('')}`:''}<p class="note">過去の実在人事の資料は <a href="https://sumirecord.com/top-stars" target="_blank" rel="noopener noreferrer">すみれコード</a> を参照。</p><button class="btn" onclick="openTab('timeline')">← 人生の記録へ戻る</button></section>`;
+}
+v18Roster=v31RosterPanel;v15RosterPanel=v31RosterPanel;
+
+
+// v31: independent top-combination tenure, including alternate history.
+function v31ValidName(n){return typeof n==='string'&&!!n&&!/空席|未設定|未収録|未選定|未定|選考中|資料未照合|記録未収録/.test(n)&&n!==game.name}
+function v31BaseLine(y){return y<=2026?v16HistoryRoster(y)[game.troupe]:game.v15?.groups?.[game.troupe]}
+function v31PartnerState(){
+ if(!game?.flags?.top||game.ended||!V15_TROUPES.includes(game.troupe))return null;
+ if(game.v31Partner?.group===game.troupe)return game.v31Partner;
+ const y=game.calendar,b=v31BaseLine(y),sel=game.v17?.partnerSelected;
+ if(game.role==='男役'&&!sel&&game.v17?.partnerPending)return null;
+ const name=game.role==='男役'?(sel?.name||b?.heroine):b?.top;
+ if(!v31ValidName(name))return null;
+ const start=sel?.year??game.topStartYear??(game.careerYears?.top!=null?game.entry+game.careerYears.top-1:y);
+ game.v31Partner={name,group:game.troupe,start,until:start+(game.role==='男役'?3+rand(4):2+rand(4)),historical:name===(game.role==='男役'?b?.heroine:b?.top)&&y<=2026};
+ game.v31PartnerHistory??=[];return game.v31Partner;
+}
+function v31SyncCombo(){
+ if(!game?.flags?.top||game.ended||game.calendar<2027||!game.v15?.groups?.[game.troupe])return;
+ const a=game.v31Partner, g=game.troupe, line=game.v15.groups[g];
+ if(game.role==='男役'){line.top=game.name;if(a?.name)line.heroine=a.name;}
+ else {line.heroine=game.name;if(a?.name)line.top=a.name;}
+ line.ranks=line.ranks.filter(n=>n!==game.name&&n!==a?.name);
+ game.v15.retired=game.v15.retired.filter(n=>n!==game.name&&n!==a?.name);
+}
+function v31SetPartner(name,group,old){
+ if(!v31ValidName(name))return false;
+ const y=game.calendar,source=group||game.troupe;
+ game.v31Partner={name,group:game.troupe,start:y,until:y+(game.role==='男役'?3+rand(4):2+rand(4)),historical:false};
+ game.v31FormerPartners??=[];if(old&&!game.v31FormerPartners.includes(old))game.v31FormerPartners.push(old);
+ game.v31PartnerHistory??=[];game.v31PartnerHistory.push({year:y,previous:old||null,name,group:game.troupe});
+ if(game.role==='男役'){v17Ensure();game.v17.partnerSelected={name,year:y,group:game.troupe};game.v17.partnerDeferred=false;}
+ if(source!==game.troupe){v17Ensure();if(!game.v17.partnerTransfers.some(t=>t.name===name&&t.year===y&&t.to===game.troupe)){const t={year:y,name,from:source,to:game.troupe,role:game.role==='男役'?'娘役':'男役',forecast:true,partner:true};game.v17.partnerTransfers.push(t);game.transferRecords??=[];game.transferRecords.push(t);feed('相手役の組替え',`${name}が${source}から${game.troupe}へ組替え。`);}}
+ game.friendship??={};game.friendship[name]=Math.max(game.friendship[name]||0,35);
+ if(old&&y>=2027&&game.v15&&!game.v15.retired.includes(old))game.v15.retired.push(old);
+ if(!old){for(const w of [...(game.performances||[]),...(game.leadWorks||[])])if(w.topLead&&w.year===y&&!v31ValidName(w.partner))w.partner=name;}
+ v31SyncCombo();return true;
+}
+function v31PartnerDue(a){
+ const y=game.calendar;
+ if(a.historical&&y<=2026){const b=v31BaseLine(y), n=game.role==='男役'?b?.heroine:b?.top;if(v31ValidName(n)&&n!==a.name)return true;}
+ const date=typeof V8_RETIREMENTS!=='undefined'?V8_RETIREMENTS[v8Key(a.name)]:null;
+ if(date&&Number(date.slice(0,4))<=y&&Number(date.slice(0,4))>a.start)return true;
+ return y>=a.until;
+}
+function v31CandidateMen(old){
+ const y=game.calendar,g=game.troupe,b=v31BaseLine(y),baseline=b?.top;
+ if(v31ValidName(baseline)&&baseline!==old&&!(game.v31FormerPartners||[]).includes(baseline)&&(y<=2026||!game.v15?.retired?.includes(baseline)))return {name:baseline,group:g};
+ let blocked=new Set([old,game.name,...(game.v31FormerPartners||[])]);
+ const rows=y<=2026?v16HistoryRoster(y):game.v15.groups;
+ for(const [other,r] of Object.entries(rows))if(other!==g)blocked.add(r.top);
+ const ranks=y<=2026?[...v31Names(v18RanksFor(y,g).second),...v31Names(v18RanksFor(y,g).third)]:b?.ranks||[];
+ const all=REAL_PEOPLE.filter(p=>p.kind==='現役'&&!blocked.has(p.name)&&v8Active(p,y)&&!game.v15?.retired?.includes(p.name)&&groupInYear(p.name,y)===g&&(ranks.includes(p.name)||v20BauEligible(p.name,y)));
+ all.sort((a,b)=>(ranks.includes(b.name)?100:0)-(ranks.includes(a.name)?100:0)+v15PersonScore(b,y)-v15PersonScore(a,y));
+ if(all[0])return {name:all[0].name,group:g};
+ // Other troupe's eligible non-top male, only if own troupe has no qualified successor.
+ const elsewhere=REAL_PEOPLE.filter(p=>p.kind==='現役'&&!blocked.has(p.name)&&v8Active(p,y)&&!game.v15?.retired?.includes(p.name)&&V15_TROUPES.includes(groupInYear(p.name,y))&&v20BauEligible(p.name,y));
+ elsewhere.sort((a,b)=>v15PersonScore(b,y)-v15PersonScore(a,y));return elsewhere[0]?{name:elsewhere[0].name,group:groupInYear(elsewhere[0].name,y)}:null;
+}
+function v31CheckPartner(){
+ if(!game?.flags?.top||game.ended||game.v17?.partnerPending||game.pending||game.popups?.length||!V15_TROUPES.includes(game.troupe))return false;
+ const a=v31PartnerState();if(!a||game.calendar<=a.start||!v31PartnerDue(a)||game.v31PartnerChecked===game.calendar)return false;
+ game.v31PartnerChecked=game.calendar;
+ if(game.role==='男役'){
+  const pool=v17WomanPool().filter(p=>p.name!==a.name&&!(game.v31FormerPartners||[]).includes(p.name));
+  const g=game.troupe,y=game.calendar,score=p=>Math.abs((pplTerm(p)||game.term)-game.term)*5+Math.abs(y-entryTerm(pplTerm(p))-5);
+  const home=pool.filter(p=>groupInYear(p.name,y)===g).sort((a,b)=>score(a)-score(b));
+  const away=pool.filter(p=>groupInYear(p.name,y)!==g).sort((a,b)=>score(a)-score(b));
+  const chosen=[...home.slice(0,2),...away.slice(0,1)];for(const p of [...home,...away]){if(chosen.length>=3)break;if(!chosen.includes(p))chosen.push(p);}
+  const opts=chosen.map(p=>({name:p.name,group:groupInYear(p.name,y),term:pplTerm(p),other:groupInYear(p.name,y)!==g}));
+  if(!opts.length){a.until=game.calendar+1;return false;}
+  game.v17.partnerPending=true;game.v17.partnerChoices=opts;game.v31PartnerChanging=a.name;
+  feed('トップ娘役交代',`${a.name}の退任に伴い、新しい相手役を選ぶことになった。`);save();render();return true;
+ }
+ const next=v31CandidateMen(a.name);if(!next){a.until=game.calendar+1;return false;}
+ if(!v31SetPartner(next.name,next.group,a.name))return false;
+ feed('相手役の交代',`${a.name}がトップスターを退任。${next.name}と新トップコンビを組む。`);popMajor('新トップコンビ誕生',`${next.name} × ${game.name}（${game.troupe}）`);save();render();return true;
+}
+const v31OldSelect=v17SelectPartner;
+v17SelectPartner=function(i){const choice=game?.v17?.partnerChoices?.[i];if(!choice||!game.v17.partnerPending)return v31OldSelect(i);const old=game.v31PartnerChanging||null;v31OldSelect(i);if(!game.v17.partnerPending){v31SetPartner(choice.name,choice.group,old);game.v31PartnerChanging=null;if(old)feed('新しい相手役',`${old}から${choice.name}へ。新コンビとして舞台に立つ。`);save();render();}};
+const v31OldRecovery=v27PartnerRecovery;v27PartnerRecovery=function(){v31OldRecovery();if(game){game.v31PartnerChanging=null;save();}};
+const v31OldPartnerPanel=v17PartnerPanel;v17PartnerPanel=function(){let html=v31OldPartnerPanel();if(game?.v31PartnerChanging)html=html.replace('トップスター就任。','トップ娘役交代。').replace('トップ娘役の相手役を選ぶ','新しいトップ娘役を選ぶ');return html;};
+// The companion at recording time is authoritative; prior work records are unchanged.
+v30TopPartner=function(){return v31PartnerState()?.name||'未定';};
+const v31OldMark=v30MarkTop;v30MarkTop=function(w){if(w&&!w.topLead&&w.year===game.calendar)w.partner=v30TopPartner();return v31OldMark(w);};
+const v31OldAdvance=v15AdvanceRoster;let v31Advancing=false;
+v15AdvanceRoster=function(y){if(!game||v31Advancing)return;v31Advancing=true;try{const a=game.v31Partner;const r=v31OldAdvance(y);if(game.flags?.top&&!game.ended){if(a||!game.v17?.partnerPending)v31PartnerState();v31SyncCombo();}return r;}finally{v31Advancing=false;}};
+const v31OldStep=step;step=function(){if(v31CheckPartner())return;const old=game?.calendar;v31OldStep();if(game?.flags?.top&&!game.ended){v31PartnerState();v31SyncCombo();if(game.calendar!==old)v31CheckPartner();save();render();}};
+const v31OldContinue=continueGame;continueGame=function(){v31OldContinue();if(game?.flags?.top&&!game.ended){v31PartnerState();v31SyncCombo();save();render();}};
+// Keep historical notices for other troupes, not the fictional incumbent's own position.
+const v31OldNotice=v15Notice;v15Notice=function(y,title,message,major=false){if(game?.flags?.top&&!game.ended&&String(message).includes(game.troupe)){if(y<=2026&&game.role==='男役'&&title==='歴代トップ交代')return;if(y>=2027&&/トップ退団|トップ娘役交代/.test(title)){const a=game.v31Partner;if(String(message).includes(game.name)||(a?.name&&String(message).includes(a.name)))return;}}return v31OldNotice(y,title,message,major);};
+
+
+// v31: retirement notices. Keep one independent entry per departing route performer.
+Object.assign(V8_RETIREMENTS,{'美弥るりか':'2019-06-09','七海ひろき':'2019-03-24','瀬戸かずや':'2021-07-04','愛月ひかる':'2021-12-26','凪七瑠海':'2025-01-19','彩みちる':'2025-11-16'});
+function v31RetirementState(){game.v31Retire??={seen:{},batch:[]};game.v31Retire.seen??={};game.v31Retire.batch??=[];return game.v31Retire;}
+function v31RankMap(year){const map=new Map();const historic=year<=2026;const rows=historic?v16HistoryRoster(year):game.v15?.groups||{};
+ for(const g of V15_TROUPES){const x=rows[g];if(!x)continue;for(const [n,label] of [[x.top,'トップスター'],[x.heroine,'トップ娘役']])if(v31ValidName(n))map.set(n,{g,label});
+ let second=[],third=[];if(historic){const r=v18RanksFor(year,g);second=v31Names(r.second,r.secondNames);third=v31Names(r.third,r.thirdNames);}else{const a=x.ranks||[];second=a.slice(0,x.doubleSecond?2:1);third=x.doubleSecond?a.slice(2,3):a.slice(1,x.doubleThird?3:2);}
+ for(const [a,label] of [[second,'2番手'],[third,'3番手']])for(let n of a){n=n.replace(/（.*?）/g,'');if(v31ValidName(n)&&!map.has(n))map.set(n,{g,label});}}
+ if(game.flags?.top&&game.v31Partner?.name)map.set(game.v31Partner.name,{g:game.troupe,label:game.role==='男役'?'トップ娘役':'トップスター'});return map;
+}
+function v31RoadName(name,year){const p=REAL_PEOPLE.find(p=>p.name===name);if(!p)return !!V20_CONFIRMED_BOW[name];if(p.kind==='OG')return true;if(p.v29Generated)return true;if(p.kind==='娘役')return (p.credits||[]).some(c=>c.year<=year)||/ヒロイン|トップ/.test(p.position||'')||!!game.v23?.npcCredits?.some(c=>c.name===name&&c.year<=year);return v8CanLead(p)||!!V20_CONFIRMED_BOW[name]||!!game.v23?.npcCredits?.some(c=>c.name===name&&c.year<=year);}
+function v31Departure(name,y,rank,detail='',already=false){if(!game||!v31ValidName(name))return;const d=v31RetirementState();if(d.seen[name])return;d.seen[name]=y;
+ const g=rank?.g||groupInYear(name,y),label=rank?.label;const text=`${name}${g&&g!=='不明'?`（${g}${label?'・'+label:''}）`:label?'（'+label+'）':''}が退団。${detail?detail+'。':''}`;
+ if(!already)v25PriorFeed(label?'番手・トップの退団':v31RoadName(name,y)?'路線生徒の退団':'退団の知らせ',text,'auto');
+ if(label&&y===game.calendar)d.batch.push(text);
+}
+function v31FlushDepartures(){if(!game)return;const d=v31RetirementState();if(!d.batch.length)return;const title='番手・トップスターの退団',body=d.batch.join('\n');d.batch=[];game.popups??=[];
+ // Merge into one notification; even with a full modal queue it remains visible.
+ const prior=game.popups.find(p=>p.title===title);if(prior)prior.body+='\n'+body;else game.popups.push({title,body});
+ playing=false;clearTimeout(timer);save();render();
+}
+function v31HistoricDepartures(y){if(y>2026||y<2009)return;const d=v31RetirementState(),rank=v31RankMap(y-1),now=v31RankMap(y);for(const [n,r] of now)if(!rank.has(n))rank.set(n,r);
+ // The recorded top's final day precedes the next incumbent's first day in these data.
+ const dates={...V8_RETIREMENTS};for(const g of V15_TROUPES)for(const [n,start,end] of V16_TOP_HISTORY[g]||[]){if(end>='2027-01-01'||dates[n])continue;const dt=new Date(end+'T00:00:00Z');dt.setUTCDate(dt.getUTCDate()-1);dates[n]=dt.toISOString().slice(0,10);}
+ // A ranked performer can retire in a year for which no full lineup is available.
+ for(const n of Object.keys(dates)){if(!rank.has(n)){for(let k=y-2;k>=Math.max(2009,y-4);k--){const r=v31RankMap(k).get(n);if(r){rank.set(n,r);break;}}}}
+ game.v8Seen??=[];
+ for(const [n,date] of Object.entries(dates)){if(Number(date.slice(0,4))!==y||d.seen[n]||(!rank.has(n)&&!v31RoadName(n,y)))continue;
+ // An alternate current top partner is handled by the top-combination scheduler.
+ if(game.flags?.top&&game.v31Partner?.name===n)continue;
+ v31Departure(n,y,rank.get(n),date+'付');const key='retire:'+n;if(!game.v8Seen.includes(key))game.v8Seen.push(key);}
+}
+const v31AdvanceRetire=v15AdvanceRoster;let v31RetireBusy=false;
+v15AdvanceRoster=function(y){if(!game||v31RetireBusy)return;if(y<2027)return v31AdvanceRetire(y);v31RetireBusy=true;try{v15Ensure();const before=new Set(game.v15.retired||[]),ranks=v31RankMap(2027),old=game.v15.year;
+ const result=v31AdvanceRetire(y);const history=game.v15.history||[];
+ for(const name of new Set(game.v15.retired||[])){if(before.has(name)||!v31ValidName(name)||name===game.v31Partner?.name)continue;const h=history.findLast?.(x=>x.year>=old+1&&x.year<=y&&/退団|退任/.test(x.title||'')&&String(x.message).includes(name))||history.slice().reverse().find(x=>x.year>=old+1&&x.year<=y&&/退団|退任/.test(x.title||'')&&String(x.message).includes(name));
+  const r=ranks.get(name)||(/番手スターの退団/.test(h?.title||'')?{g:groupInYear(name,y),label:'番手スター'}:null);
+  if(r||v31RoadName(name,y))v31Departure(name,h?.year||y,r,'',!!h&&game.events.some(e=>e.name===h.title&&String(e.text).includes(name)&&!String(e.text).includes('・'+name)));
+ }
+ return result;}finally{v31RetireBusy=false;}};
+const v31RetireSetPartner=v31SetPartner;v31SetPartner=function(name,group,old){const ok=v31RetireSetPartner(name,group,old);if(ok&&old){v31Departure(old,game.calendar,{g:game.troupe,label:game.role==='男役'?'トップ娘役':'トップスター'},'相手役の交代');v31FlushDepartures();}return ok;};
+const v31RetireStep=step;step=function(){if(!game||game.ended)return;const before=game.calendar;if(game.phase===3)v31HistoricDepartures(before);const result=v31RetireStep();if(game.phase===3&&game.calendar!==before)v31HistoricDepartures(game.calendar);v31FlushDepartures();return result;};
+// Display individual notices on separate lines inside the modal.
+const v31RetirePopup=popupHtml;popupHtml=function(){const html=v31RetirePopup();return html.replace(/(番手・トップスターの退団[\s\S]*?)(<\/p>)/,(_,a,b)=>a.replace(/\n/g,'<br>')+b);};
+
+
+// Retirements can also happen in the top-age-limit pass outside the annual roster update.
+const v31RetirementNotice=v15Notice;
+v15Notice=function(y,title,message,major=false){
+ const result=v31RetirementNotice(y,title,message,major);
+ if(!game||y<2027||!/^番手スターの退団/.test(title))return result;
+ for(const g of V15_TROUPES){const line=game.v15?.groups?.[g];if(!line)continue;
+  for(const n of line.ranks||[]){if(n!==game.name&&String(message).includes(n)&&v31ValidName(n)){
+   const idx=line.ranks.indexOf(n),label=idx<(line.doubleSecond?2:1)?'2番手':'3番手';
+   v31Departure(n,y,{g,label},'研18までにトップ就任に至らず',true);
+  }}
+ }
+ return result;
+};
+const v31TopLimits=v21TopLimits;v21TopLimits=function(y){v31TopLimits(y);v31FlushDepartures();};
+const v31ActivePartner=v8Active;v8Active=function(p,y){if(game?.v31FormerPartners?.includes(p.name)&&game.v31Retire?.seen?.[p.name]<=y)return false;return v31ActivePartner(p,y);};
+
+</script><script>
+// v33: bounded, save-local career, media and private life expansion.
+function v33Data(){return game.v33??={seen:{},records:[],rivals:[],groups:[],fans:{young:40,long:50,overseas:10},alias:'',home:'すみれ寮',car:'なし',hobbies:[],mentor:'',junior:'',best:'',sister:null,office:'',sales:[],calendar:[],press:[],topPlan:null,rankCap:0,rankUntil:0,former:[],golden:{},seed:Math.floor(Math.random()*1e9)};}
+function v33Log(title,body,kind='auto'){const d=v33Data();d.records.push({year:game.calendar,title,body});if(d.records.length>400)d.records.shift();v25PriorFeed(title,body,kind);}
+function v33People(){return v10FriendList().filter(p=>p.name!==game.name&&v8Active(p,game.calendar));}
+function v33PickPeople(){return v33People().sort((a,b)=>(game.friendship?.[b.name]||0)-(game.friendship?.[a.name]||0));}
+function v33One(key){let d=v33Data();if(d.seen[key])return false;d.seen[key]=true;return true;}
+function v33Gain(k,n){if(k)v25PriorGain(k,n);}
+function v33Event(name,text,opts){game.pending={name,text,kind:'choice',choices:opts.map(([label,key,delta,stress,action,detail])=>({label,effect:'v33',key,delta,stress,action,detail:detail||((key?(V28_STAT_LABEL[key]||key)+' '+(delta>=0?'+':'')+delta+'／':'')+'ストレス '+(stress>=0?'+':'')+stress)}))};save();render();return true;}
+function v33Annual(){let d=v33Data(),y=game.calendar,f=game.flags,p=game.stats.pop||0,people=v33PickPeople(),rank=f.top?1:f.rank;if(d.rankCap&&y>d.rankUntil&&p<35&&v30Merit()<65)d.rankUntil=y;
+ if(!v33One('annual:'+y))return;
+ // Relationships: only active people for current troupe life, former colleagues preserved privately.
+ let close=people.filter(x=>(game.friendship?.[x.name]||0)>=12);if(close.length>=2){let names=close.slice(0,4).map(x=>x.name);d.groups=names;if(v33One('group:'+names.join('|')))v33Log('仲良しグループ',names.join('、')+'と休日に集まるようになった。');}
+ if(close[0]&&(game.friendship[close[0].name]||0)>=35&&d.best!==close[0].name){d.best=close[0].name;v33Log('親友',d.best+'と何でも相談できる仲になった。');}
+ for(const [key,dir] of [['mentor',-1],['junior',1]]){if(!d[key]||!people.some(x=>x.name===d[key])){let a=people.filter(x=>dir*(pplTerm(x)-game.term)>0);if(a.length){d[key]=a[0].name;v33Log(key==='mentor'?'尊敬する上級生':'可愛がる下級生',key==='mentor'?d[key]+'から役作りを学んだ。':d[key]+'に稽古用品を譲った。');bumpFriend(d[key],4);}}}
+ if(!f.top&&game.year<=18){let a=people.filter(x=>x.kind===(game.role==='男役'?'現役':'娘役')&&groupInYear(x.name,y)===game.troupe&&Math.abs(pplTerm(x)-game.term)<=2&&v31RoadName(x.name,y));for(const x of a.slice(0,2))if(!d.rivals.includes(x.name)){d.rivals.push(x.name);v33Log('ライバル',x.name+'と同じ世代の舞台経験を競う。');}d.rivals=d.rivals.slice(-8);}
+ if(game.year>=3&&p>=12&&!d.alias){d.alias=game.name.slice(-2)+'ちゃん';v33Log('ファンの愛称','ファンの間で「'+d.alias+'」という愛称が定着した。');}
+ let young=clamp(30+Math.round(p*.35+d.press.filter(x=>x.type==='SNS').length),15,70),over=clamp(Math.round(5+(game.stats.aura||0)*.15),5,25);d.fans={young,long:100-young-over,overseas:over};
+ if(y>=game.entry&&game.year>=2){let strong=rank===1||rank===2||rank===3||p>=30;let pool=v8Roster().filter(x=>x.name!==game.name&&groupInYear(x.name,y)===game.troupe);let units=Math.round(80+p*28+(rank===1?2400:rank===2?1000:rank===3?550:0)+rand(180));let position=1+pool.filter(x=>Math.round(v15PersonScore(x,y)*14)>units).length;d.sales.push({year:y,units,position,total:pool.length+1});v33Log('舞台写真・ブロマイド売上',`年間 ${units.toLocaleString()}枚相当、組内参考 ${position}/${pool.length+1}位。`);
+ if(strong){let month=1+rand(12);d.calendar.push({year:y+1,month,type:rank===1?'スターカレンダー':'ステージカレンダー'});v33Log('カレンダー掲載発表',`${y+1}年版 ${month}月に掲載が決定。`);v33Gain('pop',1);}
+ if((rank===1||rank===2)&&p>=24&&v33One('book:'+Math.floor(game.year/4))){d.press.push({year:y,type:'写真集',title:'パーソナルブック'});v33Log('写真集の発売','パーソナルブックの撮影・発売が決定。');v33Gain('pop',2);}
+ if(strong&&Math.random()<.45){let title=pick(['歌劇','宝塚GRAPH']);d.press.push({year:y,type:'表紙',title});v33Log('雑誌表紙',title+'の表紙を飾った。');v33Gain('pop',2);}
+ if(y>=2012&&strong&&Math.random()<.55){d.press.push({year:y,type:'SNS',title:'次期スター予想'});v33Log('SNSの人事予想',d.rivals.length?'架空のファンの間で '+game.name+' と '+d.rivals.at(-1)+' の今後の人事が話題になった。':'架空のファンの間で今後の舞台活動が話題になった。');}
+ if(game.fc?.founded&&d.rivals.length&&Math.random()<.22){let loss=Math.max(0,Math.min(game.fc.members-1,Math.round(game.fc.members*.05)));game.fc.members-=loss;v33Log('ファンの推し変',`若手の注目が高まり、会員が${loss}人減少。`);}}
+ // Count multiple contemporaneous leading roles across all five troupes.
+ if(y>=2027&&game.v15?.groups){let cohorts={};for(const x of Object.values(game.v15.groups))for(const n of [x.top,x.heroine,...x.ranks]){let t=v19Term(n);if(t)cohorts[t]=(cohorts[t]||0)+1;}for(const [t,count] of Object.entries(cohorts)){if(count>=3&&v33One('goldenRank:'+t)){d.golden[t]=count;v33Log('黄金世代の台頭',`${t}期からトップ・番手が${count}人。複数の組で同期が中心的な役割を担う。`);}}}
+ // A strong cohort increases the pool of rival candidates.
+ let cohort=v8Roster().filter(x=>pplTerm(x)===game.term&&v31RoadName(x.name,y));if(cohort.length>=5&&v33One('golden:'+game.term)){d.golden[game.term]=cohort.length;v33Log('黄金世代',`${game.term}期の路線候補が${cohort.length}名。同期の活躍が注目される。`);}
+ if(!d.sister&&game.year<=4&&(game.sister||Math.random()<.10)){let name=pick(['花乃','星乃','月乃','雪乃'])+pick(['りり','ゆめ','みお','すず']);while(REAL_PEOPLE.some(x=>x.name===name)||name===game.name)name+='乃';d.sister={name,term:game.term+3+rand(4),joined:false,accepted:Math.random()<.65};game.sister=false;game.sisterRank=false;v33Log('姉妹の受験','架空の家族である妹が音楽学校を目指し始めた。');}
+ if(d.sister&&!d.sister.joined&&!d.sister.failed&&y>=entryTerm(d.sister.term)){if(d.sister.accepted===false){d.sister.failed=true;v33Log('家族の進路','妹は音楽学校への入学が叶わず、別の道に進むことになった。');}else{d.sister.joined=true;game.sister=true;game.sisterRank=false;d.sister.group=pick(V15_TROUPES);if(!REAL_PEOPLE.some(x=>x.name===d.sister.name)){REAL_PEOPLE.push({name:d.sister.name,group:d.sister.group,position:d.sister.term+'期',kind:'娘役',bio:'',credits:[],v33Sister:true});ROOT_GROUP.set(d.sister.name,d.sister.group);}bumpFriend(d.sister.name,20);v33Log('姉妹ジェンヌ誕生',d.sister.name+'が'+d.sister.group+'に入団。');}}
+ if(game.year>=15&&!f.top&&!d.office&&rank!==2&&rank!==3&&V15_TROUPES.includes(game.troupe)&&Math.random()<.28){d.office='副組長';v33Log('副組長就任','後輩の指導や組の運営を担うことになった。');popMajor('副組長就任',game.troupe+'の副組長に就任。');}
+ else if(d.office==='副組長'&&game.year>=18&&Math.random()<.35){d.office='組長';v33Log('組長就任','組子を支える立場となった。');popMajor('組長就任',game.troupe+'の組長に就任。');}
+}
+function v33Offer(){if(!game||game.phase!==3||game.ended||game.pending||game.popups?.length||game.v17?.partnerPending)return false;let d=v33Data(),y=game.calendar,f=game.flags,p=game.stats.pop||0;
+ if(!f.top&&d.inner?.accepted&&d.inner.year<=y&&game.part>=6&&game.year<=18){d.inner.accepted=false;v33Appoint(d.inner.group||game.troupe);save();render();return true;}
+ if(game.part>=1&&!d.seen['annual:'+y]){v33Annual();save();render();return true;}
+ if(f.top&&!d.topPlan){d.topPlan={start:game.topStartYear??game.v25TopStart??(game.careerYears?.top?game.entry+game.careerYears.top-1:y),works:0,target:game.role==='娘役'?(game.v25TopTenure||3+rand(4)):clamp(3+Math.floor(p/17)+rand(3),3,10),unit:game.role==='娘役'?'年':'作'};if(game.role==='娘役')game.v25TopTenure=d.topPlan.target;v33Log('トップ任期の展望',`目安は${d.topPlan.target}${d.topPlan.unit}。公演の評価と今後の希望によって進路を考える。`);save();render();return true;}
+ if(!f.top&&game.year<=18&&game.part>=2&&!d.seen['inner:'+y]&&((game.role==='男役'&&v12CanTop()&&f.rank===2)||(game.role==='娘役'&&f.rookie>0&&f.bau>0&&p>=35&&game.year>=5))){d.seen['inner:'+y]=true;if(Math.random()<.35){d.inner={year:y,confidence:0};return v33Event('トップ就任内定の打診','正式発表に先立ち、次期トップの候補に内定したという連絡が届いた。承諾すると年度後半に就任手続きが進む。',[['引き受ける意向を伝える','team',2,4,'inner','就任評価 +8／ストレス +4'],['組全体のことを相談する','team',2,0,'inner','就任評価 +8'],['準備を優先する','acting',2,1,'','芝居 +2'],['今は見送る','',0,-5,'','ストレス −5']]);}}
+ if(!f.top&&game.role==='娘役'&&f.rookie>0&&f.bau>0&&game.year>=4&&game.year<=12&&p>=26&&game.part>=3&&!d.seen['otherTop:'+y]){d.seen['otherTop:'+y]=true;if(Math.random()<.14){let g=pick(V15_TROUPES.filter(g=>g!==game.troupe));return v33Event('他組トップ娘役候補への打診',g+'への異動を伴う候補に挙がった。就任は実績・人気による選考。',[['候補として異動を希望','team',1,5,'other:'+g,'異動＋就任選考'],['今の組で経験を積む','acting',2,1,'','芝居 +2'],['相手役との相性を確認','aura',2,1,'','華 +2'],['見送る','',0,-5,'','ストレス −5']]);}}
+ if(!f.top&&game.role==='男役'&&game.part>=4&&[2,3].includes(f.rank)&&d.rivals.length&&!d.seen['rankrisk:'+y]){d.seen['rankrisk:'+y]=true;let rival=v33People().find(x=>d.rivals.includes(x.name)&&groupInYear(x.name,y)===game.troupe&&pplTerm(x)>game.term&&v20BauEligible(x.name,y));if(rival&&p<35&&Math.random()<.13){d.rankCap=f.rank===2?3:4;d.rankUntil=y+1;f.rank=d.rankCap;v33Log('路線の見直し',rival.name+'の台頭で番手が下がった。実績で再挑戦できる。');popMajor('番手変更','新しい立ち位置：'+(f.rank===4?'路線候補':f.rank+'番手'));save();render();return true;}}
+ if(!f.top&&game.year>=8&&!f.rookie&&!d.specialist&&(v30Merit()>=45)){d.specialist=true;v33Log('別格スター','主演路線とは別に、確かな舞台技術を生かす重要な役を任される。');v33Gain('pop',2);save();render();return true;}
+ if(game.part>=4&&v33One('pressChoice:'+y)){if((game.sponsor||f.sponsor)&&Math.random()<.48)return v33Event('スポンサー広告撮影',(game.sponsor||'契約企業')+'の広告・ポスター撮影。',[['舞台衣装で撮影','pop',3,3,'cm'],['自然な表情を意識','aura',2,1,'cm'],['商品紹介を練習','team',2,1,'cm'],['日程調整を相談','',0,-3,'']]);if(game.year>=3&&p>=28&&Math.random()<.30)return v33Event('地上波番組への出演','舞台の魅力を一般の視聴者に伝える企画に招かれた。',[['主題歌を歌う','pop',4,4,'tv'],['舞台の裏側を紹介','pop',3,2,'tv'],['共演者とトーク','team',2,1,'tv'],['今回は出演を見送る','',0,-4,'']]);}
+ if(game.part>=5&&v33One('private:'+y)){let who=v33PickPeople()[0]?.name,choices=[['家族と食事を楽しむ','',0,-8,'family','ストレス −8'],['同期や仲間と誕生日を祝う','team',1,-5,'birthday','協調性 +1／友情上昇'],['稽古の成果を披露する','song',2,2,'','歌唱 +2'],['自宅でゆっくり過ごす','',0,-10,'','ストレス −10']];return v33Event(who&&Math.random()<.5?'誕生日のお祝い':'家族との休日','家族の観劇や誕生日の予定を相談する。',choices);}
+ if(game.part>=6&&v33One('repOffer:'+y)&&game.fc?.founded&&y-(d.repChangedYear||0)>=3&&Math.random()<.25)return v33Event('会の代表交代の相談','代表の生活環境が変わったため、運営体制を話し合う。',[['新しい代表候補を募る','team',1,1,'fc'],['現代表とスタッフで分担','team',1,-1,'fcSupport'],['会計・事務の分担を見直す','team',1,0,'fcSupport'],['現状を維持する','',0,0,'']]);
+ if(d.office&&game.part>=6&&v33One('office:'+y))return v33Event(d.office+'としての仕事','組の現場を支え、組子の相談や行事の調整を行う。',[['下級生の相談を聞く','team',2,1,''],['稽古の段取りを調整する','acting',1,2,''],['他の上級生と役割を分担する','team',1,-3,''],['自分の休息時間も設ける','',0,-6,'']]);
+ return false;}
+const v33OldStep=step;step=function(){if(!game||game.ended||game.pending||game.popups?.length||game.v17?.partnerPending)return;if(v33Offer())return;const before=game.flags?.rank,year=game.calendar;v33OldStep();if(!game||game.ended)return;let d=v33Data();if(game.flags?.rank!==before&&[2,3].includes(game.flags.rank)&&game.role==='男役'&&!game.flags.top){let older=(d.rivals||[]).find(n=>{let p=REAL_PEOPLE.find(x=>x.name===n);return p&&pplTerm(p)<game.term&&v20BauEligible(n,game.calendar);});if(older)v33Log('飛び級人事',older+'より下級生の'+game.name+'が番手に昇格した。');}if(year!==game.calendar&&d.sister?.joined)v33RestoreSister();save();};
+function v33RestoreSister(){let s=game?.v33?.sister;if(s?.joined&&!REAL_PEOPLE.some(p=>p.name===s.name)){REAL_PEOPLE.push({name:s.name,group:s.group,position:s.term+'期',kind:'娘役',bio:'',credits:[],v33Sister:true});ROOT_GROUP.set(s.name,s.group);}}
+const v33OldRank=adjustRank;adjustRank=function(){v33OldRank();if(!game||game.flags.top)return;let d=game.v33;if(d?.rankCap&&game.calendar<=d.rankUntil&&game.flags.rank>0)game.flags.rank=Math.max(d.rankCap,game.flags.rank);};
+const v33OldScore=v15PlayerScore;v15PlayerScore=function(){return v33OldScore()+((game?.v33?.inner?.accepted?game.v33.inner.confidence:0)||0);};
+const v33OldChoice=runGameChoice;runGameChoice=function(i){let e=game?.pending,c=e?.choices?.[i];if(c?.effect!=='v33')return v33OldChoice(i);game.pending=null;let d=v33Data();v33Gain(c.key,c.delta);v25Stress(c.stress);let a=c.action||'';if(a==='inner'){d.inner.confidence=8;d.inner.accepted=true;d.inner.group=game.troupe;}if(a==='family')v33Log('家族の観劇','家族が公演を見に来て感想を話してくれた。');if(a==='birthday'){let p=v33PickPeople()[0];if(p){bumpFriend(p.name,6);v33Log('誕生日のお祝い',p.name+'と誕生日を祝った。');}}if(a==='tv'||a==='cm')d.press.push({year:game.calendar,type:a==='tv'?'地上波':'広告',title:e.name});if(a==='fc'){d.oldRep=game.fc.representative;game.fc.candidates=fcCandidateList();game.pending={name:'新代表の選考',text:'会員数を維持したまま新代表を選ぶ。',kind:'choice',choices:game.fc.candidates.map((r,i)=>({label:r.name+'｜'+(r.profession||r.job||r.occupation||"職業未設定")+'｜応援歴 '+r.history+'年・経験 '+r.experience+'・資金 '+r.funding+'・事務 '+r.admin+'・対人 '+r.communication,effect:'v33',action:'rep:'+i,delta:0,stress:0,detail:'会員数維持／運営能力を更新'})).concat([{label:'現代表を継続',effect:'v33',delta:0,stress:0,detail:'変更なし'}])};}if(a.startsWith('rep:')){let r=game.fc.candidates[Number(a.split(':')[1])];if(r){game.fc.representative=r;d.repChangedYear=game.calendar;game.fc.quality=Math.round((r.admin+r.communication+r.experience)/3);v33Log('新代表就任',r.name+'が新代表となった。');}}if(a==='fcSupport')game.fc.quality=clamp(game.fc.quality+3);if(a.startsWith('other:')){let g=a.slice(6);let chance=clamp(.15+v30Merit()*.006+(game.stats.pop||0)*.002,.15,.80);if(Math.random()<chance){v33Appoint(g);}else v33Log('就任選考','今回は見送りとなり、現在の組で経験を積む。');}v33Log(e.name,c.label+'。'+(c.detail||''),'choice');save();render();v29Resume();};
+// Additional personal-life actions use savings, not fan-club funds.
+const V33_SPEND=[['住まい：賃貸マンション',350000,'home','賃貸マンション',-8],['住まい：高級マンション',1800000,'home','高級マンション',-12],['自動車：コンパクトカー',1600000,'car','コンパクトカー',-5],['自動車：高級車',6800000,'car','高級車',-8],['ピアノ教室',25000,'hobby','ピアノ',-3,'song'],['語学教室',18000,'hobby','語学',-3,'acting'],['着付け教室',20000,'hobby','着付け',-3,'aura'],['料理教室',12000,'hobby','料理',-7,'team'],['同期旅行',85000,'travel','同期旅行',-18],['海外旅行',250000,'travel','海外旅行',-24],['一人旅',45000,'travel','一人旅',-15],['実家への帰省',25000,'family','帰省',-12]];
+function v33FormerList(){return Object.entries(game.friendship||{}).filter(([name,n])=>n>=8&&((game.v15?.retired||[]).includes(name)||REAL_PEOPLE.some(p=>p.name===name&&!v8Active(p,game.calendar)))).map(([n])=>n);}
+function v33Buy(i){if(!game||game.ended)return;const x=V33_SPEND[i];if(!x)return;let [label,cost,type,value,stress,skill]=x,d=v33Data();if(game.wallet<cost)return alert('貯蓄が足りません。');if((type==='home'||type==='car')&&d[type]===value)return alert('すでに選択済みです。');let friend=type==='travel'&&value==='同期旅行'?document.getElementById('v33-trip')?.value:'';if(type==='travel'&&value==='同期旅行'&&!v33People().some(p=>p.name===friend&&pplTerm(p)===game.term))return alert('旅行相手を選択してください。');game.wallet-=cost;game.purchases.push({year:game.calendar,name:label,cost});if(type==='home'||type==='car')d[type]=value;if(type==='hobby'&&!d.hobbies.includes(value))d.hobbies.push(value);if(friend)bumpFriend(friend,8);if(skill)v33Gain(skill,2);v25Stress(stress);v33Log(label,`${JPY(cost)}を支出。${friend?friend+'と一緒に過ごした。':''}${skill?V28_STAT_LABEL[skill]+' +2。':''}ストレス ${stress}。`,'choice');save();render();v29Resume();}
+function v33OGOuting(){if(!game||game.ended)return;let n=document.getElementById('v33-og')?.value;if(!v33FormerList().includes(n))return alert('相手を選んでください。');if(game.wallet<10000)return alert('貯蓄が足りません。');game.wallet-=10000;game.purchases.push({year:game.calendar,name:'OGとの観劇・食事',cost:10000});bumpFriend(n,5);v25Stress(-12);v33Log('退団後の交友',n+'と観劇・食事を楽しんだ。舞台の競争には参加しない。','choice');save();render();v29Resume();}
+const v33OldShop=shop;shop=function(){let html=v33OldShop();if(!game||game.ended)return html;let d=v33Data(),peers=v33People(),former=v33FormerList();return html+`<section class="panel"><h2>暮らし・趣味・旅行</h2><p>住まい：${esc(d.home)} ／ 愛車：${esc(d.car)}</p><label>同期旅行の相手 <select id="v33-trip"><option value="">選択</option>${peers.filter(p=>pplTerm(p)===game.term).map(p=>`<option>${esc(p.name)}</option>`).join('')}</select></label><div class="actions">${V33_SPEND.map(([label,cost],i)=>`<button onclick="v33Buy(${i})">${esc(label)}<br><small>${JPY(cost)}</small></button>`).join('')}</div><h3>OGとの交友</h3>${former.length?`<select id="v33-og"><option value="">選択</option>${former.map(n=>`<option>${esc(n)}</option>`).join('')}</select><button class="btn" onclick="v33OGOuting()">観劇・食事（10,000円）</button>`:'<p class="muted">仲の良かった退団者がいると選択できます。</p>'}</section>`;};
+function v33Panel(){let d=v33Data();const row=(label,value)=>`<div class="history"><b>${esc(label)}</b>：${esc(value||'なし')}</div>`;return `<section class="panel"><h2>スター活動・プライベート</h2>${row('ファンの愛称',d.alias)}${row('ファン層',`若年層 ${d.fans.young}%・古参等 ${d.fans.long}%・海外 ${d.fans.overseas}%`)}${row('親友',d.best)}${row('仲良しグループ',d.groups.join('、'))}${row('尊敬する先輩',d.mentor)}${row('可愛がる後輩',d.junior)}${row('ライバル',d.rivals.join('、'))}${row('組の役職',d.office)}${row('路線外の専門性',d.specialist?'別格スター':'')}${row('住まい',d.home)}${row('愛車',d.car)}${row('習い事',d.hobbies.join('、'))}${row('姉妹',d.sister?d.sister.name+(d.sister.joined?'（'+d.sister.group+'）':d.sister.failed?'（別の進路）':'（受験準備）'):'')}${row('トップ任期目安',d.topPlan?d.topPlan.target+d.topPlan.unit:'')}${row('黄金世代',Object.keys(d.golden).map(k=>k+'期').join('、'))}<h3>舞台写真・売上ランキング</h3>${d.sales.slice(-20).reverse().map(x=>row(x.year+'年',x.units+'枚相当 ／ '+x.position+'位（'+x.total+'人中）')).join('')||'記録なし'}<h3>カレンダー掲載</h3>${d.calendar.slice(-20).reverse().map(x=>row(x.year+'年版',x.month+'月 '+x.type)).join('')||'記録なし'}<h3>メディア出演</h3>${d.press.slice(-30).reverse().map(x=>row(x.year+'年 '+x.type,x.title)).join('')||'記録なし'}<h3>活動の記録</h3>${d.records.slice(-40).reverse().map(x=>row(x.year+'年 '+x.title,x.body)).join('')}<button class="btn" onclick="openTab('timeline')">人生の記録へ戻る</button></section>`;}
+const v33OldScreen=gameScreen;gameScreen=function(){let target=tab==='v33';if(target)tab='timeline';let html=v33OldScreen();if(target){tab='v33';let j=journal();if(html.includes(j))html=html.replace(j,v33Panel());else html+=v33Panel();}if(game)html=html.replace('お金を使う</button>','お金を使う</button><button class="btn" onclick="openTab(\'v33\')">スター活動・私生活</button>');return html;};
+// A top can retire together with the current partner; keep the partner out of future casting.
+function v33FinishTop(together){if(!game||game.ended)return;let a=v31PartnerState();if(together&&a?.name){v33Log('添い遂げ退団',a.name+'と同じ公演で退団することを決めた。');v15Ensure();if(!game.v15.retired.includes(a.name))game.v15.retired.push(a.name);v31RetirementState().seen[a.name]=game.calendar;game.v31FormerPartners??=[];if(!game.v31FormerPartners.includes(a.name))game.v31FormerPartners.push(a.name);}
+ game.pending=null;game.ended=true;game.flags.retired=true;game.retireYear=game.calendar;game.v26AutoRequested=false;v8AutoRequested=false;stop();v28Farewell();v33Log('退団を決意',game.name+'は宝塚歌劇団を退団した。','choice');awardTitles();save();render();}
+const v33OldRetire=v12RetireAsk;v12RetireAsk=function(){if(!game||game.ended)return;if(!game.flags.top)return v33OldRetire();if(!confirm('トップとして退団しますか？'))return;let a=v31PartnerState();v33FinishTop(!!a?.name&&confirm(a.name+'と同時退団（添い遂げ退団）を選びますか？'));};
+// A top career has a real term limit, separate from non-top year 19. The limit is checked once per production/year.
+const v33OfferBase=v33Offer;v33Offer=function(){if(game.flags?.top&&game.phase===3&&!game.pending&&!game.popups?.length&&game.part>=(game.role==='娘役'?5:2)){let d=v33Data(),t=d.topPlan;if(t){let n=t.unit==='年'?game.calendar-t.start+1:(game.topShows||0)-t.works;if(n>=t.target&&v33One('tenure:'+game.calendar+':'+n)){let max=t.unit==='年'?6:10;let opts=[['退団を発表する','',0,-5,'retire','単独退団'],['相手役と添い遂げ退団','team',1,-5,'together','同時退団（コンビがいる場合）']];if(n<max)opts.push(['もう一作続ける','acting',1,3,'extend','任期目安を延長'],['組長と相談して続投する','team',1,-2,'extend','任期目安を延長']);return v33Event('トップ任期の節目',`${n}${t.unit}を重ね、退団か続投を考える時期。${n>=max?'任期の目安の上限に達した。':''}`,opts);}}}return v33OfferBase();};
+const v33ChoiceBase=runGameChoice;runGameChoice=function(i){let c=game?.pending?.choices?.[i];if(c?.effect==='v33'&&['extend','retire','together'].includes(c.action)){let a=c.action;game.pending=null;if(a==='extend'){let t=v33Data().topPlan;t.target=Math.min(t.unit==='年'?6:10,Math.max(t.target+1,t.unit==='年'?game.calendar-t.start+2:(game.topShows||0)+1));if(t.unit==='年')game.v25TopTenure=t.target;v33Gain(c.key,c.delta);v25Stress(c.stress);v33Log('トップ続投','次の舞台に向けて任期の目安を延長した。','choice');save();render();v29Resume();}else v33FinishTop(a==='together');return;}return v33ChoiceBase(i);};
+const v33PrevContinue=continueGame;continueGame=function(){v33PrevContinue();if(game){v33RestoreSister();save();render();}};
+function v33Appoint(g){let old=game.troupe,y=game.calendar;v17Ensure();if(old!==g){const record={year:y,name:game.name,from:old,to:g,role:game.role,forecast:true,player:true};game.troupe=g;game.group=g;game.v17.transferDecided=true;game.v17.transferDone=true;game.transferRecords??=[];game.transferRecords.push(record);if(game.v15){game.v15.futureTransfers??=[];game.v15.futureTransfers.push(record);for(const line of Object.values(game.v15.groups)){line.ranks=line.ranks.filter(n=>n!==game.name);if(line.top===game.name)line.top='';if(line.heroine===game.name)line.heroine='';}}v33Log('主人公の組替え',old+' → '+g+'、トップ就任に伴う異動。');}
+ game.flags.top=true;game.flags.rank=1;v12Milestone('top');game.topStartYear=y;game.topShows=0;game.v30Migrated=true;game.v31Partner=null;game.v33.topPlan=null;v33Gain('pop',5);v25Stress(10);v33Log('トップ就任正式発表',game.name+'が'+g+'の'+(game.role==='男役'?'トップスター':'トップ娘役')+'に就任。');if(game.role==='男役')v17OnTop();v31PartnerState();v31SyncCombo();if(y>=2027)v23SyncPlayerRank(y);popMajor('トップ就任',game.troupe+' '+game.name);}
+// Future lineup references the actual demotion, not a stale player slot.
+const v33OldSync=v23SyncPlayerRank;v23SyncPlayerRank=function(y){if(game?.v33?.rankCap&&game.calendar<=game.v33.rankUntil&&!game.flags.top){game.flags.rank=Math.max(game.flags.rank||game.v33.rankCap,game.v33.rankCap);if(game.flags.rank>3&&game.v15)for(const x of Object.values(game.v15.groups))x.ranks=x.ranks.filter(n=>n!==game.name);}return v33OldSync(y);};
+// Keep rivals relevant to the casting contest and record results even when a named rival wins.
+function v33Opponent(){if(!game||game.flags.top)return null;const y=game.calendar;return v33People().filter(p=>v33Data().rivals.includes(p.name)&&groupInYear(p.name,y)===game.troupe&&p.kind===(game.role==='男役'?'現役':'娘役')&&Math.abs(pplTerm(p)-game.term)<=3).sort((a,b)=>v15PersonScore(b,y)-v15PersonScore(a,y))[0]||null;}
+const v33Chance=v30SelectionChance;v30SelectionChance=function(kind,index=0,since=0){const base=v33Chance(kind,index,since),r=v33Opponent();if(!r)return base;if(kind==='rookie'&&game.calendar-entryTerm(pplTerm(r))>=7)return base;let merit=v30Merit()*.75+(game.stats.pop||0)*.25,op=clamp(v15PersonScore(r,game.calendar)*.55,15,92),delta=clamp((merit-op)*.002,-.08,.08);v33Data().lastContest={name:r.name,year:game.calendar,kind,delta};return clamp(base+delta,.025,.90);};
+const v33ContestChoice=runGameChoice;runGameChoice=function(i){let c=game?.pending?.choices?.[i],kind=c?.effect;if(!['rookie','bau','tojo'].includes(kind)||!game||game.flags.top)return v33ContestChoice(i);let old=game.flags[kind]||0,r=v33Opponent();if(game.v33)game.v33.lastContest=null;const result=v33ContestChoice(i);if(!game||!r||game.ended)return result;let win=(game.flags[kind]||0)>old;let name=kind==='rookie'?'新人公演':kind==='bau'?'バウホール':'東上公演';v33Log('ライバルとの選考',`${r.name}と競う${name}の選考。${win?'主人公が主演・ヒロインを獲得。':'今回は主演に届かなかった。'}`);save();render();return result;};
+// Sales are attached to each production, not just an annual aggregate. The market values are game metrics.
+function v33WorkSale(w){if(!w||!game||/新人/.test(w.kind||''))return w;let d=v33Data();d.workSales??=[];let key=[w.year,w.troupe,w.kind,w.title].join('|');if(d.workSales.some(x=>x.key===key))return w;let pop=game.stats.pop||0,lead=!!w.topLead||/主演|ヒロイン/.test(w.role||''),units=Math.round(25+pop*12+(lead?700:0)+rand(90));let people=v8Roster().filter(p=>p.name!==game.name&&groupInYear(p.name,w.year)===w.troupe);let pos=1+people.filter(p=>v15PersonScore(p,w.year)*9>units).length;let goods=Math.round(units*.7+pop*6);d.workSales.push({key,year:w.year,title:w.title,units,goods,pos,total:people.length+1});v33Log('公演別舞台写真ランキング',`『${w.title}』舞台写真 ${units}枚／組内 ${pos}位（${people.length+1}名中）、その他グッズ ${goods}点相当。`);return w;}
+const v33OldRecord=recordShow;recordShow=function(kind,featured){let w=v33OldRecord(kind,featured);if(game?.v33?.specialist&&!featured&&!game.flags.top&&w&&!/新人/.test(w.kind||'')){w.role='別格・重要な助演';v33Gain('pop',1);}return v33WorkSale(w);};
+const v33OldBox=v9RecordBox;v9RecordBox=function(featured,kind){let w=v33OldBox(featured,kind);if(game?.v33?.specialist&&!featured&&!game.flags.top&&w){w.role='別格・重要な助演';v33Gain('pop',1);}return v33WorkSale(w);};
+const v33WorksPanel=v33Panel;v33Panel=function(){let d=v33Data();return v33WorksPanel().replace('<h3>カレンダー掲載</h3>','<h3>公演別グッズ・舞台写真</h3>'+((d.workSales||[]).slice(-30).reverse().map(x=>`<div class="history"><b>${x.year}年 『${esc(x.title)}』</b><br>舞台写真 ${x.units}枚相当 ／ 組内 ${x.pos}/${x.total}位<br>その他グッズ ${x.goods}点相当</div>`).join('')||'<p>記録なし</p>')+'<h3>カレンダー掲載</h3>');};
+// Record doubles and actual generational leapfrogs in predicted rosters just once, not on rendering.
+const v33Advance=v15AdvanceRoster;v15AdvanceRoster=function(y){const prior=game?.v15?.year??2026;const result=v33Advance(y);if(!game||y<=prior||y<2027)return result;let d=v33Data();for(const g of V15_TROUPES){let line=game.v15.groups[g];if(!line)continue;let a=line.ranks?.[0],b=line.ranks?.[1],ta=v19Term(a),tb=v19Term(b);if(a&&b&&!line.doubleSecond&&ta&&tb&&ta>tb&&v33One('leap:'+g+':'+a+':'+b))v33Log('飛び級人事（未来予測）',`${g}の${a}（${ta}期）が${b}（${tb}期）より先の番手となった。`);}return result;};
+// Include fictional sister exactly once after a roster reset, and allow historical private OG meetings without reactivating casting.
+const v33Cohorts=v29Cohorts;v29Cohorts=function(y){let r=v33Cohorts(y);if(game?.v33?.sister?.joined)v33RestoreSister();return r;};
+// Catch works directly recorded by the existing top-performance scheduler.
+const v33ProductionStep=step;step=function(){let start=game?.performances?.length||0;let r=v33ProductionStep();if(game?.performances?.length>start){for(let i=start;i<game.performances.length;i++)v33WorkSale(game.performances[i]);save();render();}return r;};
+
+</script>
+</body></html>
