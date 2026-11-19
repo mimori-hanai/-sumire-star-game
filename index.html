@@ -3479,4 +3479,275 @@ const v37OuterStep=step;step=function(){v37CaptureDepth++;try{return v37OuterSte
 // Prevent already-retired historical performers (including alternate whitespace spellings) from retiring again in the fictional era.
 function v37PastRetired(n,y){const k=String(n).replace(/\s/g,'');let date=V36_RETIRES[n]||V36_RETIRES[k]||V8_RETIREMENTS[k];if(date&&Number(date.slice(0,4))<y)return true;return y>=2027&&REAL_PEOPLE.some(p=>p.kind==='OG'&&String(p.name).replace(/\s/g,'')===k);}
 const v37AllPeople=v15AllPeople;v15AllPeople=function(){let a=v37AllPeople();if(!game||game.calendar<2027)return a;return a.filter(p=>!v37PastRetired(p.name,game.calendar));};
-</script></body></html>
+</script><script>
+// Ver.38 — unified career records, theatre awards, fan reactions and school challenge.
+const V38_SOURCE='https://momonoyakata.com/futurestars-all20102019/';
+// Calendar year of first actual performance, troupe, title, male lead, female lead (when verified).
+const V38_ROOKIES=`2009|星|My dear New Orleans|真風涼帆|蒼乃夕妃
+2009|宙|薔薇に降る雨|七海ひろき|愛花ちさき
+2009|月|エリザベート|明日海りお|羽桜しずく
+2009|月|ラスト プレイ|明日海りお|
+2009|宙|カサブランカ|凪七瑠海|藤咲えり
+2010|星|ハプスブルクの宝剣|美弥るりか|早乙女わかば
+2010|雪|ソルフェリーノの夜明け|彩風咲奈|愛加あゆ
+2010|花|虞美人|鳳真由|天咲千華
+2010|月|THE SCARLET PIMPERNEL|珠城りょう|彩星りおん
+2010|宙|TRAFALGAR|蒼羽りく|すみれ乃麗
+2010|雪|ロジェ|彩風咲奈|夢華あみ
+2010|花|麗しのサブリナ|瀬戸かずや|実咲凜音
+2010|月|ジプシー男爵|宇月颯|花陽みら
+2010|星|愛と青春の旅だち|芹香斗亜|音波みのり
+2010|宙|誰がために鐘は鳴る|愛月ひかる|すみれ乃麗
+2011|雪|ロミオとジュリエット|彩風咲奈|愛加あゆ
+2011|花|愛のプレリュード|大河凜|桜咲彩花
+2011|月|バラの国の王子|煌月爽矢|愛風ゆめ
+2011|星|ノバ・ボサ・ノバ|麻央侑希|早乙女わかば
+2011|宙|美しき生涯|愛月ひかる|瀬音リサ
+2011|花|ファントム|鳳真由|実咲凜音
+2011|月|アルジェの男|紫門ゆりや|愛希れいか
+2011|雪|仮面の男|彩凪翔|星乃あんり
+2011|宙|クラシコ・イタリアーノ|澄輝さやと|伶美うらら
+2012|花|サン=テグジュペリ|芹香斗亜|春妃うらら
+2012|宙|銀河英雄伝説＠TAKARAZUKA|蒼羽りく|花乃まりあ
+2012|雪|JIN －仁－|彩風咲奈|透水さらさ
+2012|星|めぐり会いは再び 2nd|十碧れいや|妃海風
+2013|月|ベルサイユのばら|煌月爽矢|
+2013|宙|モンテ・クリスト伯|愛月ひかる|花乃まりあ
+2013|雪|ベルサイユのばら|彩風咲奈|夢華あみ
+2013|星|ロミオとジュリエット|礼真琴|城妃美伶
+2013|月|ルパン|珠城りょう|咲妃みゆ
+2013|花|愛と革命の詩|芹香斗亜|朝月希和
+2013|宙|風と共に去りぬ|蒼羽りく|花乃まりあ
+2013|雪|Shall we ダンス？|月城かなと|夢華あみ
+2014|星|眠らない男・ナポレオン|礼真琴|妃海風
+2014|花|ラスト・タイクーン|柚香光|華雅りりか
+2014|雪|一夢庵風流記 前田慶次|月城かなと|有沙瞳
+2014|星|The Lost Glory|麻央侑希|綺咲愛里
+2014|花|エリザベート|柚香光|花乃まりあ
+2014|月|PUCK|朝美絢|海乃美月
+2014|宙|白夜の誓い|桜木みなと|伶美うらら
+2015|雪|ルパン三世|永久輝せあ|星南のぞみ
+2015|星|黒豹の如く|礼真琴|綺咲愛里
+2015|花|カリスタの海に抱かれて|水美舞斗|城妃美伶
+2015|月|1789|暁千星|美園さくら
+2015|宙|王家に捧ぐ歌|桜木みなと|星風まどか
+2015|雪|星逢一夜|月城かなと|彩みちる
+2015|星|ガイズ＆ドールズ|瀬央ゆりあ|綺咲愛里
+2015|花|新源氏物語|柚香光|朝月希和
+2015|月|舞音 -MANON-|朝美絢|叶羽時
+2016|月|NOBUNAGA|暁千星|紫乃小雪
+2016|宙|エリザベート|瑠風輝|星風まどか
+2016|星|桜華に舞え|天華えま|小桜ほのか
+2016|雪|私立探偵ケイレブ・ハント|永久輝せあ|星南のぞみ
+2016|花|金色の砂漠|綺城ひか理|城妃美伶
+2017|月|グランドホテル|夢奈瑠音|海乃美月
+2017|宙|王妃の館|留依蒔世|遥羽らら
+2017|星|THE SCARLET PIMPERNEL|天華えま|有沙瞳
+2017|雪|幕末太陽傳|永久輝せあ|野々花ひまり
+2017|花|邪馬台国の風|飛龍つかさ|華優希
+2017|月|All for One|蓮つかさ|結愛かれん
+2017|宙|神々の土地|瑠風輝|
+2017|星|ベルリン、わが愛|極美慎|星蘭ひとみ
+2017|雪|ひかりふる路|綾凰華|潤花
+2018|花|ポーの一族|聖乃あすか|城妃美伶
+2018|月|カンパニー|風間柚乃|美園さくら
+2018|宙|天は赤い河のほとり|鷹翔千空|天彩峰里
+2018|星|ANOTHER WORLD|天華えま|星蘭ひとみ
+2018|雪|凱旋門|縣千|潤花
+2018|花|MESSIAH|聖乃あすか|舞空瞳
+2018|月|エリザベート|暁千星|美園さくら
+2018|宙|異人たちのルネサンス|瑠風輝|夢白あや
+2018|雪|ファントム|綾凰華|野々花ひまり
+2019|星|霧深きエルベのほとり|極美慎|水乃ゆり
+2019|雪|壬生義士伝|彩海せら|彩みちる
+2019|星|GOD OF STARS -食聖-|天飛華音|舞空瞳
+2019|花|A Fairy Tale|聖乃あすか|都姫ここ
+2019|月|I AM FROM AUSTRIA|英かおと|白河りり
+2019|宙|El Japón|風色日向|花宮沙羅
+2020|雪|ONCE UPON A TIME IN AMERICA|諏訪さき|潤花
+2020|星|眩耀の谷|碧海さりお|桜庭舞
+2021|月|桜嵐記|礼華はる|きよら羽龍
+2021|宙|シャーロック・ホームズ|亜音有星|山吹ひばり
+2021|雪|CITY HUNTER|縣千|音彩唯
+2021|星|柳生忍法帖|天飛華音|瑠璃花夏
+2021|花|元禄バロックロック|希波らいと|美羽愛
+2022|月|今夜、ロマンス劇場で|礼華はる|花妃舞音
+2022|宙|NEVER SAY GOODBYE|風色日向|春乃さくら
+2022|雪|夢介千両みやげ|縣千|華純沙那
+2022|星|めぐり会いは再び next generation|咲城けい|詩ちづる
+2022|花|巡礼の年|侑輝大弥|星空美咲
+2022|月|グレート・ギャツビー|彩海せら|きよら羽龍
+2022|宙|HiGH&LOW|亜音有星|山吹ひばり
+2023|星|1789|稀惺かずと|詩ちづる
+2023|花|鴛鴦歌合戦|天城れいん|朝葉ことの
+2023|月|フリューゲル|瑠皇りあ|花妃舞音
+2024|雪|ボイルド・ドイル・オンザ・トイル・トレイル|華世京|星沢ありさ
+2024|星|RRR×TAKARAZUKA|大希颯|乙華菜乃
+2024|花|アルカンシェル|天城れいん|七彩はづき
+2024|月|Eternal Voice|雅耀|乃々れいあ
+2025|宙|Razzle Dazzle|泉堂成|花恋こまち
+2025|雪|ROBIN THE HERO|苑利香輝|愛空みなみ
+2025|星|阿修羅城の瞳|稀惺かずと|詩ちづる
+2025|花|悪魔城ドラキュラ|夏希真斗|彩葉ゆめ
+2025|月|GUYS AND DOLLS|雅耀|帆華なつ海
+2026|花|蒼月抄|鏡星珠|翠笙芹南
+2026|月|RYOFU|美颯りひと|薫乃咲月
+2026|宙|黒蜥蜴|鳳城のあん|梨恋あやめ
+2026|雪|ポーの一族|華世京|澄花まい
+2026|花|エリザベート|光稀れん|彩葉ゆめ`.split('\n').map(s=>{let [y,g,t,m,f]=s.split('|');return {year:+y,troupe:g+'組',title:t,male:m,female:f}});
+// Missing historical profiles. The existing roster uses spaced and unspaced spellings; canonicalize both.
+const V38_PROFILES=`81|花|男|真飛聖|2011-04-24
+82|花|男|蘭寿とむ|2014-05-11
+78|月|男|瀬奈じゅん|2009-12-27
+80|月|男|霧矢大夢|2012-04-22
+79|雪|男|水夏希|2010-09-12
+84|雪|男|音月桂|2012-12-24
+82|雪|男|壮一帆|2014-08-31
+77|星|男|安蘭けい|2009-04-26
+85|星|男|柚希礼音|2015-05-10
+81|宙|男|大和悠河|2009-07-05
+78|宙|男|大空祐飛|2012-07-01
+86|宙|男|凰稀かなめ|2015-02-15
+87|雪|男|早霧せいな|2017-07-23
+90|宙|男|朝夏まなと|2017-11-19
+89|花|男|明日海りお|2019-11-24
+89|雪|男|望海風斗|2021-04-11
+89|星|男|紅ゆずる|2019-10-13
+92|宙|男|真風涼帆|2023-06-11
+94|月|男|珠城りょう|2021-08-15
+95|花|男|柚香光|2024-05-26
+95|月|男|月城かなと|2024-07-07
+93|雪|男|彩風咲奈|2024-10-13
+93|宙|男|芹香斗亜|2025-04-27
+95|星|男|礼真琴|2025-08-10
+83|星|男|北翔海莉|2016-11-20
+92|月|男|鳳月杏|
+88|花|娘|桜乃彩音|2010-05-30
+89|月|娘|羽桜しずく|2009-12-27
+90|月|娘|蒼乃夕妃|2012-04-22
+90|雪|娘|愛原実花|2010-09-12
+91|雪|娘|愛加あゆ|2014-08-31
+91|宙|娘|野々すみ花|2012-07-01
+100|花|娘|華優希|2021-07-04
+100|花|娘|星風まどか|2024-05-26
+99|月|娘|美園さくら|2021-08-15
+97|月|娘|海乃美月|2024-07-07
+101|月|娘|天紫珠李|
+102|宙|娘|潤花|2023-06-11
+103|雪|娘|夢白あや|2026-02-22
+101|星|娘|舞空瞳|2024-12-01
+102|星|娘|舞空瞳|2024-12-01
+100|宙|娘|天彩峰里|
+105|星|娘|詩ちづる|
+83|花|男|愛音羽麗|2012-10-14
+80|雪|男|彩吹真央|2010-04-25
+84|雪|男|未涼亜希|2014-08-31
+85|専科|男|華形ひかる|2020-09-20
+89|星|男|七海ひろき|2019-03-24
+90|花|男|瀬戸かずや|2021-07-04
+92|専科|男|凛城きら|
+91|花|男|紫門ゆりや|
+103|宙|娘|二葉ゆゆ|
+99|専科|娘|小桜ほのか|
+102|星|娘|天愛るりあ|
+85|専科|男|奏乃はると|
+106|宙|男|鳳城のあん|
+110|月|娘|薫乃咲月|
+108|宙|娘|梨恋あやめ|
+111|雪|娘|澄花まい|
+87|月|男|龍真咲|2016-09-04
+98|雪|娘|真彩希帆|2021-04-11
+89|宙|娘|愛花ちさき|2014-07-27
+91|宙|娘|藤咲えり|2012-07-01
+91|花|男|鳳真由|2016-07-31
+90|月|娘|彩星りおん|2012-04-22
+90|月|男|宇月颯|2018-05-06
+91|星|娘|音波みのり|2022-07-24
+91|宙|男|澄輝さやと|2019-07-21
+97|花|娘|春妃うらら|
+97|花|娘|城妃美伶|2019-11-24
+98|星|娘|有沙瞳|2023-08-27
+98|雪|娘|星南のぞみ|2021-11-14
+99|月|娘|彩みちる|2025-11-16
+98|月|娘|紫乃小雪|2017-10-08
+98|星|男|天華えま|2024-04-06
+97|花|男|綺城ひか理|2025-01-19
+97|宙|男|留依蒔世|2022-11-20
+98|宙|娘|遥羽らら|2021-09-26
+99|雪|娘|野々花ひまり|2024-10-13
+98|花|男|飛龍つかさ|2022-09-04
+97|月|男|蓮つかさ|2023-11-19
+101|月|娘|結愛かれん|2023-04-30
+101|専科|娘|星蘭ひとみ|2020-11-30
+98|雪|男|綾凰華|2022-06-12
+102|星|娘|水乃ゆり|2024-12-01
+104|花|娘|都姫ここ|2023-03-19
+103|月|娘|白河りり|
+102|宙|娘|花宮沙羅|2023-12-24
+96|月|男|夢奈瑠音|
+102|花|男|侑輝大弥|
+102|雪|男|咲城けい|
+101|星|男|碧海さりお|`.split('\n').map(s=>s.split('|')).filter(r=>!(r[3]==='舞空瞳'&&r[0]==='101'));
+const v38Norm=n=>String(n||'').replace(/[\s　]/g,'');
+for(const [t,g,role,n,date] of V38_PROFILES){let matched=REAL_PEOPLE.filter(p=>v38Norm(p.name)===n);let p=matched.find(p=>pplTerm(p))||matched[0];if(!p){p={name:n,group:g,position:'',kind:role==='娘'?'娘役':'現役',credits:[],source:'https://sumirecord.com/class/'+t};REAL_PEOPLE.push(p);}p.name=n;p.position=t+'期'+(role==='男'&&V38_ROOKIES.some(x=>x.male===n)?'・新人公演主演経験者':'');p.kind=role==='娘'?'娘役':'現役';p.group=g==='専科'?g:g+'組';ROOT_GROUP.set(n,p.group);for(const other of matched)if(other!==p){const i=REAL_PEOPLE.indexOf(other);if(i>=0)REAL_PEOPLE.splice(i,1);}if(date){V8_RETIREMENTS[n]=date;V36_RETIRES[n]=date;}}
+// Explicit first performance dates only where available; completed records are never fabricated for missing rows.
+const v38CreditBase=v21PersonCredits;v21PersonCredits=function(p,y){let c=v38CreditBase(p,y),n=v38Norm(p.name),field=p.kind==='娘役'?'female':'male';let real=V38_ROOKIES.filter(w=>w.year<=y&&w[field]===n).map(w=>`${w.year}『${w.title}』`);let future=(game?.v23?.npcCredits||[]).filter(w=>v38Norm(w.name)===n&&w.type==='rookie'&&w.year<=y).map(w=>`${w.year}『${w.title}』（予測）`);let rows=p.kind==='娘役'?c.rookie.filter(x=>!real.some(r=>r.includes(x.replace(/^\d+年?『|』$/g,'')))):[];return {...c,rookie:[...new Set([...real,...future,...rows])]};};
+const v38Road=v15IsRoad;v15IsRoad=function(p){return V38_ROOKIES.some(w=>w.year<=(game?.calendar||2026)&&(w.male===v38Norm(p.name)||w.female===v38Norm(p.name)))||v38Road(p)};
+const v38Active=v8Active;v8Active=function(p,y){const n=v38Norm(p.name);if(v35Lock(n,y))return true;let d=V36_RETIRES[n];if(d&&d<=((game?.calendar===y&&game.phase===3)?v36Date():`${y}-12-31`))return false;if(d&&pplTerm(p)&&entryTerm(pplTerm(p))<=y&&d>v36Date()&&game?.calendar===y)return !game.v15?.retired?.includes(n);return v38Active(p,y)};
+function v38Retired(p){if(!game||v35Lock(p.name,game.calendar))return false;const n=v38Norm(p.name),d=V36_RETIRES[n]||v8RetDate(p);return !!(d&&d<=v36Date()||game.v15?.retired?.includes(n)||game.v31Retire?.seen?.[n]&&game.v31Retire.seen[n]<game.calendar);}
+v33FormerList=function(){return [...new Set(REAL_PEOPLE.filter(p=>pplTerm(p)&&entryTerm(pplTerm(p))<=game.calendar&&v38Retired(p)).map(p=>p.name))].sort((a,b)=>(game.friendship[b]||0)-(game.friendship[a]||0)||a.localeCompare(b,'ja'));};
+// Persisted Senka selection: old choices used closures that were lost when saved or ignored by runGameChoice.
+const v38SenkaOld=v19SenkaOffer;v19SenkaOffer=function(){if(!v38SenkaOld())return false;game.pending.choices=game.pending.choices.map((c,i)=>({label:c.label,effect:'v38Senka',action:i,detail:i===0?'専科に正式異動・各組に客演':i===1?'所属組に残る・芝居練習':i===2?'所属組に残る・歌唱練習':'所属組に残る・後輩指導'}));return true;};
+function v38MoveSenka(){if(game.troupe==='専科')return;let from=game.troupe;v19State();game.v19.senkaChosen=true;game.v19.senkaLastGroup=from;game.troupe=game.group='専科';game.flags.rank=0;game.v37&&delete game.v37.playerAppointment;game.transferRecords??=[];game.transferRecords.push({year:game.calendar,date:v36Date(),name:game.name,from,to:'専科',role:game.role,forecast:true,player:true});if(game.v15?.groups)for(let l of Object.values(game.v15.groups)){v37Prune(l,n=>n!==game.name);if(l.top===game.name)l.top='';if(l.heroine===game.name)l.heroine='';}feed('専科異動',`${game.name}が${from}から専科へ異動。各組への特別出演が始まる。`);popMajor('専科異動',`${from} → 専科`);v19SenkaAppearance();}
+function v38Data(){return game.v38??={seen:{},awards:[],hits:[],rotations:[],apt:{},posts:[],pairs:{},alias:'',aliasOrigin:'',difficulty:'ノーマル',exam:null,retireChoice:null,serial:0};}
+function v38Once(key){let d=v38Data();if(d.seen[key])return false;d.seen[key]=true;return true;}
+function v38Log(t,b){v25PriorFeed(t,b,'auto');}
+function v38Genre(t){return /ベルサイユ|ロミオ|エリザベート|ファントム|1789|オペラ|モーツァルト|ミュージカル|スカーレット|GUYS|TOP HAT/i.test(t)?'海外ミュージカル':/桜|月の燈|義士|剣|鴛鴦|幕末|JIN|銀二貫|日本|蒼月|龍|RYOFU/.test(t)?'和物・歴史劇':/ショー|レヴュー|REVUE|FOLLIES|ダンス/i.test(t)?'レビュー':/コメディ|オーシャンズ|CITY HUNTER|ロマンス劇場|食聖/i.test(t)?'コメディー':/ポー|黒蜥蜴|シャーロック|ファントム|怪盗/.test(t)?'幻想・サスペンス':'芝居・恋愛劇';}
+function v38Review(w){if(!w?.title||!game||/初舞台|研究/.test(w.title))return;let d=v38Data(),key=[w.year,w.troupe,w.kind,w.title].join('|');if(!v38Once('review:'+key))return;let genre=v38Genre(w.title),s=game.stats,merit=v30Merit(),prior=d.apt[genre]||0,score=Math.round(clamp(merit*.78+(s.pop||0)*.13+prior*.5+rand(25)-(game.stress||0)*.10,0,100));d.apt[genre]=Math.min(30,prior+1+(score>=65?2:0));w.v38Rating=score;w.v38Genre=genre;let top=!!w.topLead||/主演|ヒロイン/.test(w.role||''),hit=score>=72&&top||score>=82;let verdict=score>=80?'大好評':score>=65?'好評':score>=45?'まずまず':'課題が残った';if(hit){d.hits.push({year:w.year,title:w.title,role:w.role,score});gain('pop',3);v38Log('当たり役',`『${w.title}』の${w.role}が評判に。代表作に加わった。`);}if(w.year>=2010){let posts=score>=65?[`『${w.title}』、役の心情が伝わってきた。`,`今回の${game.name}、舞台上の存在感が印象的。`]:[`『${w.title}』では${game.name}のこれからの成長に期待。`,`次の役ではもっと違う表情を見たい。`];for(let i=0;i<2;i++)d.posts.push({year:w.year,date:v36Date(),type:i?'SNS':'ファンブログ',text:posts[i]+'（'+verdict+'）'});d.posts=d.posts.slice(-100);}
+ // Role switching uses a genuine role pair for Elisabeth when possible; otherwise only a fictional alternate role in future productions.
+ if(!game.flags.top&&game.role==='男役'&&game.year>=3&&/エリザベート/.test(w.title)&&!/新人/.test(w.kind)&&[2009,2014,2016,2018,2026].includes(w.year)&&Math.random()<.55){let peer=v33People().find(p=>p.kind!=='娘役'&&p.name!==game.name&&groupInYear(p.name,game.calendar)===game.troupe);if(peer){d.rotations.push({year:w.year,title:w.title,a:'ルドルフ',b:w.year===2026?'シュテファン':'別日程の助演',peer:peer.name});w.rotation='ルドルフ／'+(w.year===2026?'シュテファン':'助演');bumpFriend(peer.name,3);v38Log('役替わり公演',`${peer.name}と『${w.title}』のルドルフ役を交代で担当。`);}}}
+function v38ScanWorks(){let d=v38Data(),a=game.performances||[];for(let i=Math.min(d.scanIndex||0,a.length);i<a.length;i++)v38Review(a[i]);d.scanIndex=a.length;}
+function v38Annual(){let d=v38Data(),y=game.calendar;if(game.phase!==3||game.year<1)return;let n=game.name,merit=v30Merit();if(!d.alias){let real=String(game.realName||game.real||game.name||''),stage=String(n),opts=[[real.slice(-2)+'ちゃん','本名の下の名前'],[real.slice(0,2)+'っち','本名の名字'],[stage.slice(0,2)+'さん','芸名の名字'],[stage.slice(-2)+'りん','芸名の下の名前'],['スミちゃん','同期との稽古場での呼び名']];let a=pick(opts);d.alias=a[0];d.aliasOrigin=a[1];v33Data().alias=a[0];v38Log('愛称の由来',`${a[1]}から「${a[0]}」と呼ばれるようになった。`);}
+ if(game.year>=2&&game.part>=5&&v38Once('award:'+y)){let prior=(game.performances||[]).filter(w=>w.year===y||w.year===y-1),high=Math.max(0,...prior.map(w=>w.v38Rating||0)),award=game.year<=7&&game.flags.rookie&&merit>=43&&!d.awards.some(a=>a.name==='新人賞')?'新人賞':game.flags.top&&high>=76?'優秀賞':merit>=70&&high>=66?'努力賞':merit>=48&&high>=50?'奨励賞':null;if(award&&Math.random()<.62){d.awards.push({year:y,name:award,work:prior.sort((a,b)=>(b.v38Rating||0)-(a.v38Rating||0))[0]?.title||'年間の舞台活動'});gain('pop',2);v38Log('劇団年度賞',`${award}を受賞。`);popMajor('劇団年度賞',`${game.name}が${award}を受賞！`);}}
+ let admired=REAL_PEOPLE.find(p=>v38Norm(p.name)===v38Norm(game.admire));if(admired&&v38Retired(admired)&&v38Once('admire:'+admired.name)){v38Log('憧れの先輩の退団',`${admired.name}が卒業。これまでの舞台への感謝を胸に、次の公演へ。`);}
+ if(game.role==='男役'&&game.part>=4&&v38Once('pair:'+y)){let p=v33People().filter(p=>p.kind!=='娘役'&&p.name!==n&&(game.friendship[p.name]||0)>=12).sort((a,b)=>(game.friendship[b.name]||0)-(game.friendship[a.name]||0))[0];if(p){let val=d.pairs[p.name]??=0;d.pairs[p.name]=Math.min(100,val+5+rand(9));gain('pop',1);v38Log('男役コンビ人気',`${p.name}との舞台やトークでコンビを応援するファンが増えた。`);}}
+ if(game.pet&&game.part>=4&&v38Once('pet:'+y)&&Math.random()<.45){let p=v33People().filter(p=>(game.friendship[p.name]||0)>0)[0];if(p){game.pending={name:'ペット同士の交流',text:`${p.name}とペットの話で盛り上がり、動物と過ごす休日を計画した。`,choices:[{label:'ペット同伴で遊ぶ',effect:'v38Pet',person:p.name,detail:'仲良し＋7・ストレス−10'},{label:'ペット用品を見に行く',effect:'v38Pet',person:p.name,detail:'仲良し＋4・ストレス−6'},{label:'写真を交換する',effect:'v38Pet',person:p.name,detail:'仲良し＋3・ストレス−3'},{label:'今回は見送る',effect:'v38Pet',person:p.name,detail:'変化なし'}],kind:'choice'};}}
+}
+// Retirement choice uses real future dates where available; optional alternate-world production selection.
+function v38FarewellOptions(){let a=v36Shows(game.calendar).filter(w=>w.troupe===game.troupe&&w.start>=v36Date());let b=a.map(w=>({title:w.title,start:w.start,end:w.end,troupe:w.troupe}));let recent=(game.performances||[]).filter(w=>!/新人/.test(w.kind));for(let w of recent.slice().reverse())if(b.length<3&&!b.some(x=>x.title===w.title))b.push({title:w.title,troupe:game.troupe,revival:true});return b.length?b:[{title:'すみれの花咲く頃',troupe:game.troupe,revival:true}];}
+function v38RetireOffer(together=false){if(game.ended)return;let d=v38Data(),options=v38FarewellOptions();game.pending={name:'退団公演の選択',text:'最後の舞台として希望する作品を選ぶ。再演希望はゲーム内企画。',kind:'choice',choices:[...options.map(w=>({label:'『'+w.title+'』',effect:'v38Farewell',work:w,together,detail:w.revival?'再演希望・退団公演を記録':`${w.start}〜${w.end}・退団公演`})),{label:'退団を保留する',effect:'v38FarewellCancel',detail:'在団を継続'}]};save();render();}
+const v38FinishTop=v33FinishTop;v33FinishTop=function(together){if(!game.ended&&!v38Data().retireChoice)return v38RetireOffer(together);return v38FinishTop(together);};
+const v38RetireAsk=v12RetireAsk;v12RetireAsk=function(){if(game?.phase===3&&!game.ended&&!game.flags.top){if(confirm('退団公演を選択しますか？'))v38RetireOffer(false);return;}return v38RetireAsk();};
+function v38Archive(){if(!game?.ended)return;let d=v38Data(),a=v38ArchiveList();let id=String(game.seed)+'|'+game.term;if(a.some(x=>x.id===id))a=a.filter(x=>x.id!==id);let row={id,name:game.name,role:game.role,term:game.term,group:game.troupe,year:game.year,top:!!game.flags.top,topShows:game.topShows||0,leads:game.leadWorks?.length||0,awards:d.awards.length,hit:d.hits.length,eto:game.v21EtHits?.length||0,pop:game.stats.pop,works:(game.leadWorks||[]).map(w=>w.title),difficulty:d.difficulty};a.push(row);try{localStorage.setItem('sumire_v38_archive',JSON.stringify(a.slice(-200)))}catch(e){game.lastSaveError=String(e)}}
+function v38ArchiveList(){try{return JSON.parse(localStorage.getItem('sumire_v38_archive')||'[]')}catch(e){return []}}
+function v38ArchivePanel(){let a=v38ArchiveList(),top=(key)=>a.slice().sort((x,y)=>y[key]-x[key]).slice(0,5).map((x,i)=>`<div class="history">${i+1}位 ${esc(x.name)}：${x[key]}</div>`).join('')||'記録なし';return `<section class="panel"><h2>歴代スター図鑑・記録ランキング</h2><p>このブラウザでの退団済み人生：${a.length}人</p><h3>トップ主演作数</h3>${top('topShows')}<h3>主演・ヒロイン総数</h3>${top('leads')}<h3>在団年数</h3>${top('year')}<h3>年度賞</h3>${top('awards')}<h3>スター図鑑</h3>${a.slice().reverse().map(x=>`<details class="history"><summary>${esc(x.name)}（${x.term}期・${esc(x.role)}）</summary>${esc(x.group)}・研${x.year}・${x.top?'トップ経験あり':'トップ経験なし'}・${esc(x.difficulty)}<br>主演：${x.leads}／受賞：${x.awards}<br>${esc(x.works.join('、'))}</details>`).join('')}</section>`;}
+function v38Panel(){let d=v38Data();return `<section class="panel"><h2>舞台評価・ファンの反応</h2><p>愛称：${esc(d.alias||'未定')}（${esc(d.aliasOrigin||'未定')}）</p><h3>年度賞</h3>${d.awards.map(a=>`<div class="history">${a.year}年度 ${esc(a.name)}：${esc(a.work)}</div>`).join('')||'受賞歴なし'}<h3>代表作・当たり役</h3>${d.hits.map(a=>`<div class="history">${a.year}年 ${esc(a.title)} ／ ${esc(a.role)} ／ 評価 ${a.score}</div>`).join('')||'なし'}<h3>公演適性</h3>${Object.entries(d.apt).map(([k,v])=>`<div class="history">${esc(k)}：${v}/30</div>`).join('')||'まだ記録なし'}<h3>役替わり</h3>${d.rotations.map(x=>`<div class="history">${x.year}年 ${esc(x.title)}：${esc(x.a)}／${esc(x.b)}　${esc(x.peer)}と交代</div>`).join('')||'なし'}<h3>男役コンビ人気</h3>${Object.entries(d.pairs).map(([k,v])=>`<div class="history">${esc(k)}：${v}/100</div>`).join('')||'なし'}<h3>架空のファンブログ・SNS</h3>${d.posts.slice().reverse().map(x=>`<div class="history"><small>${esc(x.date)}・${x.type}</small><br>${esc(x.text)}</div>`).join('')||'まだ投稿なし'}</section>`;}
+function v38RookiePanel(){const rows=V38_ROOKIES.filter(w=>w.year<=game.calendar).slice().reverse();let future=(game.v23?.npcCredits||[]).filter(w=>w.type==='rookie'&&w.year<=game.calendar);return `<details class="panel"><summary>新人公演 主演・ヒロイン一覧（${rows.length}件）</summary>${rows.map(w=>`<div class="history">${w.year}年 ${w.troupe}『${esc(w.title)}』<br>男役主演：${esc(w.male||'未確認')} ／ ヒロイン：${esc(w.female||'未確認・不在')}</div>`).join('')}${future.map(w=>`<div class="history">${w.year}年 ${esc(w.troupe)}『${esc(w.title)}』：${esc(w.name)}（予測）</div>`).join('')}</details>`;}
+const v38People=revisedPeople;revisedPeople=function(){return v38People()+v38RookiePanel();};
+const v38Works=revisedWorks;revisedWorks=function(){return v38Works()+`<section class="panel"><h3>新人公演の主演・ヒロイン</h3>${(game.performances||[]).filter(w=>/新人/.test(w.kind)).map(w=>{let row=V38_ROOKIES.find(x=>x.year===w.year&&x.troupe===w.troupe&&(w.title.includes(x.title)||x.title.includes(w.title))), own=/主演|ヒロイン/.test(w.role||''),male=own&&game.role==='男役'?game.name:own&&game.role==='娘役'?w.partner:row?.male,female=own&&game.role==='娘役'?game.name:own&&game.role==='男役'?w.partner:row?.female;return `<div class="history">${w.year}年 『${esc(w.title)}』<br>主演：${esc(male||'未確認')} ／ ヒロイン：${esc(female||'未確認')}</div>`}).join('')||'記録なし'}</section>`;};
+// difficulty is selected before generating a new life, normal retains legacy balance.
+let v38NextDifficulty='ノーマル';const v38New=newGame;newGame=function(){v38New();let d=v38Data();d.difficulty=v38NextDifficulty;d.exam=d.difficulty==='ハード'?{attempt:0,stage:0,prep:0,passed:false}:null;if(d.difficulty==='イージー')for(let k of ['song','dance','acting','aura','team'])gain(k,8);save();render();};
+function v38Start(d){v38NextDifficulty=d;newGame();}
+const v38Home=home;home=function(){return v38Home().replace('onclick="newGame()"','onclick="v38Start(\'ノーマル\')"')+`<section class="panel"><h3>難易度選択</h3><button class="btn" onclick="v38Start('イージー')">イージー</button> <button class="btn" onclick="v38Start('ハード')">ハード：音楽学校受験から</button></section>`+v38ArchivePanel();};
+function v38Exam(){let d=v38Data(),e=d.exam;if(!e||e.passed||game.ended)return false;let stage=e.stage;if(stage===0){e.attempt++;game.attempt=e.attempt;game.pending={name:`音楽学校受験 ${e.attempt}回目：準備`,text:'4回まで受験可能。入学試験に備える。',kind:'choice',choices:[['声楽を重点的に練習','song'],['バレエを重点的に練習','dance'],['面接を練習','team'],['自己表現を磨く','aura']].map(([label,key])=>({label,key,effect:'v38Exam',detail:'対応能力＋4・受験準備'}))};}else{let labels=['','一次試験（面接）','二次試験（歌唱・舞踊）','三次試験（面接等）'];game.pending={name:labels[stage],text:'これまでの練習と実力を発揮する。',kind:'choice',choices:['落ち着いて臨む','得意分野をアピール','丁寧な基礎を意識','個性を表現'].map((label,i)=>({label,effect:'v38Exam',key:['team','song','dance','aura'][i],detail:'試験評価に反映'}))};}save();render();return true;}
+const v38Screen=gameScreen;gameScreen=function(){let t=tab;if(t==='v38'||t==='v38Archive')tab='timeline';let h=v38Screen();if(t==='v38'||t==='v38Archive'){let j=journal();let body=t==='v38'?v38Panel():v38ArchivePanel();h=h.includes(j)?h.replace(j,body):h+body;tab=t;}return h.replace('お金を使う</button>','お金を使う</button><button class="btn" onclick="openTab(\'v38\')">舞台評価・SNS</button><button class="btn" onclick="openTab(\'v38Archive\')">歴代スター図鑑</button>');};
+const v38Chance=v30SelectionChance;v30SelectionChance=function(...a){let q=v38Chance(...a),d=v38Data();return clamp(q+(d.difficulty==='イージー'?.12:d.difficulty==='ハード'?-.12:0),.02,.97);};
+const v38Save=save;save=function(){if(game?.ended)v38Archive();return v38Save();};
+const v38Choice=runGameChoice;runGameChoice=function(i){let c=game?.pending?.choices?.[i],e=game?.pending;if(!c)return;let effect=c.effect;if(/^専科への異動を考える/.test(e.name)&&(!effect||effect==='acting'||effect==='v38Senka')){game.pending=null;v19State();if(!game.v19.senkaOffered.length)game.v19.senkaOffered.push(game.calendar);if(i===0)v38MoveSenka();else improve(['acting','acting','song','team'][i]||'team',1);save();render();v29Resume();return;}
+ if(effect==='v38Pet'){game.pending=null;if(i<3){bumpFriend(c.person,[7,4,3][i]);v25Stress(-[10,6,3][i]);v38Log('ペット仲間',`${c.person}と${c.label}。`);}}
+ else if(effect==='v38Exam'){game.pending=null;let d=v38Data(),a=d.exam;gain(c.key,a.stage===0?4:1);if(a.stage===0){a.prep+=4;a.stage=1;}else{let val=(game.stats[c.key]||0)*.35+v30Merit()*.5+a.prep;let success=Math.random()<clamp(.20+val/120,.15,.90);if(success){v38Log('音楽学校 入学試験',e.name+'に合格。');if(a.stage===3){a.passed=true;game.attempt=a.attempt;popMajor('宝塚音楽学校 合格',`${a.attempt}回目で合格。`);}else a.stage++;}else{v38Log('音楽学校 入学試験',e.name+'で不合格。');if(a.attempt>=4){game.ended=true;v38Log('受験終了','4回の挑戦を終え、別の進路へ。');}else a.stage=0;}}}
+ else if(effect==='v38FarewellCancel'){game.pending=null;}
+ else if(effect==='v38Farewell'){let d=v38Data();game.pending=null;d.retireChoice=c.work;let w={...c.work,year:game.calendar,term:game.year,kind:'退団公演',role:game.flags.top?(game.role==='男役'?'主演':'ヒロイン'):'退団記念出演',partner:game.flags.top?v30TopPartner():'',forecast:!!c.work.revival};let existing=game.performances.find(x=>x.year===w.year&&x.title===w.title&&x.troupe===w.troupe&&!/新人/.test(x.kind));if(existing){existing.retirement=true;}else{game.performances.push(w);if(game.flags.top){game.leadWorks.push(w);game.topShows=(game.topShows||0)+1;}}v38ScanWorks();v38Log('退団公演決定',`『${w.title}』を最後の舞台に選んだ。`);if(game.flags.top)v38FinishTop(c.together);else{game.ended=true;game.flags.retired=true;game.retireYear=game.calendar;stop();awardTitles();v38Log('退団',`${game.name}が退団した。`);}}
+ else {let r=v38Choice(i);if(game){v38ScanWorks();save();render();v29Resume();}return r;}save();render();v29Resume();};
+const v38Step=step;step=function(){if(!game||game.ended)return;if(game.pending||game.popups?.length||game.v17?.partnerPending)return v38Step();if(game.phase===0&&v38Data().exam&&!v38Data().exam.passed){if(v38Exam())return;}const was=game.calendar;let r=v38Step();if(game){v38ScanWorks();if(!game.ended&&!game.pending&&!game.popups?.length&&game.phase===3)v38Annual();save();render();v29Resume();}return r;};
+
+const v38OldProcess=processChoices;processChoices=function(i){if(game?.pending?.choices?.[i]?.effect?.startsWith('v38')||/^専科への異動を考える/.test(game?.pending?.name||''))return runGameChoice(i);return v38OldProcess(i);};
+const v38OldProfile=profileScreen;profileScreen=function(){let h=v38OldProfile();if(v38Data().exam&&!v38Data().exam.passed)return `<section class="panel"><h3>ハードモード：音楽学校受験前</h3><p>合格前のプロフィール候補です。受験結果により進路が変わります。</p></section>`+h;return h;};
+// Register repaired historical roster in the canonical reset sources as well.
+V29_ORIG_PEOPLE.splice(0,V29_ORIG_PEOPLE.length,...REAL_PEOPLE.filter(p=>!p.v29Generated));
+for(const p of REAL_PEOPLE.filter(p=>p.kind==='娘役'&&V38_ROOKIES.some(w=>w.female===p.name))){let q=V29_ORIG_LADIES.find(x=>v38Norm(x.name)===p.name);if(q)Object.assign(q,p);else V29_ORIG_LADIES.push(p);}
+HEROINE_DATA.splice(0,HEROINE_DATA.length,...V29_ORIG_LADIES);
+for(const p of [...REAL_PEOPLE,...HEROINE_DATA]){p.bio??='';p.scene??='';p.credits??=[];}
+
+</script>
+</body></html>
